@@ -1,22 +1,31 @@
 ---
-title: Screen: QuickMatchCreation
+title: Screen: Match Scoreboard
 status: Draft
-version: 0.6.0
+version: 0.7.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-07
 related_documents: []
 ---
 
-# Screen: QuickMatchCreation
+# Screen: Match Scoreboard
 
 ## Objetivo
 
-Tela para criar partida rápida em poucos segundos.
+Placar e gols durante o acompanhamento do jogo.
+
+## Elementos
+
+A definir.
+
+## Campos
+
+A definir.
 
 ## Regras de UX
 
-- Priorizar simplicidade.
+- Priorizar clareza e simplicidade.
 - Exibir apenas campos essenciais inicialmente.
+- Mostrar ações primárias com destaque.
 - Permitir avanço para detalhes.
 - Respeitar tema e modo de linguagem.
 

@@ -1,5 +1,5 @@
 ---
-title: ADR 004 UI Language Modes
+title: ADR 005 UI Language Modes
 status: Draft
 version: 0.4.0
 owner: Product Architecture
@@ -7,7 +7,7 @@ last_update: 2026-07-06
 related_documents: []
 ---
 
-# ADR 004: UI Language Modes
+# ADR 005: UI Language Modes
 
 ## Status
 

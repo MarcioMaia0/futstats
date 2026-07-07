@@ -27,3 +27,11 @@ Definir partidas como evento central do FUTSTATS.
 4. Primeiro e segundo quadro são partidas independentes.
 5. Cancelamento permanece no histórico.
 6. Editar gols recalcula placar.
+
+## Modalidades
+
+1. Toda partida possui uma modalidade canônica: `FUTSAL`, `SOCIETY` ou `FIELD`.
+2. A quantidade de titulares (`starters_count`) tem padrão derivado da modalidade (5/7/11) e pode ser ajustada por partida.
+3. A modalidade é herdada do time (`default_modality`) e nunca exige escolha no fluxo casual.
+4. Estatísticas e rankings podem segmentar por modalidade.
+5. Ver `ADR_011_Multi_Modality_Support.md`.

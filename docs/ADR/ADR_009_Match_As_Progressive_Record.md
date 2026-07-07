@@ -1,5 +1,5 @@
 ---
-title: ADR 009: Match As Progressive Record
+title: ADR 009 Match As Progressive Record
 status: Draft
 version: 0.9.0
 owner: Product Architecture

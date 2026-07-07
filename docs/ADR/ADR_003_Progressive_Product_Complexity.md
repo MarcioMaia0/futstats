@@ -1,5 +1,5 @@
 ---
-title: ADR 002 Progressive Product Complexity
+title: ADR 003 Progressive Product Complexity
 status: Draft
 version: 0.4.0
 owner: Product Architecture
@@ -7,7 +7,7 @@ last_update: 2026-07-06
 related_documents: []
 ---
 
-# ADR 002: Progressive Product Complexity
+# ADR 003: Progressive Product Complexity
 
 ## Status
 

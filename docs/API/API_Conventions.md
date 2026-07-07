@@ -13,7 +13,7 @@ related_documents:
 ## Nomenclatura
 
 - Rotas em inglês.
-- JSON em `snake_case` ou `camelCase`, desde que padronizado no projeto.
+- JSON em `snake_case`, espelhando as colunas do banco. Não converter para `camelCase` na borda (ver `Frontend/Naming_Conventions.md`).
 - Enums em `UPPER_SNAKE_CASE`.
 
 ## Paginação

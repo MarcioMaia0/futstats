@@ -6,7 +6,7 @@ owner: Product Architecture
 last_update: 2026-07-06
 ---
 
-# ADR 008 Social First Acquisition
+# ADR 008: Social First Acquisition
 
 
 ## Status

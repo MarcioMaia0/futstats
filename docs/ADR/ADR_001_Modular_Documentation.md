@@ -1,5 +1,5 @@
 ---
-title: Documentação modular
+title: ADR 001 Modular Documentation
 status: Draft
 version: 1.0.0
 owner: Product Architecture
@@ -8,7 +8,7 @@ related_documents:
   []
 ---
 
-# Documentação modular
+# ADR 001: Modular Documentation
 
 ## Status
 

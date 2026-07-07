@@ -25,6 +25,7 @@ Representar times.
 - `primary_color`
 - `secondary_color`
 - `accent_color`
+- `default_modality` (enum: `FUTSAL`, `SOCIETY`, `FIELD`; padrão `FUTSAL`)
 - `created_by_user_id`
 - `created_at`
 - `updated_at`

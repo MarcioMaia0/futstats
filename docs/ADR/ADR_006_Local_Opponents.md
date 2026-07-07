@@ -1,5 +1,5 @@
 ---
-title: ADR 005 Local Opponents
+title: ADR 006 Local Opponents
 status: Draft
 version: 0.5.0
 owner: Product Architecture
@@ -7,7 +7,7 @@ last_update: 2026-07-06
 related_documents: []
 ---
 
-# ADR 005 Local Opponents
+# ADR 006: Local Opponents
 
 ## Status
 

@@ -48,6 +48,7 @@ players → match_goals
 - primary_color
 - secondary_color
 - accent_color
+- default_modality (enum: FUTSAL, SOCIETY, FIELD; padrão FUTSAL)
 
 ### matches
 
@@ -58,6 +59,8 @@ players → match_goals
 - home_score
 - opponent_score
 - status
+- modality (enum: FUTSAL, SOCIETY, FIELD; herdado do time)
+- starters_count (padrão por modalidade: 5/7/11)
 
 ### match_goals
 

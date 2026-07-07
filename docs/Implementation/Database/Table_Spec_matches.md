@@ -25,6 +25,8 @@ Representar partidas.
 - `match_date`
 - `status`
 - `match_type`
+- `modality` (enum: `FUTSAL`, `SOCIETY`, `FIELD`; padrão `FUTSAL`)
+- `starters_count` (inteiro; padrão derivado da modalidade: 5/7/11)
 - `frame_type`
 - `home_score`
 - `opponent_score`
@@ -37,6 +39,9 @@ Representar partidas.
 - Deve aceitar dados mínimos.
 - Placar pode ser atualizado.
 - Cancelamento preserva registro.
+- `modality` e `starters_count` são herdados do `default_modality` do time na criação; o usuário pode sobrescrever.
+- `modality` (futsal/society/campo) é independente de `match_type` (amistoso, campeonato).
+- Vale para partidas agendadas e registradas (agendamento usa esta tabela via `status`).
 
 
 ## Critérios de qualidade

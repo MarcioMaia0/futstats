@@ -1,5 +1,5 @@
 ---
-title: Screen: Settings
+title: Screen: Language Settings
 status: Draft
 version: 0.7.0
 owner: Product Architecture
@@ -7,11 +7,11 @@ last_update: 2026-07-07
 related_documents: []
 ---
 
-# Screen: Settings
+# Screen: Language Settings
 
 ## Objetivo
 
-Temas, linguagem e preferências do usuário.
+Configuração dos modos de linguagem da UI (Technical, Varzea, Resenha).
 
 ## Elementos
 

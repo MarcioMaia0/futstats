@@ -1,5 +1,5 @@
 ---
-title: Screen: Settings
+title: Screen: Quick Match Creation
 status: Draft
 version: 0.7.0
 owner: Product Architecture
@@ -7,11 +7,11 @@ last_update: 2026-07-07
 related_documents: []
 ---
 
-# Screen: Settings
+# Screen: Quick Match Creation
 
 ## Objetivo
 
-Temas, linguagem e preferências do usuário.
+Criar partida rápida em poucos segundos, para uso casual.
 
 ## Elementos
 

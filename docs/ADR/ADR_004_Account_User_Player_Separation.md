@@ -1,5 +1,5 @@
 ---
-title: ADR 003 Account User Player Separation
+title: ADR 004 Account User Player Separation
 status: Draft
 version: 0.4.0
 owner: Product Architecture
@@ -7,7 +7,7 @@ last_update: 2026-07-06
 related_documents: []
 ---
 
-# ADR 003: Account, User and Player Separation
+# ADR 004: Account, User and Player Separation
 
 ## Status
 

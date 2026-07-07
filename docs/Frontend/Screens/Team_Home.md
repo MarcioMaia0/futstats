@@ -1,22 +1,31 @@
 ---
-title: Screen: TeamHome
+title: Screen: Team Home
 status: Draft
-version: 0.6.0
+version: 0.7.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-07
 related_documents: []
 ---
 
-# Screen: TeamHome
+# Screen: Team Home
 
 ## Objetivo
 
-Tela principal do time.
+Tela principal do time (visão interna dos membros).
+
+## Elementos
+
+A definir.
+
+## Campos
+
+A definir.
 
 ## Regras de UX
 
-- Priorizar simplicidade.
+- Priorizar clareza e simplicidade.
 - Exibir apenas campos essenciais inicialmente.
+- Mostrar ações primárias com destaque.
 - Permitir avanço para detalhes.
 - Respeitar tema e modo de linguagem.
 
