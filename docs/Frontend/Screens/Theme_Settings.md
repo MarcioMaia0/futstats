@@ -15,11 +15,11 @@ Configurações de tema.
 
 ## Elementos
 
-A definir.
+- Seletor de tema: claro / escuro / tema do time quando aplicável (componente `ThemePicker`).
 
 ## Campos
 
-A definir.
+- `preferred_theme_id` — nullable. Origem: `user_preferences.preferred_theme_id`.
 
 ## Regras de UX
 

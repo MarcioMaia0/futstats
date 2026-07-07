@@ -11,15 +11,19 @@ related_documents: []
 
 ## Objetivo
 
-Temas, linguagem e preferências do usuário.
+Hub de configurações do usuário: conta, privacidade, aparência (tema) e idioma. Componente: `SettingsScreen`.
 
 ## Elementos
 
-A definir.
+- Seção Conta (dados básicos do usuário).
+- Link "Privacidade" → `Privacy_Settings` (visibilidade de perfil, exibição de nome, região).
+- Link "Aparência" → `Theme_Settings`.
+- Link "Idioma" → `Language_Settings`.
+- Ação de sair (logout).
 
 ## Campos
 
-A definir.
+Nenhum. Tela de navegação.
 
 ## Regras de UX
 

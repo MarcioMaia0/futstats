@@ -15,7 +15,7 @@ related_documents:
 
 ## Objetivo
 
-Capturar o nome de exibição logo após o primeiro auth, quando o provedor não o forneceu (típico em telefone; às vezes em social). Componente: `CompleteProfileScreen`. Passo mínimo e único — nada além do necessário.
+Capturar o handle público e o nome de exibição logo após o primeiro auth via social/telefone. Componente: `CompleteProfileScreen`. Passo mínimo — nada além do necessário.
 
 ## Elementos
 
@@ -25,11 +25,12 @@ Capturar o nome de exibição logo após o primeiro auth, quando o provedor não
 
 ## Campos
 
-- `display_name` — obrigatório. Origem: `users.display_name`.
+- `username` — obrigatório, único, com verificação de disponibilidade. Origem: `users.username`.
+- `display_name` — obrigatório (pré-preenchido com o nome do provedor social quando houver). Origem: `users.display_name`.
 
 ## Regras de UX
 
-- Aparece apenas quando `display_name` está ausente após o auth; caso contrário, pular direto para a Home.
+- Exibida em login social/telefone para conta nova (o `username` nunca vem do provedor); pulada quando o login vincula a uma conta já existente (ver ADR 012). Em login por e-mail os dados já foram coletados na Auth.
 - Não pedir foto, apelido esportivo, posição ou time favorito aqui — tudo diferido (casual-first).
 - Textos via i18n; tokens de tema.
 

@@ -39,3 +39,7 @@ Separar autenticação, usuário, atleta, árbitro e papéis.
 ## Impacto técnico
 
 Tabelas prováveis: `accounts`, `users`, `roles`, `user_team_roles`, `players`, `referees`.
+
+## Mapeamento Supabase
+
+A camada `account` é o `auth.users` do Supabase; `public.users` referencia-o 1:1 (sem tabela `accounts` própria). Enum `auth_provider`: `EMAIL | GOOGLE | APPLE | PHONE`. Torcedor (visitante sem registro) tem leitura pública do macro; interação social exige conta. Ver `../ADR/ADR_012_Identity_On_Supabase_Auth.md`.

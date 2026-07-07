@@ -13,6 +13,8 @@ related_documents: []
 
 Listar as principais tabelas previstas para o FUTSTATS e sua finalidade.
 
+> As colunas detalhadas de cada tabela estão em `../Implementation/Database/Table_Spec_*.md` (fonte única). Este documento é um mapa de alto nível; algumas tabelas aqui ainda são visão e podem não ter spec definida.
+
 ## Identity
 
 ### accounts
@@ -75,7 +77,11 @@ Eventos da partida.
 
 ### match_appearances
 
-Participação de atletas.
+Participação de atletas (jogador ou técnico).
+
+### match_ratings
+
+Notas dos participantes da partida (peer e geral).
 
 ### match_status_history
 
@@ -148,6 +154,10 @@ Seguidores.
 ### media_assets
 
 Imagens e vídeos.
+
+### team_blocks
+
+Bloqueios de interação aplicados por diretores (moderação).
 
 ## Statistics
 

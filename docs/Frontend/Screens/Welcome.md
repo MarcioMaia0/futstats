@@ -30,10 +30,10 @@ Explorar é permitido sem conta; qualquer ação que gere dado (criar time, regi
 - Slides de valor opcionais (registrar jogo, montar time, compartilhar resenha).
 - Botão "Continuar com Google".
 - Botão "Continuar com Apple" — visível apenas no iOS.
-- Botão "Continuar com telefone".
+- Botão "Continuar com telefone" — atrás de feature flag; desativado no MVP.
 - Botão "Continuar com e-mail".
 - Link discreto "Explorar sem entrar".
-- Rodapé com links de Termos de Uso e Política de Privacidade.
+- Aviso de aceite implícito sob os botões: "Ao continuar, você aceita os Termos de Uso e a Política de Privacidade" (com links). Grava `terms_accepted_at` na criação da conta.
 
 ## Campos
 
@@ -43,6 +43,7 @@ Nenhum campo de entrada. Tela de navegação/decisão.
 
 - Botões sociais primeiro; telefone e e-mail em seguida.
 - Apple renderizado condicionalmente por plataforma (`Platform.OS === 'ios'`); exigido pela App Store no iOS quando há outro login social.
+- MVP ativa Google, Apple (iOS) e e-mail; telefone/WhatsApp ficam atrás de feature flag, ocultos no lançamento.
 - "Explorar sem entrar" visível, porém discreto — não competir com os CTAs de entrada.
 - Todo texto via camada de i18n; respeitar tema e modo de linguagem.
 - Nenhuma cor fixa: usar tokens de tema.

@@ -12,10 +12,12 @@ related_documents:
 
 ## Entidades mínimas
 
-- `accounts`
+- `accounts` (mapeado ao `auth.users` do Supabase — ver ADR 012, Opção A)
 - `users`
+- `user_preferences`
 - `teams`
-- `team_members`
+- `user_team_roles`
+- `team_players`
 - `players`
 - `matches`
 - `match_goals`
@@ -30,13 +32,21 @@ O MVP deve permitir registro de partida sem scout.
 
 ```text
 accounts → users
-users → team_members → teams
+users → user_preferences
+users → user_team_roles → teams
+players → team_players → teams
 teams → matches
 matches → match_goals
 matches → match_cards
 matches → posts
 players → match_goals
 ```
+
+## Pessoas, papéis e social
+
+- `players` é o pool de pessoas do time (jogador/técnico/árbitro; user global ou registro do time). Ver ADR 004/012 e `../Database/Table_Spec_players.md`.
+- Papel de gestão = `user_team_roles` (ex.: `DIRECTOR`); elenco = `team_players`; participação na partida = `match_appearances` (jogador/técnico); arbitragem = `match_referees`.
+- Social e moderação: `follows`, `match_ratings` (peer/geral), `referee_reviews` (peso por papel), `comments` (thread + ocultar), `reactions` (dialeto), `team_blocks`.
 
 ## Campos mínimos
 

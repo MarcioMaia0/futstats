@@ -33,10 +33,12 @@ Criar conta ou entrar pelo caminho de e-mail e senha. Tela única com alternânc
 
 ### Modo criar conta
 
+- `username` — obrigatório, único (handle público `@usuario`); regras: minúsculas, letras/números/`_`/`.`, 3–20 caracteres, sem espaço, handles reservados bloqueados; com verificação de disponibilidade. Origem: `users.username`.
 - `display_name` — obrigatório. Origem: `users.display_name`.
-- `email` — obrigatório, formato de e-mail. Origem: `accounts.email`.
-- `password` — obrigatório, regras mínimas de força. Nunca persistido em claro (Supabase Auth).
-- `terms_accepted` — checkbox obrigatório. Origem: `accounts.terms_accepted_at`.
+- `email` — obrigatório, formato de e-mail. Origem: `auth.users.email`.
+- `phone` — opcional, formato E.164 (telefone de contato, não verificado). Origem: `users.contact_phone`.
+- `password` — obrigatório, mínimo 8 caracteres; campo único com botão "mostrar senha" (sem confirmação). Nunca persistido em claro (Supabase Auth).
+- `terms_accepted` — checkbox obrigatório. Origem: `users.terms_accepted_at`.
 
 ### Modo entrar
 
@@ -48,6 +50,8 @@ Criar conta ou entrar pelo caminho de e-mail e senha. Tela única com alternânc
 - Validação inline; não revelar se um e-mail existe (mensagem neutra).
 - `auth_provider` gravado como `EMAIL`.
 - Cadastro cria `account` + `user`; nunca cria `player`.
+- Verificação de e-mail: o usuário entra imediatamente; um lembrete persistente pede a confirmação, exigida só antes de ações sensíveis (casual-first).
+- Se o e-mail informado já pertencer a uma conta social (Google/Apple), o vínculo exige antes a confirmação do e-mail; no sentido inverso — login social com e-mail verificado sobre conta de e-mail existente — o vínculo é automático (ver ADR 012).
 - Textos via i18n; tokens de tema.
 
 ## Estados

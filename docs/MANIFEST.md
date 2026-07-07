@@ -1,7 +1,7 @@
 # FUTSTATS Documentation Manifest
 
 Generated on: 2026-07-06
-Total files: 423
+Total files: 406
 
 - `ADR/ADR_001_Modular_Documentation.md`
 - `ADR/ADR_002_English_Canonical_Naming.md`
@@ -14,6 +14,7 @@ Total files: 423
 - `ADR/ADR_009_Match_As_Progressive_Record.md`
 - `ADR/ADR_010_MVP_Casual_First.md`
 - `ADR/ADR_011_Multi_Modality_Support.md`
+- `ADR/ADR_012_Identity_On_Supabase_Auth.md`
 - `ADR/README.md`
 - `AI/AI_Data_Boundaries.md`
 - `AI/AI_Privacy.md`
@@ -153,35 +154,6 @@ Total files: 423
 - `Database/Seed_Data.md`
 - `Database/Soft_Delete.md`
 - `Database/Soft_Delete_and_Audit.md`
-- `Database/Tables/accounts.md`
-- `Database/Tables/audit_logs.md`
-- `Database/Tables/comments.md`
-- `Database/Tables/follows.md`
-- `Database/Tables/local_opponents.md`
-- `Database/Tables/match_appearances.md`
-- `Database/Tables/match_events.md`
-- `Database/Tables/match_goals.md`
-- `Database/Tables/match_referees.md`
-- `Database/Tables/matches.md`
-- `Database/Tables/media_assets.md`
-- `Database/Tables/metric_definitions.md`
-- `Database/Tables/notifications.md`
-- `Database/Tables/players.md`
-- `Database/Tables/posts.md`
-- `Database/Tables/reactions.md`
-- `Database/Tables/referee_reviews.md`
-- `Database/Tables/referees.md`
-- `Database/Tables/roles.md`
-- `Database/Tables/statistics_snapshots.md`
-- `Database/Tables/team_players.md`
-- `Database/Tables/team_settings.md`
-- `Database/Tables/teams.md`
-- `Database/Tables/themes.md`
-- `Database/Tables/ui_vocabulary.md`
-- `Database/Tables/user_preferences.md`
-- `Database/Tables/user_team_roles.md`
-- `Database/Tables/users.md`
-- `Database/Tables/venues.md`
 - `Database/Tables.md`
 - `Documentation_Index.md`
 - `Domain/Experience.md`
@@ -202,6 +174,7 @@ Total files: 423
 - `Frontend/Card_Templates.md`
 - `Frontend/Component_Guidelines.md`
 - `Frontend/Components.md`
+- `Frontend/Components/Auth_Prompt_Sheet.md`
 - `Frontend/Design_System_Components.md`
 - `Frontend/Design_System_Integration.md`
 - `Frontend/Design_System_Tokens.md`
@@ -221,6 +194,7 @@ Total files: 423
 - `Frontend/Screens/Match_Scoreboard.md`
 - `Frontend/Screens/Phone_Otp.md`
 - `Frontend/Screens/Player_Profile.md`
+- `Frontend/Screens/Privacy_Settings.md`
 - `Frontend/Screens/Quick_Match_Creation.md`
 - `Frontend/Screens/Referee_Review.md`
 - `Frontend/Screens/Settings.md`
@@ -260,28 +234,37 @@ Total files: 423
 - `Implementation/Data_Model/Future_Data_Model.md`
 - `Implementation/Data_Model/MVP_Data_Model.md`
 - `Implementation/Database/Table_Spec_accounts.md`
+- `Implementation/Database/Table_Spec_audit_logs.md`
+- `Implementation/Database/Table_Spec_local_opponents.md`
+- `Implementation/Database/Table_Spec_match_cards.md`
+- `Implementation/Database/Table_Spec_match_goals.md`
+- `Implementation/Database/Table_Spec_media_assets.md`
+- `Implementation/Database/Table_Spec_metric_definitions.md`
+- `Implementation/Database/Table_Spec_notifications.md`
+- `Implementation/Database/Table_Spec_roles.md`
+- `Implementation/Database/Table_Spec_statistics_snapshots.md`
+- `Implementation/Database/Table_Spec_team_settings.md`
+- `Implementation/Database/Table_Spec_ui_vocabulary.md`
+- `Implementation/Database/Table_Spec_venues.md`
+- `Implementation/Database/Table_Spec_comments.md`
+- `Implementation/Database/Table_Spec_follows.md`
+- `Implementation/Database/Table_Spec_match_appearances.md`
+- `Implementation/Database/Table_Spec_match_ratings.md`
+- `Implementation/Database/Table_Spec_match_referees.md`
+- `Implementation/Database/Table_Spec_players.md`
+- `Implementation/Database/Table_Spec_reactions.md`
+- `Implementation/Database/Table_Spec_referee_reviews.md`
+- `Implementation/Database/Table_Spec_team_blocks.md`
+- `Implementation/Database/Table_Spec_team_players.md`
+- `Implementation/Database/Table_Spec_user_team_roles.md`
 - `Implementation/Database/Table_Spec_match_events.md`
 - `Implementation/Database/Table_Spec_matches.md`
 - `Implementation/Database/Table_Spec_posts.md`
 - `Implementation/Database/Table_Spec_referees.md`
 - `Implementation/Database/Table_Spec_teams.md`
+- `Implementation/Database/Table_Spec_user_preferences.md`
 - `Implementation/Database/Table_Spec_themes.md`
 - `Implementation/Database/Table_Spec_users.md`
-- `Implementation/Database/Tables/accounts.md`
-- `Implementation/Database/Tables/comments.md`
-- `Implementation/Database/Tables/match_cards.md`
-- `Implementation/Database/Tables/match_goals.md`
-- `Implementation/Database/Tables/matches.md`
-- `Implementation/Database/Tables/players.md`
-- `Implementation/Database/Tables/post_reactions.md`
-- `Implementation/Database/Tables/posts.md`
-- `Implementation/Database/Tables/referee_reviews.md`
-- `Implementation/Database/Tables/referees.md`
-- `Implementation/Database/Tables/team_members.md`
-- `Implementation/Database/Tables/teams.md`
-- `Implementation/Database/Tables/themes.md`
-- `Implementation/Database/Tables/user_preferences.md`
-- `Implementation/Database/Tables/users.md`
 - `Implementation/Frontend/MVP_Navigation.md`
 - `Implementation/Frontend/Screen_Spec_Match_Report.md`
 - `Implementation/Frontend/Screen_Spec_Player_Profile.md`

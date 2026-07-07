@@ -15,11 +15,13 @@ Entrada do usuário com próximos jogos, ações rápidas e feed.
 
 ## Elementos
 
-A definir.
+- Estado torcedor (não autenticado): notícias e destaques de todos os times; slot de conteúdo patrocinado (nunca rotulado como "anúncio" ao usuário — ver `UX_Principles.md`); busca de time; busca de player; acesso a feeds e perfis públicos.
+- Estado autenticado: próximo jogo, último resultado, atalho "nova partida" (para membros de time), feed.
+- Barra de busca (time/player), disponível nos dois estados.
 
 ## Campos
 
-A definir.
+Nenhum campo de entrada além da busca. Tela de leitura/navegação. Ações que geram dado só aparecem para usuários vinculados a um time.
 
 ## Regras de UX
 

@@ -15,11 +15,13 @@ Feed social de resultados, posts e resenha.
 
 ## Elementos
 
-A definir.
+- Lista de posts e resultados (cards).
+- Reações e comentários (interação social).
+- Torcedor (não autenticado): leitura pública liberada; reagir/comentar dispara o `AuthPromptSheet` (ver `../Components/Auth_Prompt_Sheet.md`).
 
 ## Campos
 
-A definir.
+Nenhum campo de entrada direta. A interação social (reagir/comentar) exige conta.
 
 ## Regras de UX
 

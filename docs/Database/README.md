@@ -29,4 +29,5 @@ Documentar a arquitetura de banco do FUTSTATS.
 - `Naming_Conventions.md`
 - `Entity_Relationships.md`
 - `Indexes.md`
-- `Tables/*.md`
+- `../Implementation/Database/Table_Spec_*.md` (specs de tabela — fonte única)
+- `Tables.md` (mapa de alto nível das tabelas)

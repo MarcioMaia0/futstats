@@ -15,11 +15,11 @@ Configuração dos modos de linguagem da UI (Technical, Varzea, Resenha).
 
 ## Elementos
 
-A definir.
+- Seletor de modo de linguagem: Technical / Varzea / Resenha (componente `LanguageModeSelector`; ver `../../ADR/ADR_005_UI_Language_Modes.md`).
 
 ## Campos
 
-A definir.
+- `preferred_language_mode` — enum. Origem: `user_preferences.preferred_language_mode` (default pelo locale do dispositivo).
 
 ## Regras de UX
 

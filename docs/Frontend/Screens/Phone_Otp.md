@@ -22,6 +22,8 @@ Autenticar por telefone com código de uso único (OTP). Componente: `PhoneOtpSc
 
 O envio de código depende de um provedor externo contratado (o Supabase Auth não envia mensagem por conta própria). SMS via Twilio/MessageBird/Vonage; WhatsApp via WhatsApp Business API (ex.: Twilio Verify). Custo por mensagem em qualquer canal. A tela é agnóstica ao canal: trata "telefone" e "código", e SMS-vs-WhatsApp é configuração do provedor.
 
+No MVP, o login por telefone (SMS e WhatsApp) fica construído porém atrás de feature flag, desativado no lançamento.
+
 ## Elementos
 
 ### Passo 1 — telefone
