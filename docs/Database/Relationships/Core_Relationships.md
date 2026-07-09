@@ -1,9 +1,9 @@
 ---
 title: Core Relationships
 status: Draft
-version: 0.6.0
+version: 0.6.1
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-07
 related_documents: []
 ---
 
@@ -12,8 +12,8 @@ related_documents: []
 ## Identity
 
 ```text
-accounts 1---1 users
-users 1---N user_team_roles
+auth.users 1---1 public.users
+public.users 1---N user_team_roles
 roles 1---N user_team_roles
 ```
 

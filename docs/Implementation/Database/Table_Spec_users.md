@@ -1,11 +1,13 @@
 ---
 title: Table Spec users
 status: Draft
-version: 1.0.0
+version: 1.2.0
 owner: Product Architecture
-last_update: 2026-07-07
+last_update: 2026-07-09
 related_documents:
   - ../../ADR/ADR_012_Identity_On_Supabase_Auth.md
+  - ../../API/Auth_API.md
+  - Table_Spec_persons.md
   - Table_Spec_accounts.md
 ---
 
@@ -17,31 +19,43 @@ Especificar tabela `users`.
 
 ## Finalidade
 
-Representar a pessoa dentro da plataforma. Referencia o `auth.users` do Supabase 1:1 (ver `ADR_012_Identity_On_Supabase_Auth.md`).
+Representar a presença de uma `person` dentro da plataforma. Referencia `auth.users` do Supabase em relacao 1:1.
 
 ## Campos sugeridos
 
 - `id` (uuid, PK, referencia `auth.users.id`)
-- `username` (text, único, obrigatório) — handle público (`@usuario`)
-- `display_name` (text, obrigatório)
-- `nickname` (text, nullable) — apelido/alias exibido conforme as preferências de nome
+- `person_id` (uuid, FK -> `persons.id`, unico)
+- `username` (text, unico, nullable durante onboarding) - handle publico (`@usuario`)
+- `display_name` (text, nullable durante onboarding)
 - `avatar_url` (text, nullable)
-- `contact_phone` (text, nullable) — telefone de contato opcional, não verificado; distinto do telefone de auth (`auth.users.phone`, usado no login por OTP)
+- `contact_phone` (text, nullable) - telefone de contato opcional, nao verificado; distinto do telefone de auth (`auth.users.phone`, usado no login por OTP)
 - `region_state` (text, nullable)
 - `region_city` (text, nullable)
-- `region_zone` (text, nullable) — apenas para cidades grandes com divisão por zona
+- `region_zone` (text, nullable) - apenas para cidades grandes com divisao por zona
 - `terms_accepted_at` (timestamptz)
+- `start_path_completed_at` (timestamptz, nullable) - marca que a pessoa ja passou pela tela de intencao inicial
+- `last_start_path_choice` (enum `start_path_choice`, nullable) - ultima escolha explicita feita na tela de intencao inicial
 - `created_at`
 - `updated_at`
 - `deleted_at` (nullable, soft delete)
 
+## Enums
+
+- `start_path_choice`: `CREATE_TEAM | JOIN_TEAM | EXPLORE`
+
 ## Regras
 
-- User pode não ser player; relação `users` ↔ `players` é 1:1 nullable, via claim.
-- `username` é único e obrigatório no cadastro (handle público para o social); nunca vem do provedor.
-- `nickname` (apelido) é atributo da pessoa em `users`; sua exibição por audiência é controlada em `user_preferences`.
-- Preferências (idioma/tema), visibilidade de perfil e exibição de nome ficam em `user_preferences` (1:1).
-- `contact_phone` é opcional e não verificado; não é o telefone de auth (login por OTP). Se um dia servir para recuperação/2FA, exigirá verificação.
-- Região é opcional e informada manualmente (sem GPS; sem inferência de time, que geraria dado falso para torcedores).
-- Soft delete preserva o histórico esportivo.
-
+- `users` representa a presenca daquela `person` na plataforma, e nao a identidade canonica base.
+- `person_id` e obrigatorio e unico em `users`.
+- Toda conta `user` deve apontar para uma `person`.
+- User pode nao ser player; relacao efetiva passa a ser `persons` -> `players` 1:1 nullable.
+- `username` e unico e obrigatorio no estado final do perfil minimo, mas pode nascer `null` durante onboarding social ou telefone ate a conclusao de `Complete Profile`.
+- `display_name` e obrigatorio no estado final do perfil minimo, mas pode nascer `null` ou incompleto durante onboarding ate a conclusao de `Complete Profile`.
+- `display_name` e nome de contexto da plataforma; nao substitui `persons.full_name` nem `persons.nickname`.
+- Preferencias como idioma, tema, visibilidade de perfil e exibicao de nome ficam em `user_preferences` (1:1).
+- `contact_phone` e opcional e nao verificado; nao e o telefone de auth. Se um dia servir para recuperacao ou 2FA, exigira verificacao.
+- Regiao e opcional e informada manualmente, sem GPS nem inferencia de time.
+- `start_path_completed_at` e `last_start_path_choice` nao definem tipo fixo de usuario; apenas registram a passagem pela etapa e a ultima escolha explicita conhecida.
+- A aplicacao deve tratar `username` e `display_name` nulos como estado transitorio de onboarding, sinalizado por `GET /api/v1/me -> onboarding.requires_complete_profile = true`.
+- Atualizacoes via API devem permitir patch parcial em `PATCH /api/v1/me` para os campos de perfil da pessoa, sem misturar preferencias nem papeis contextuais.
+- Soft delete preserva o historico esportivo.

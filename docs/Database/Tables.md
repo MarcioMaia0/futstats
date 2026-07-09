@@ -1,9 +1,9 @@
 ---
 title: Database Tables
 status: Draft
-version: 0.4.0
+version: 0.5.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 related_documents: []
 ---
 
@@ -13,25 +13,29 @@ related_documents: []
 
 Listar as principais tabelas previstas para o FUTSTATS e sua finalidade.
 
-> As colunas detalhadas de cada tabela estão em `../Implementation/Database/Table_Spec_*.md` (fonte única). Este documento é um mapa de alto nível; algumas tabelas aqui ainda são visão e podem não ter spec definida.
+> As colunas detalhadas de cada tabela estão em `../Implementation/Database/Table_Spec_*.md`. Este documento é um mapa de alto nível.
 
 ## Identity
 
 ### accounts
 
-Armazena autenticação. Representa login e provedores externos.
+Camada conceitual de autenticação. Na implementação atual, corresponde a `auth.users` do Supabase, não a uma tabela própria em `public`.
 
 ### users
 
 Representa a pessoa dentro da plataforma.
 
+### persons
+
+Representa a identidade canônica da pessoa, com ou sem conta no app.
+
 ### roles
 
-Define papéis possíveis.
+Reserva para papéis de gestão customizáveis, caso o projeto evolua além do enum do MVP.
 
 ### user_team_roles
 
-Relaciona usuários, times e permissões.
+Relaciona pessoas, times e permissões de gestão contextuais.
 
 ## Teams
 
@@ -57,6 +61,46 @@ Controla convites.
 
 Representa perfil esportivo.
 
+### player_match_statistics
+
+Projeção do desempenho do atleta por partida.
+
+### player_profile_summary
+
+Resumo principal pronto para o topo do perfil do atleta.
+
+### player_statistics_summary
+
+Agregação geral do atleta.
+
+### player_statistics_by_modality
+
+Agregação do atleta por modalidade.
+
+### player_statistics_by_team_modality
+
+Agregação do atleta por time e modalidade.
+
+### player_timeline_items
+
+Timeline narrativa pronta do atleta.
+
+### player_gallery_items
+
+Itens da galeria social do atleta.
+
+### player_gallery_group_counters
+
+Contadores rápidos da galeria do atleta.
+
+### player_performance_series
+
+Série temporal pronta para gráficos do atleta.
+
+### player_style_inference
+
+Inferência contextual do estilo de jogo do atleta.
+
 ### player_claims
 
 Controla reivindicação de perfis.
@@ -75,13 +119,29 @@ Representa a partida.
 
 Eventos da partida.
 
-### match_appearances
+### match_players
 
-Participação de atletas (jogador ou técnico).
+Atletas relacionados a uma partida por time, inclusive avulsos.
+
+### match_players_positions
+
+Posições usadas no contexto da partida.
+
+### match_staff
+
+Staff efetivo da partida, como técnico.
+
+### match_attendance_responses
+
+Respostas de presença para jogos agendados.
+
+### match_substitutions
+
+Substituições detalhadas da partida.
 
 ### match_ratings
 
-Notas dos participantes da partida (peer e geral).
+Notas dos participantes da partida.
 
 ### match_status_history
 
@@ -157,7 +217,7 @@ Imagens e vídeos.
 
 ### team_blocks
 
-Bloqueios de interação aplicados por diretores (moderação).
+Bloqueios de interação aplicados por gestores do time.
 
 ## Statistics
 
@@ -168,10 +228,6 @@ Define métricas.
 ### statistics_snapshots
 
 Snapshots agregados.
-
-### player_match_statistics
-
-Estatísticas de jogador por partida.
 
 ### team_match_statistics
 

@@ -1,56 +1,42 @@
 ---
 title: MVP Strategy
 status: Draft
-version: 0.6.0
+document_type: Reference
+version: 0.7.0
 owner: Product Architecture
-last_update: 2026-07-06
-related_documents: []
+last_update: 2026-07-07
+related_documents:
+  - PRD_MVP.md
 ---
 
 # MVP Strategy
 
 ## Objetivo
 
-Definir o recorte inicial do FUTSTATS para maximizar adoção, reduzir complexidade e validar o produto rapidamente.
+Registrar a tese resumida do MVP e apontar para a especificacao canonica do escopo.
 
 ## Tese
 
-O MVP deve entrar pelo uso casual, social e compartilhável. A profundidade estatística deve estar preparada arquiteturalmente, mas não pode ser requisito para o primeiro valor percebido.
+O MVP deve entrar pelo uso casual, social e compartilhavel. A profundidade estatistica deve estar preparada arquiteturalmente, mas nao pode ser requisito para o primeiro valor percebido.
+
+## Fonte oficial
+
+O documento canonico de escopo, prioridades, requisitos, riscos e criterios de sucesso do MVP e `PRD_MVP.md`.
+
+## Uso deste arquivo
+
+Este arquivo deve ser usado apenas como resumo executivo da tese de produto.
+
+Quando houver divergencia entre este resumo e o PRD, prevalece o `PRD_MVP.md`.
 
 ## O que o MVP precisa provar
 
-1. Usuários querem registrar jogos amadores.
-2. Usuários querem compartilhar resultados.
+1. Usuarios querem registrar jogos amadores.
+2. Usuarios querem compartilhar resultados.
 3. Atletas se engajam quando aparecem em gols, cards e rankings simples.
 4. Diretores aceitam organizar um pouco mais quando recebem valor imediato.
-5. O social pode gerar aquisição orgânica.
+5. O social pode gerar aquisicao organica.
 
-## Funcionalidades essenciais
+## Regra
 
-- Criar time rapidamente.
-- Criar partida rapidamente.
-- Registrar placar.
-- Registrar autores dos gols.
-- Gerar card do resultado.
-- Compartilhar card.
-- Criar perfil simples de atleta.
-- Histórico básico do time.
-- Ranking simples de artilharia.
-
-## Funcionalidades preparadas, mas não obrigatórias
-
-- Elenco completo.
-- Quadras.
-- Adversários locais.
-- Arbitragem.
-- Scout.
-- Plus/Minus.
-- Relatórios avançados.
-
-## Critério de sucesso
-
-O usuário deve conseguir registrar e compartilhar um jogo em menos de 2 minutos.
-
-## Decisão de produto
-
-O MVP não é uma versão incompleta do produto analítico. Ele é uma experiência social e simples que cria o caminho para o uso analítico.
+Nao duplicar aqui listas detalhadas de requisitos, escopo ou criterios de sucesso que pertencem ao `PRD_MVP.md`.

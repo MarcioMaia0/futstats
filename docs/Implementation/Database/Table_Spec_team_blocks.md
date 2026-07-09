@@ -31,6 +31,5 @@ Especificar `team_blocks` — bloqueios de interação aplicados por diretores, 
 
 - Escopo do time: impede interagir (comentar, reagir, dar nota) no contexto daquele time; o bloqueado ainda **lê** o conteúdo público.
 - Durações: 1 hora, 1 dia, 1 semana ou permanente → `blocked_until` (nulo = permanente). Ativo enquanto `blocked_until` for futuro ou nulo.
-- Só `DIRECTOR` bloqueia; diretor não bloqueia outro diretor do mesmo time.
+- Só `DIRECTOR` ou `PRESIDENT` bloqueiam; diretor ou presidente não bloqueiam outro gestor equivalente do mesmo time.
 - Ação registrada em `audit_logs`; aviso neutro ao bloqueado ("suas interações neste time estão suspensas até X").
-

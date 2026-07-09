@@ -1,11 +1,10 @@
 ---
 title: API Conventions
 status: Draft
-version: 0.9.0
+version: 0.9.1
 owner: Product Architecture
-last_update: 2026-07-06
-related_documents:
-[]
+last_update: 2026-07-07
+related_documents: []
 ---
 
 # API Conventions

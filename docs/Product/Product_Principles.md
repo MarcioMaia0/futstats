@@ -1,9 +1,9 @@
 ---
 title: Product Principles
 status: Draft
-version: 0.5.0
+version: 0.5.1
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-07
 related_documents: [Product_Overview.md, Product_Vision.md]
 ---
 

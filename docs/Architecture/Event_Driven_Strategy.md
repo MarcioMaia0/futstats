@@ -66,6 +66,8 @@ Um gol foi registrado.
 - PlayerCreated
 - PlayerLinkedToTeam
 - PlayerClaimedByUser
+- PlayerProfileProjectionRefreshRequested
+- PlayerGalleryProjectionRefreshRequested
 - RefereeReviewed
 - PostPublished
 - MatchCardGenerated
@@ -109,6 +111,9 @@ Handlers possíveis:
 ```text
 Statistics.OnGoalRegistered
   -> recalcula artilharia ou agenda job
+
+PlayerProfile.OnGoalRegistered
+  -> atualiza projeções do atleta impactado
 
 Social.OnGoalRegistered
   -> atualiza feed ou prepara card
@@ -167,6 +172,7 @@ Exemplo:
 - enviar push;
 - atualizar feed derivado;
 - consolidar estatísticas históricas.
+- consolidar projeções do perfil do atleta.
 
 ## Filas
 

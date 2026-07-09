@@ -1,7 +1,7 @@
 ---
 title: Frontend Naming Conventions
 status: Draft
-version: 1.0.0
+version: 1.0.1
 owner: Product Architecture
 last_update: 2026-07-07
 related_documents:
@@ -16,9 +16,9 @@ related_documents:
 
 ## Objetivo
 
-Padronizar a nomenclatura de telas, componentes, classes, funções, variáveis e arquivos do frontend, complementando a ADR 002 (inglês canônico) e as convenções já definidas para banco e API.
+Padronizar a nomenclatura de telas, componentes, classes, funcoes, variaveis e arquivos do frontend, complementando a ADR 002 e as convencoes ja definidas para banco e API.
 
-## Convenções
+## Convencoes
 
 ### Telas
 
@@ -35,9 +35,9 @@ Padronizar a nomenclatura de telas, componentes, classes, funções, variáveis 
 - `camelCase` com prefixo `use`: `useMatchGoals`, `useTeamTheme`, `useOfflineQueue`.
 - Arquivo com o mesmo nome: `useMatchGoals.ts`.
 
-### Funções e variáveis
+### Funcoes e variaveis
 
-- `camelCase`, em inglês, descritivas: `registerGoal()`, `generateShareCard()`.
+- `camelCase`, em ingles, descritivas: `registerGoal()`, `generateShareCard()`.
 - Booleanos com prefixo `is`, `has` ou `can`: `isMatchFinished`, `hasClaimedProfile`, `canEditScore`.
 
 ### Classes e services
@@ -48,8 +48,8 @@ Padronizar a nomenclatura de telas, componentes, classes, funções, variáveis 
 ### Types, interfaces e enums (TypeScript)
 
 - Types e interfaces em `PascalCase`, sem prefixo `I`: `Match`, `PlayerProfile`.
-- Enums com nome em `PascalCase` e membros em `UPPER_SNAKE_CASE`, espelhando os enums canônicos do banco: `MatchStatus.FINISHED`, `MatchStatus.CANCELLED_BY_OPPONENT`.
-- O valor canônico do enum nunca é traduzido no código; a tradução pertence à camada de linguagem (i18n).
+- Enums com nome em `PascalCase` e membros em `UPPER_SNAKE_CASE`, espelhando os enums canonicos do banco: `MatchStatus.FINISHED`, `MatchStatus.CANCELLED_BY_OPPONENT`.
+- O valor canonico do enum nunca e traduzido no codigo; a traducao pertence a camada de linguagem.
 
 ### Constantes
 
@@ -58,23 +58,23 @@ Padronizar a nomenclatura de telas, componentes, classes, funções, variáveis 
 ### Arquivos e pastas
 
 - Componentes e telas: `PascalCase.tsx`.
-- Hooks, services, utils e demais módulos: `camelCase.ts`.
-- Pastas em minúsculas, refletindo domínios de produto: `features/matches/`, `features/identity/`.
+- Hooks, services, utils e demais modulos: `camelCase.ts`.
+- Pastas em minusculas, refletindo dominios de produto: `features/matches/`, `features/identity/`.
 
 ### JSON da API
 
 - `snake_case`, espelhando as colunas do banco: `home_score`, `opponent_name`, `match_date`.
-- Não converter para `camelCase` na borda; o payload trafega canônico do banco à UI.
+- Nao converter para `camelCase` na borda; o payload trafega canonico do banco a UI.
 
 ### Rotas
 
-- Minúsculas, kebab-case quando compostas, refletindo domínios: `/teams`, `/matches/:matchId`.
-- Parâmetros de rota em `camelCase`: `:teamId`, `:matchId`.
+- Minusculas, kebab-case quando compostas, refletindo dominios: `/teams`, `/matches/:matchId`.
+- Parametros de rota em `camelCase`: `:teamId`, `:matchId`.
 
-### Arquivos de documentação
+### Arquivos de documentacao
 
-- `Snake_Title.md`: `Screen_Spec_Quick_Match.md`, `Naming_Conventions.md`.
+- `Snake_Title.md`: `Quick_Match_Creation.md`, `Naming_Conventions.md`.
 
 ## Regra
 
-Todo identificador técnico é em inglês. Português, várzea e resenha pertencem à camada de linguagem da UI, nunca a nomes de código, payloads ou banco.
+Todo identificador tecnico e em ingles. Portugues, varzea e resenha pertencem a camada de linguagem da UI, nunca a nomes de codigo, payloads ou banco.

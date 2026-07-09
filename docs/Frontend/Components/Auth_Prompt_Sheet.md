@@ -1,11 +1,12 @@
 ---
 title: Component: Auth Prompt Sheet
 status: Draft
-version: 0.1.0
+version: 0.1.1
 owner: Product Architecture
 last_update: 2026-07-07
 related_documents:
   - ../Screens/Welcome.md
+  - ../../API/Auth_API.md
   - ../../Domain/Identity.md
   - ../../ADR/ADR_012_Identity_On_Supabase_Auth.md
   - ../Naming_Conventions.md
@@ -15,26 +16,30 @@ related_documents:
 
 ## Objetivo
 
-Gate contextual de autenticação. Surge quando um visitante não autenticado (torcedor) tenta uma interação que exige conta. Componente: `AuthPromptSheet`.
+Gate contextual de autenticação. Surge quando um visitante não autenticado tenta uma interação que exige conta. Componente: `AuthPromptSheet`.
 
-## Modelo de acesso (torcedor)
+## Modelo de acesso
 
-- Visitante sem registro = torcedor: acesso somente-leitura ao macro/público — anúncios na Home, notícias e destaques de todos os times, buscar time, ver o feed de um time, buscar player.
-- Ações de criar/gerir (partida, elenco) não são exibidas ao torcedor.
-- Interações sociais (responder/reagir a feed, comentar, seguir) disparam o `AuthPromptSheet`.
-- Torcedor é o papel-base (ausência de vínculo com time) e não requer registro de auth — leitura pública resolvida via RLS.
+- Visitante sem registro tem acesso somente leitura ao macro e ao público.
+- Ações de criar ou gerir não são exibidas ao visitante.
+- Interações sociais como reagir, comentar e seguir disparam o `AuthPromptSheet`.
+- A leitura pública é resolvida por política de acesso; a interação exige autenticação.
 
 ## Comportamento
 
-- Apresentação: bottom sheet, dispensável (fechar volta ao modo leitura, sem perder o contexto da tela).
-- Métodos condensados no MVP: Google, Apple (iOS) e e-mail; "outras formas de entrar" leva às telas completas. Telefone/WhatsApp atrás de feature flag, ocultos no MVP.
-- Mensagem contextual por ação ("entre para responder", "entre para seguir"), com fallback genérico.
-- Após autenticar: se faltar `display_name`/`username`, encaminha para `Complete Profile`; caso contrário, retoma a intenção original (aplica a reação/o seguir) quando possível.
+- Apresentação em bottom sheet, dispensável.
+- Métodos condensados no MVP: Google, Apple no iOS e e-mail.
+- "Outras formas de entrar" leva às telas completas.
+- Telefone via WhatsApp fica atrás de feature flag e oculto no MVP.
+- Mensagem contextual por ação, com fallback genérico.
+- Após autenticar, a aplicação deve consultar `GET /api/v1/me`.
+- Se `onboarding.requires_complete_profile = true`, encaminha para `Complete Profile`.
+- Caso contrário, retoma a intenção original quando possível.
 
 ## Elementos
 
 - Mensagem contextual.
-- Botões de método (condensados).
+- Botões de método.
 - Link "outras formas de entrar".
 - Ação de fechar.
 
@@ -45,11 +50,11 @@ Sem campos próprios; delega aos métodos de autenticação.
 ## Estados
 
 - loading: durante o handshake do método escolhido.
-- error: falha/cancelamento do provedor.
-- offline: autenticação indisponível ("conecte-se para participar").
-- success: sessão criada → completar perfil ou retomar a ação.
+- error: falha ou cancelamento do provedor.
+- offline: autenticação indisponível.
+- success: sessão criada, seguida por consulta a `GET /api/v1/me`.
 
 ## Eventos
 
-- Disparado por ação restrita em modo torcedor.
+- Disparado por ação restrita em modo visitante.
 - Conclusão bem-sucedida retoma a ação original quando aplicável.

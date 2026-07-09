@@ -1,9 +1,9 @@
 ---
 title: Venues Domain
 status: Draft
-version: 0.5.0
+version: 0.7.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 related_documents: [Matches.md, Statistics.md]
 ---
 
@@ -39,6 +39,8 @@ Características como piso, cobertura e tipo.
 4. Cobertura deve ser registrada quando conhecida.
 5. Estatísticas por local devem ser derivadas.
 6. O uso casual não exige cadastro de quadra.
+7. Quadra pode usar localidade macro e endereço micro.
+8. Busca externa por nome/endereço pode acelerar cadastro, mas não substitui a persistência local.
 
 ## Tipos iniciais
 
@@ -61,6 +63,36 @@ Características como piso, cobertura e tipo.
 - Associar partida ao local.
 - Ver desempenho por piso.
 - Ver desempenho por quadra.
+
+## Regra de localidade
+
+### Macro
+
+Usada para identidade regional e descoberta:
+
+- `region_state`
+- `region_city`
+- `region_zone` opcional
+
+### Micro
+
+Usada para endereço operacional real da quadra:
+
+- `address_line`
+- `address_number`
+- `address_complement`
+- `postal_code`
+- `latitude`
+- `longitude`
+
+## Regra de busca externa
+
+- A primeira integração recomendada para busca externa é `Google Places`.
+- A gestão pode buscar quadra por nome, campo ou endereço em provedor externo de mapas.
+- Quando existir sugestão externa, o sistema pode pré-preencher nome, endereço e coordenadas.
+- A pessoa continua podendo revisar e editar os dados antes de salvar.
+- Se o local não existir no provedor externo, o cadastro manual continua válido.
+- `external_place_provider` e `external_place_id` são apenas referências auxiliares.
 
 ## Decisão
 

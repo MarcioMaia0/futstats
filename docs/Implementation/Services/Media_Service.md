@@ -1,9 +1,9 @@
 ---
 title: Media Service
 status: Draft
-version: 0.9.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 ---
 
 # Media Service
@@ -16,6 +16,8 @@ Especificar serviço de mídia.
 
 - upload de imagens;
 - upload de vídeos;
+- emissão de tokens temporários de upload;
+- promoção de upload temporário para ativo final;
 - associação de mídia a partidas, jogadores e posts;
 - thumbnails;
 - validação de tamanho;
@@ -29,6 +31,22 @@ Especificar serviço de mídia.
 - Imagens de cards podem ser regeneradas.
 - Conteúdo deve poder ser denunciado.
 
+## Regras para upload temporário
+
+- O serviço deve permitir criar uma intenção de upload temporário.
+- Cada intenção deve registrar dono, propósito, caminho temporário, expiração e status.
+- O serviço deve validar tipo e tamanho do arquivo conforme o propósito declarado.
+- O serviço deve permitir promoção do arquivo temporário para ativo final apenas por serviços de negócio autorizados.
+- Promoção deve invalidar o uso posterior do token temporário.
+- O serviço não deve permitir que a UI persista diretamente uma URL temporária como mídia final.
+- O serviço deve suportar o caso em que a UI substitui uma mídia temporária por outra antes da conclusão do caso de uso principal.
+- O serviço não precisa promover automaticamente o token anterior substituído; basta garantir que o novo token seja o válido para o fluxo corrente.
+- Tokens expirados ou já consumidos devem falhar com erro explícito no momento de promoção.
+
+## Propósitos iniciais
+
+- `TEAM_CREST`
+- `USER_AVATAR` (reservado para fluxo futuro)
 
 ## Critérios de qualidade
 

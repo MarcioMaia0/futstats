@@ -1,11 +1,10 @@
 ---
 title: ERD Overview
 status: Draft
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
-related_documents:
-  []
+last_update: 2026-07-09
+related_documents: []
 ---
 
 # ERD Overview
@@ -13,19 +12,33 @@ related_documents:
 ## Visão conceitual
 
 ```text
-accounts ── users ── user_team_roles ── teams
-              │              │
-              │              └── roles
-              │
-            players ── team_players
-                         │
-teams ── matches ── match_events
-  │          │              │
-  │          ├── match_referees ── referee_reviews
-  │          ├── venues
-  │          └── local_opponents
-  │
-  └── team_settings / themes
+auth.users -- public.users -- user_team_roles -- teams
+        |             |
+        |             -- roles
+        |
+      persons -- players -- team_players
+                       |           |
+                       |           -- player_statistics_by_team_modality
+                       |
+                       -- player_profile_summary
+                       -- player_statistics_summary
+                       -- player_statistics_by_modality
+                       -- player_timeline_items
+                       -- player_gallery_items
+                       -- player_performance_series
+                       -- player_style_inference
+
+teams -- matches -- match_players -- player_match_statistics
+  |         |            |
+  |         |            -- match_players_positions
+  |         |
+  |         |-- match_events
+  |         |-- match_goals
+  |         |-- match_referees -- referee_reviews
+  |         |-- venues
+  |         -- local_opponents
+  |
+  -- team_settings / themes
 ```
 
 ## Observação

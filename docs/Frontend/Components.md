@@ -1,10 +1,11 @@
 ---
 title: Frontend Components
 status: Draft
-version: 0.4.0
+version: 0.5.0
 owner: Product Architecture
-last_update: 2026-07-06
-related_documents: []
+last_update: 2026-07-08
+related_documents:
+  - Reusable_Building_Blocks.md
 ---
 
 # Frontend Components
@@ -38,3 +39,9 @@ related_documents: []
 ## Regra
 
 Componentes visuais devem ser reutilizáveis e não conhecer detalhes de API.
+
+## Complemento
+
+Este documento é uma visão resumida.
+
+O catálogo canônico de componentes, fluxos e métodos reutilizáveis fica em `Reusable_Building_Blocks.md`.

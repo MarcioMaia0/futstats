@@ -1,9 +1,9 @@
 ---
 title: Product Roadmap
 status: Draft
-version: 0.5.0
+version: 0.5.1
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-07
 related_documents: [Product_Vision.md, Product_Principles.md]
 ---
 
@@ -22,7 +22,7 @@ Preparar a arquitetura e a experiência básica.
 ### Entregas
 
 - Autenticação.
-- Modelo `accounts`, `users`, `players`.
+- Modelo de identidade com camada de conta em `auth.users`, camada de pessoa em `public.users` e perfil esportivo em `players`.
 - Criação rápida de time.
 - Identidade visual básica.
 - Estrutura de temas.
@@ -45,7 +45,7 @@ Validar adoção inicial.
 - Perfil simples de atleta.
 - Histórico básico do time.
 - Feed simples.
-- Resenha/comentários simples.
+- Resenha e comentários simples.
 
 ### Critério de sucesso
 
@@ -55,7 +55,7 @@ Usuários conseguem registrar e compartilhar uma partida sem configurar scout ou
 
 ### Objetivo
 
-Aumentar retenção dos diretores e organizadores.
+Aumentar retenção dos gestores e organizadores.
 
 ### Entregas
 
@@ -66,7 +66,7 @@ Aumentar retenção dos diretores e organizadores.
 - Quadras.
 - Presença.
 - Primeiro e segundo quadro.
-- Cancelamentos/W.O.
+- Cancelamentos e W.O.
 - Arbitragem básica.
 
 ## Fase 3: Estatísticas Simples
@@ -81,7 +81,7 @@ Mostrar valor acumulado.
 - Assistências.
 - Jogos por atleta.
 - Aproveitamento.
-- Gols pró/contra.
+- Gols pró e contra.
 - Desempenho por adversário.
 - Desempenho por quadra.
 - Ranking simples.

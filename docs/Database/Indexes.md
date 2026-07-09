@@ -1,23 +1,25 @@
 ---
 title: Database Indexes
 status: Draft
-version: 0.5.0
+version: 1.0.0
 owner: Product Architecture
-last_update: 2026-07-06
-related_documents: []
+last_update: 2026-07-09
+related_documents:
+  - ../ADR/ADR_012_Identity_On_Supabase_Auth.md
+  - ../Implementation/Database/Table_Spec_users.md
 ---
 
 # Database Indexes
 
 ## Objetivo
 
-Definir índices iniciais para performance.
+Definir indices iniciais para performance.
 
 ## Identity
 
-- `accounts.email`
-- `accounts.provider_external_id`
-- `users.account_id`
+- `auth.users.email`
+- `auth.users.phone`
+- `users.username`
 
 ## Teams
 
@@ -38,7 +40,7 @@ Definir índices iniciais para performance.
 ## Events
 
 - `match_events.match_id`
-- `match_events.player_id`
+- `match_events.primary_match_player_id`
 - `match_events.event_type`
 - `match_events.occurred_at`
 
@@ -49,6 +51,23 @@ Definir índices iniciais para performance.
 - `comments.post_id`
 - `reactions.post_id`
 
-## Observação
+## Player Profile Read Models
 
-Índices devem ser revisados com dados reais de uso.
+- `player_match_statistics.player_id`
+- `player_match_statistics.match_id`
+- `player_match_statistics.team_id`
+- `player_match_statistics.match_date`
+- `player_match_statistics.player_id + team_id + modality`
+- `player_statistics_by_modality.player_id + modality`
+- `player_statistics_by_team_modality.player_id + team_id + modality`
+- `player_timeline_items.player_id + occurred_at`
+- `player_gallery_items.player_id + published_at`
+- `player_gallery_items.player_id + modality + published_at`
+- `player_gallery_items.player_id + team_id + published_at`
+- `player_gallery_group_counters.player_id + scope_type + modality + team_id`
+- `player_performance_series.player_id + scope_type + bucket_type + bucket_start_date`
+- `player_style_inference.player_id + scope_type + modality + team_id`
+
+## Observacao
+
+Indices devem ser revisados com dados reais de uso.

@@ -1,7 +1,7 @@
 ---
 title: Screen: Welcome
 status: Draft
-version: 0.1.0
+version: 0.1.3
 owner: Product Architecture
 last_update: 2026-07-07
 related_documents:
@@ -17,46 +17,50 @@ related_documents:
 
 ## Objetivo
 
-Primeira tela na abertura do app. Apresenta a proposta de valor e oferece os caminhos de entrada (social, telefone, e-mail) ou explorar o app sem conta. Componente: `WelcomeScreen`.
+Primeira tela na abertura do app. Apresenta a proposta de valor e oferece os caminhos de entrada social, telefone, e-mail ou exploracao sem conta. Componente: `WelcomeScreen`.
 
 ## Modelo de entrada
 
-Explorar é permitido sem conta; qualquer ação que gere dado (criar time, registrar partida, reagir, comentar, seguir, reivindicar player) dispara o gate de autenticação (`AuthPromptSheet`). Ver "Eventos".
+Explorar e permitido sem conta; qualquer acao que gere dado, como criar time, registrar partida, reagir, comentar, seguir ou reivindicar player, dispara o gate de autenticacao (`AuthPromptSheet`). Ver "Eventos".
 
 ## Elementos
 
 - Logo e nome do produto.
 - Tagline de valor (via i18n).
 - Slides de valor opcionais (registrar jogo, montar time, compartilhar resenha).
-- Botão "Continuar com Google".
-- Botão "Continuar com Apple" — visível apenas no iOS.
-- Botão "Continuar com telefone" — atrás de feature flag; desativado no MVP.
-- Botão "Continuar com e-mail".
+- Botao "Continuar com Google".
+- Botao "Continuar com Apple" visivel apenas no iOS.
+- Botao "Continuar com telefone" atras de feature flag; desativado no MVP. Quando habilitado no futuro, o envio do codigo sera por WhatsApp.
+- Botao "Continuar com e-mail".
 - Link discreto "Explorar sem entrar".
-- Aviso de aceite implícito sob os botões: "Ao continuar, você aceita os Termos de Uso e a Política de Privacidade" (com links). Grava `terms_accepted_at` na criação da conta.
+- Aviso de aceite sob os botoes: "Ao continuar, voce aceita os Termos de Uso e a Politica de Privacidade", com links.
 
 ## Campos
 
-Nenhum campo de entrada. Tela de navegação/decisão.
+Nenhum campo de entrada. Tela de navegacao e decisao.
 
 ## Regras de UX
 
-- Botões sociais primeiro; telefone e e-mail em seguida.
-- Apple renderizado condicionalmente por plataforma (`Platform.OS === 'ios'`); exigido pela App Store no iOS quando há outro login social.
-- MVP ativa Google, Apple (iOS) e e-mail; telefone/WhatsApp ficam atrás de feature flag, ocultos no lançamento.
-- "Explorar sem entrar" visível, porém discreto — não competir com os CTAs de entrada.
+- Botoes sociais primeiro; telefone e e-mail em seguida.
+- Apple renderizado condicionalmente por plataforma (`Platform.OS === 'ios'`); exigido pela App Store no iOS quando houver outro login social.
+- MVP ativa Google, Apple (iOS) e e-mail; login por telefone via WhatsApp fica fora do lancamento e oculto por feature flag.
+- "Explorar sem entrar" visivel, porem discreto, sem competir com os CTAs de entrada.
 - Todo texto via camada de i18n; respeitar tema e modo de linguagem.
 - Nenhuma cor fixa: usar tokens de tema.
+- O fluxo social deve mapear para `POST /api/v1/auth/social/start` e `POST /api/v1/auth/social/complete`.
+- O fluxo de telefone deve mapear para `POST /api/v1/auth/phone/request-code` e `POST /api/v1/auth/phone/verify-code` quando a feature flag estiver ativa.
+- No primeiro acesso social ou por telefone, o aceite exibido aqui deve ser propagado ao endpoint de conclusao do auth como `terms_accepted = true`, para persistir `public.users.terms_accepted_at`.
+- Depois da criacao da sessao, a decisao entre Home e `Complete Profile` deve seguir `GET /api/v1/me -> onboarding.requires_complete_profile`.
 
 ## Estados
 
-- loading: durante handshake OAuth/redirecionamento.
-- error: falha de OAuth, cancelamento pelo usuário, ou rede indisponível.
-- offline: autenticação indisponível — permitir "Explorar sem entrar", desabilitar botões de login com aviso ("conecte-se para entrar").
-- success: sessão criada — redireciona para completar perfil (se faltar `display_name`) ou para a Home.
+- loading: durante handshake OAuth ou redirecionamento.
+- error: falha de OAuth, cancelamento pelo usuario ou rede indisponivel.
+- offline: autenticacao indisponivel; permitir "Explorar sem entrar" e desabilitar botoes de login com aviso.
+- success: sessao criada; a aplicacao consulta `GET /api/v1/me` e redireciona para `Complete Profile` quando `onboarding.requires_complete_profile = true`, caso contrario segue para a Home.
 
 ## Eventos
 
-- Seleção de provedor de login inicia o fluxo correspondente (`Auth`, `Phone_Otp`, OAuth nativo).
-- "Explorar sem entrar" entra em modo somente-leitura.
-- Ação restrita em modo explorar dispara `AuthPromptSheet` (componente de gate contextual, a especificar em Components).
+- Selecao de provedor de login inicia o fluxo correspondente (`Auth`, `Phone_Otp`, OAuth nativo).
+- "Explorar sem entrar" entra em modo somente leitura.
+- Acao restrita em modo explorar dispara `AuthPromptSheet`.

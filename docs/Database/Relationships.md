@@ -1,9 +1,9 @@
 ---
 title: Database Relationships
 status: Draft
-version: 0.4.0
+version: 0.5.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 related_documents: []
 ---
 
@@ -16,8 +16,10 @@ Descrever os relacionamentos principais do banco.
 ## Identity
 
 ```text
-accounts 1 --- 1 users
-users 1 --- N user_team_roles
+auth.users 1 --- 1 public.users
+persons 1 --- 0..1 public.users
+persons 1 --- 0..1 players
+public.users 1 --- N user_team_roles
 teams 1 --- N user_team_roles
 ```
 
@@ -26,6 +28,15 @@ teams 1 --- N user_team_roles
 ```text
 teams 1 --- N team_players
 players 1 --- N team_players
+players 1 --- N player_match_statistics
+players 1 --- 1 player_profile_summary
+players 1 --- 1 player_statistics_summary
+players 1 --- N player_statistics_by_modality
+players 1 --- N player_statistics_by_team_modality
+players 1 --- N player_timeline_items
+players 1 --- N player_gallery_items
+players 1 --- N player_performance_series
+players 1 --- N player_style_inference
 ```
 
 Um jogador pode atuar por vários times. Um time pode ter vários jogadores.
@@ -35,8 +46,16 @@ Um jogador pode atuar por vários times. Um time pode ter vários jogadores.
 ```text
 teams 1 --- N matches
 matches 1 --- N match_events
-matches 1 --- N match_appearances
-players 1 --- N match_appearances
+matches 1 --- N match_players
+players 1 --- N match_players
+matches 1 --- N match_players_positions
+match_players 1 --- N match_players_positions
+matches 1 --- N match_staff
+persons 1 --- N match_staff
+matches 1 --- N match_attendance_responses
+players 1 --- N match_attendance_responses
+matches 1 --- N match_substitutions
+match_players 1 --- N match_substitutions
 ```
 
 ## Opponents

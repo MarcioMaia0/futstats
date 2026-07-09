@@ -1,11 +1,13 @@
 ---
 title: Frontend Documentation
 status: Draft
-version: 0.9.0
+version: 1.0.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-08
 related_documents:
-[]
+  - Frontend_Architecture.md
+  - Components.md
+  - Reusable_Building_Blocks.md
 ---
 
 # Frontend Documentation
@@ -22,3 +24,7 @@ Documentar decisões de frontend.
 - Tema dinâmico.
 - Internacionalização.
 - Modo casual antes de modo avançado.
+
+## Fonte de reutilização
+
+Antes de definir novo componente, fluxo ou hook, consultar `Reusable_Building_Blocks.md`.

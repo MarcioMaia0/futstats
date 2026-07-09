@@ -1,10 +1,12 @@
 ---
 title: Screen: Match Detail
 status: Draft
-version: 0.7.0
+version: 0.8.0
 owner: Product Architecture
 last_update: 2026-07-07
-related_documents: []
+related_documents:
+  - ../../Implementation/Frontend/Screen_Spec_Match_Report_Historical.md
+  - ../../Implementation/Core_Flows/Share_Card_Implementation.md
 ---
 
 # Screen: Match Detail
@@ -15,19 +17,29 @@ Detalhes da partida: placar, gols, eventos e compartilhamento.
 
 ## Elementos
 
-A definir.
+- placar;
+- gols;
+- destaques;
+- estatisticas simples;
+- estatisticas avancadas se disponiveis;
+- midia;
+- comentarios;
+- compartilhamento.
 
 ## Campos
 
-A definir.
+Tela de leitura predominante. Edicao de placar e eventos deve respeitar permissao e status da partida.
 
 ## Regras de UX
 
 - Priorizar clareza e simplicidade.
 - Exibir apenas campos essenciais inicialmente.
-- Mostrar ações primárias com destaque.
-- Permitir avanço para detalhes.
+- Mostrar acoes primarias com destaque.
+- Permitir avancar para detalhes.
 - Respeitar tema e modo de linguagem.
+- Dados ausentes nao devem gerar erro visual.
+- Quando metricas avancadas nao estiverem disponiveis, mostrar mensagem educativa.
+- Compartilhamento deve ser rapido e visualmente destacado.
 
 ## Estados
 
@@ -35,8 +47,10 @@ A definir.
 - empty;
 - error;
 - success;
-- offline quando aplicável.
+- offline quando aplicavel.
 
 ## Eventos
 
-A definir conforme integração com API.
+- abrir compartilhamento do resultado;
+- navegar para comentarios, midia e destaques;
+- abrir estatisticas avancadas apenas quando houver dados suficientes.

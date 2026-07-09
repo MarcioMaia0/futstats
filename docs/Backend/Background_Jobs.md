@@ -17,6 +17,9 @@ Listar processamentos assíncronos.
 ## Jobs
 
 - Recalcular estatísticas.
+- Rebuild do perfil do atleta.
+- Rebuild da timeline do atleta.
+- Rebuild da galeria do atleta.
 - Gerar cards.
 - Processar uploads.
 - Gerar thumbnails.

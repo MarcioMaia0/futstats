@@ -1,11 +1,12 @@
 ---
 title: Table Spec match_ratings
 status: Draft
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-07
+last_update: 2026-07-09
 related_documents:
-  - Table_Spec_match_appearances.md
+  - Table_Spec_match_players.md
+  - Table_Spec_match_staff.md
   - Table_Spec_follows.md
   - Table_Spec_referee_reviews.md
 ---
@@ -34,9 +35,12 @@ Especificar `match_ratings` — notas dos participantes de uma partida (jogadore
 
 ## Regras
 
-- `PEER`: avaliador é user que participou da partida (`match_appearances`). `GENERAL` ("nota da geral"): avaliador é user que segue o time (`follows`).
+- `PEER`
+  - avaliador é user ligado a um `player` que foi relacionado para a partida em `match_players`.
+- `GENERAL` ("nota da geral")
+  - avaliador é user que segue o time (`follows`).
 - As médias `PEER` e `GENERAL` são exibidas e agregadas separadamente — nunca misturadas.
 - 1 nota por avaliador, por alvo, por partida; apenas após a partida.
 - A "nota da geral" avalia o **lado do time que o avaliador segue**; seguidor dos dois times avalia cada lado entrando no evento de cada time.
+- Quando o alvo for técnico, o backend deve resolver o técnico efetivo da partida a partir de `match_staff`.
 - Árbitro NÃO é avaliado aqui — ver `referee_reviews`.
-

@@ -1,9 +1,9 @@
 ---
 title: Architecture Principles
 status: Approved
-version: 1.0.0
+version: 1.0.1
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-07
 related_documents:
   - Architecture/README.md
   - Architecture/Event_Driven_Strategy.md
@@ -345,7 +345,7 @@ Isso protege o domínio contra mudanças de tecnologia.
 
 O FUTSTATS pode separar comandos e consultas quando houver ganho claro.
 
-Commands alteram estado.
+Commands alteram estado.  
 Queries leem estado.
 
 Essa separação é especialmente útil em:

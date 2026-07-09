@@ -1,9 +1,9 @@
 ---
 title: Statistics Service
 status: Draft
-version: 0.9.0
+version: 1.0.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 ---
 
 # Statistics Service
@@ -21,19 +21,67 @@ Especificar o serviço de estatísticas.
 - gerar snapshots;
 - identificar limitações por falta de dados.
 
+## Recorte obrigatório do MVP para atleta
+
+O serviço deve sustentar `GET /api/v1/players/:player_id/statistics` com:
+
+- `matches_played`
+- `starter_matches`
+- `bench_matches`
+- `official_team_matches`
+- `guest_matches`
+- `wins`
+- `draws`
+- `losses`
+- `goals_scored`
+- `recorded_assists`
+- `own_goals`
+- consolidação por `modality`
+- consolidação por `team`
+- bloco `coverage`
+- bloco `limitations`
+- inferência contextual de estilo de jogo, quando houver base suficiente
+- série temporal de desempenho, quando a granularidade dos dados permitir
+
 ## Regras
 
 - Estatística deve funcionar com dados incompletos.
 - Métrica avançada deve declarar pré-condições.
 - Snapshots devem registrar versão do cálculo.
 - Reprocessamentos devem ser idempotentes.
+- Assistências do MVP devem ser tratadas como `recorded_assists`, nunca como verdade absoluta quando o registro não for obrigatório.
+- Métricas de resultado devem considerar apenas partidas finalizadas.
+- O serviço não deve inferir minutos, scout fino ou plus/minus sem base factual suficiente.
+- Inferência de estilo de jogo deve combinar dado declarado e dado observado.
+- O serviço deve expor grau de confiança quando gerar inferência de estilo.
+- Sem base suficiente, o serviço deve preferir ausência de inferência a chute fraco.
+
+## Inferência de estilo de jogo
+
+Entrada conceitual da inferência:
+
+- `player_positions`
+- `match_players_positions`
+- métricas disponíveis por evento/estatística
+
+Saída conceitual:
+
+- `OFFENSIVE`
+- `DEFENSIVE`
+- `BALANCED`
+- `GOALKEEPER`
+
+Com confiança, por exemplo:
+
+- `LOW`
+- `MEDIUM`
+- `HIGH`
 
 ## Jobs
 
 - `RecalculateMatchStatisticsJob`
 - `RecalculateTeamRankingsJob`
 - `RebuildPlayerStatisticsJob`
-
 
 ## Critérios de qualidade
 
@@ -46,6 +94,7 @@ Especificar o serviço de estatísticas.
 ## Regras para IA
 
 Ao usar este documento como contexto para implementação, a IA deve:
+
 1. preservar o princípio de uso casual simples;
 2. não criar campos obrigatórios que bloqueiem o MVP;
 3. respeitar separação entre dado canônico e texto de interface;

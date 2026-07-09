@@ -1,44 +1,75 @@
 ---
 title: Player Profile Implementation
 status: Draft
-version: 0.9.0
+version: 1.0.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 ---
 
 # Player Profile Implementation
 
 ## Objetivo
 
-Definir implementação do perfil de jogador.
+Definir a implementação do perfil de atleta como composição de identidade, perfil esportivo declarado e histórico factual.
 
 ## Contexto
 
-O perfil do jogador precisa funcionar para resenha, identidade e estatísticas. Ele deve poder nascer simples e evoluir.
+O perfil do atleta precisa funcionar para resenha, identidade e estatísticas. Ele deve poder nascer simples, inclusive sem conta vinculada, e evoluir sem perder histórico.
+
+## Camadas de dados
+
+### Identidade-base
+
+- `persons`
+  - avatar;
+  - apelido;
+  - nome completo.
+
+### Perfil esportivo declarado
+
+- `players`
+  - perna dominante;
+  - nascimento;
+  - altura;
+  - peso;
+  - status de completude;
+- `player_modalities`
+  - modalidades declaradas;
+- `player_positions`
+  - posições declaradas por modalidade.
+
+### Histórico factual
+
+- `team_players`
+  - times atuais/oficiais;
+- `match_players`
+  - partidas em que foi relacionado;
+- `match_players_positions`
+  - posições efetivamente registradas no histórico;
+- read models/snapshots
+  - métricas e listas consolidadas para leitura.
 
 ## Níveis de perfil
 
 ### Perfil mínimo
 
 - apelido;
-- time;
-- gols registrados.
+- avatar opcional;
+- ao menos uma identidade esportiva existente.
 
 ### Perfil básico
 
-- foto;
-- posição;
-- perna dominante;
-- número.
+- ao menos uma modalidade declarada;
+- ao menos uma posição declarada válida;
+- perna dominante opcional;
+- time atual quando existir.
 
-### Perfil completo
+### Perfil enriquecido
 
-- histórico;
+- dados físicos opcionais;
+- histórico consolidado;
 - estatísticas;
-- cards;
-- atributos;
-- conquistas;
-- vídeos.
+- timeline esportiva.
 
 ## Regras
 
@@ -47,17 +78,63 @@ O perfil do jogador precisa funcionar para resenha, identidade e estatísticas. 
 - Histórico não deve ser perdido na reivindicação.
 - Apelido deve ser destaque visual.
 - Nome completo pode ser opcional em contextos sociais.
+- O perfil deve separar leitura declarativa e leitura factual.
+- `player_positions` não substitui `match_players_positions`.
+- `player_modalities` não substitui histórico real de partidas por modalidade.
+- O bloco público principal do perfil não depende de nascimento, altura ou peso.
+- Timeline e estatísticas não devem ser misturadas no mesmo contrato.
+
+## Contrato de leitura recomendado
+
+### GET /api/v1/players/:player_id
+
+Deve retornar, no mínimo:
+
+- `player`
+- `person`
+- `declared_profile`
+- `active_teams`
+- `statistics_overview`
+- `recent_matches`
+- `historical_positions_by_modality`
+- `permissions`
+
+### GET /api/v1/players/:player_id/timeline
+
+Deve retornar a camada narrativa do perfil, separada da camada agregada de estatísticas.
+
+Itens iniciais do MVP:
+
+- entrada em time;
+- post de boas-vindas publicado;
+- participação em partida;
+- reivindicação do perfil, quando aplicável.
+
+## Contrato de edição recomendado
+
+### PATCH /api/v1/players/:player_id
+
+Escopo do fluxo de edição do atleta:
+
+- atualizar dados complementares do atleta;
+- atualizar modalidades declaradas;
+- atualizar posições declaradas;
+- nunca sobrescrever histórico factual de partidas.
+
+Regra:
+
+- nome, apelido e avatar pertencem a `persons` e devem ser tratados na borda apropriada do fluxo de edição.
 
 ## API
 
 ```http
-POST /players
-GET /players/{playerId}
-PATCH /players/{playerId}
-POST /players/{playerId}/claim
-GET /players/{playerId}/timeline
+POST /api/v1/players
+GET /api/v1/players/{playerId}
+PATCH /api/v1/players/{playerId}
+POST /api/v1/players/{playerId}/claim
+GET /api/v1/players/{playerId}/statistics
+GET /api/v1/players/{playerId}/timeline
 ```
-
 
 ## Critérios de qualidade
 
@@ -70,6 +147,7 @@ GET /players/{playerId}/timeline
 ## Regras para IA
 
 Ao usar este documento como contexto para implementação, a IA deve:
+
 1. preservar o princípio de uso casual simples;
 2. não criar campos obrigatórios que bloqueiem o MVP;
 3. respeitar separação entre dado canônico e texto de interface;

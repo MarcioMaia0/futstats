@@ -43,6 +43,10 @@ Um evento vira job quando:
 ## Jobs iniciais
 
 - RecalculateStatisticsJob
+- RebuildPlayerProfileReadModelJob
+- RebuildPlayerMatchStatisticsJob
+- RebuildPlayerTimelineJob
+- RebuildPlayerGalleryJob
 - GenerateMatchCardJob
 - SendNotificationJob
 - UpdateRankingJob
@@ -65,6 +69,21 @@ Pode ser acionado por:
 - PlayerLinkedToTeam
 
 Deve ser idempotente.
+
+## RebuildPlayerProfileReadModelJob
+
+Responsável por reconstruir projeções do perfil do atleta.
+
+Pode ser acionado por:
+
+- PlayerCreated
+- TeamJoinRequestApproved
+- MatchFinished
+- GoalRegistered
+- GoalUpdated
+- PostPublished com vínculo ao atleta
+
+Pode executar rebuild parcial ou total conforme payload.
 
 ## GenerateMatchCardJob
 

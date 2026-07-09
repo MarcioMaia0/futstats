@@ -1,9 +1,9 @@
 ---
 title: Database Architecture
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 related_documents:
   - Architecture/Architecture_Principles.md
   - Backend/Backend_Architecture.md
@@ -91,7 +91,7 @@ Triggers podem ser usadas para:
 - updated_at;
 - audit logs;
 - normalizações simples;
-- criação de linha pública de user após auth.users;
+- criação de linha pública de user após `auth.users`;
 - manutenção local de campos técnicos;
 - outbox pattern futuro.
 
@@ -110,11 +110,12 @@ Contas, usuários, papéis e permissões.
 
 Tabelas relacionadas:
 
-- accounts
-- users
-- roles
-- user_team_roles
-- user_preferences
+- `auth.users` como camada de conta
+- `persons`
+- `users`
+- `roles`
+- `user_team_roles`
+- `user_preferences`
 
 ### Sports Core
 
@@ -122,12 +123,12 @@ Times, jogadores, partidas, quadras e adversários.
 
 Tabelas relacionadas:
 
-- teams
-- team_players
-- players
-- matches
-- venues
-- local_opponents
+- `teams`
+- `team_players`
+- `players`
+- `matches`
+- `venues`
+- `local_opponents`
 
 ### Events
 
@@ -135,10 +136,14 @@ Eventos registrados nas partidas.
 
 Tabelas relacionadas:
 
-- match_events
-- match_goals
-- match_appearances
-- match_referees
+- `match_events`
+- `match_goals`
+- `match_players`
+- `match_players_positions`
+- `match_staff`
+- `match_attendance_responses`
+- `match_substitutions`
+- `match_referees`
 
 ### Statistics
 
@@ -146,8 +151,25 @@ Agregações, rankings, snapshots e métricas.
 
 Tabelas relacionadas:
 
-- statistics_snapshots
-- metric_definitions
+- `statistics_snapshots`
+- `metric_definitions`
+- `player_match_statistics`
+- `player_statistics_summary`
+- `player_statistics_by_modality`
+- `player_statistics_by_team_modality`
+- `player_performance_series`
+- `player_style_inference`
+
+### Player Profile Read Models
+
+Leituras otimizadas do perfil rico do atleta.
+
+Tabelas relacionadas:
+
+- `player_profile_summary`
+- `player_timeline_items`
+- `player_gallery_items`
+- `player_gallery_group_counters`
 
 ### Experience
 
@@ -155,10 +177,10 @@ Temas, linguagem e preferências.
 
 Tabelas relacionadas:
 
-- themes
-- ui_vocabulary
-- user_preferences
-- team_settings
+- `themes`
+- `ui_vocabulary`
+- `user_preferences`
+- `team_settings`
 
 ### Social
 
@@ -166,12 +188,12 @@ Posts, comentários, reações, mídia e compartilhamentos.
 
 Tabelas relacionadas:
 
-- posts
-- comments
-- reactions
-- follows
-- media_assets
-- notifications
+- `posts`
+- `comments`
+- `reactions`
+- `follows`
+- `media_assets`
+- `notifications`
 
 ### Governance
 
@@ -179,8 +201,8 @@ Auditoria, logs, relatórios, moderação e segurança.
 
 Tabelas relacionadas:
 
-- audit_logs
-- referee_reviews
+- `audit_logs`
+- `referee_reviews`
 
 ## Offline-first
 
@@ -190,9 +212,9 @@ Recomendações:
 
 - usar UUIDs canônicos;
 - aceitar IDs gerados pelo cliente quando seguro;
-- usar idempotency_key em comandos sensíveis;
-- armazenar created_at_client quando relevante;
-- considerar device_id para rastreabilidade;
+- usar `idempotency_key` em comandos sensíveis;
+- armazenar `created_at_client` quando relevante;
+- considerar `device_id` para rastreabilidade;
 - usar versionamento para resolução de conflitos;
 - preservar histórico de alterações críticas.
 

@@ -22,6 +22,7 @@ Definir como mudanças relevantes serão rastreadas.
 - team roles;
 - referee reviews;
 - player claims;
+- player merges/reassignments;
 - subscription/billing;
 - public content moderation.
 
@@ -32,6 +33,7 @@ Definir como mudanças relevantes serão rastreadas.
 3. Eventos de partida devem permitir reconstrução do placar.
 4. Alteração em scout deve recalcular estatísticas.
 5. Reviews e comentários devem guardar trilha mínima para moderação.
+6. Merge de `player_id` deve registrar origem, destino, autor e contexto da ação.
 
 ## Tabelas possíveis
 
