@@ -1,9 +1,9 @@
 ---
 title: Open Issues
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 related_documents: []
 ---
 
@@ -18,7 +18,7 @@ Registrar decisões que ainda precisam ser detalhadas no futuro.
 - Definir branding final.
 - Definir nomes comerciais dos planos.
 - Definir limites do plano gratuito.
-- Definir se haverá verificação de times no MVP.
+- Definir se haverá verificação de times no recorte inicial.
 - Definir política de conteúdo público.
 
 ## Técnico
@@ -41,5 +41,5 @@ Registrar decisões que ainda precisam ser detalhadas no futuro.
 
 - Definir ERD final.
 - Definir SQL inicial.
-- Definir regras de recalculo de estatísticas.
+- Definir regras de recálculo de estatísticas.
 - Definir critérios de confiabilidade das métricas.

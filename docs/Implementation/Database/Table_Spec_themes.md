@@ -47,7 +47,7 @@ Representar definicoes de tema que podem ser selecionadas pela pessoa ou aplicad
 - Temas `SYSTEM` nao possuem `team_id`.
 - Temas `TEAM` exigem `team_id`.
 - `key` deve ser canonica e tecnica, por exemplo: `light`, `dark`, `team-default`.
-- O MVP deve garantir pelo menos dois temas `SYSTEM`: claro e escuro.
+- O estado atual do produto deve garantir pelo menos dois temas `SYSTEM`: claro e escuro.
 - O tema selecionado em `user_preferences.preferred_theme_id` deve sempre referenciar um tema ativo.
 - Um time pode ter varios temas `TEAM`, mas apenas um `is_default = true`.
 - Cores devem ser persistidas em formato estavel para o frontend, por exemplo hex.

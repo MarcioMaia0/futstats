@@ -83,7 +83,7 @@ Registrar, por plataforma:
   - payload inválido;
   - plataforma não conectada;
   - conta do time inelegível para publicar.
-- No MVP, cada plataforma deve ter no máximo 3 tentativas totais por `post`.
+- No estado atual do produto, cada plataforma deve ter no máximo 3 tentativas totais por `post`.
 - Backoff recomendado:
   - tentativa 1 -> imediata ou fila inicial;
   - tentativa 2 -> +5 minutos;

@@ -1,45 +1,49 @@
 ---
 title: Event Driven Strategy
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-10
 related_documents:
-  - Architecture/Architecture_Principles.md
-  - Backend/Backend_Architecture.md
-  - Backend/Jobs_and_Queues.md
-  - Database/Database_Architecture.md
+  - ./Architecture_Principles.md
+  - ../Backend/Backend_Architecture.md
+  - ../Backend/Jobs_and_Queues.md
+  - ../Documentation_Index.md
+  - ../Release_1_0/Source_of_Truth_Map.md
+  - ../Database/Tables.md
+  - ../Database/Relationships.md
+  - ../Database/Entity_Relationships.md
 ---
 
 # Event Driven Strategy
 
 ## Objetivo
 
-Documentar a estratégia de eventos do FUTSTATS.
+Documentar a estrategia de eventos do FUTSTATS.
 
-Eventos devem permitir que ações simples gerem efeitos colaterais sem acoplar domínios diretamente.
+Eventos devem permitir que acoes simples gerem efeitos colaterais sem acoplar dominios diretamente.
 
 ## Por que eventos?
 
-O produto gera muitos efeitos colaterais a partir de ações simples.
+O produto gera muitos efeitos colaterais a partir de acoes simples.
 
 Um gol registrado pode alterar:
 
 - placar;
 - ranking;
 - card social;
-- estatísticas do atleta;
+- estatisticas do atleta;
 - timeline do time;
-- notificações;
-- experiência do usuário.
+- notificacoes;
+- experiencia do usuario.
 
-Sem eventos, a tendência é criar casos de uso gigantes que conhecem módulos demais.
+Sem eventos, a tendencia e criar casos de uso gigantes que conhecem modulos demais.
 
-Com eventos, cada domínio reage ao que importa para ele.
+Com eventos, cada dominio reage ao que importa para ele.
 
 ## Conceito central
 
-Evento representa um fato que já aconteceu.
+Evento representa um fato que ja aconteceu.
 
 Exemplo:
 
@@ -47,7 +51,7 @@ Exemplo:
 GoalRegistered
 ```
 
-Não significa "registre um gol".
+Nao significa "registre um gol".
 
 Significa:
 
@@ -78,15 +82,15 @@ Um gol foi registrado.
 
 Eventos devem ser emitidos por:
 
-- entidades de domínio;
+- entidades de dominio;
 - domain services;
 - use cases.
 
-Eventos não devem depender de triggers de banco como origem principal das regras de negócio.
+Eventos nao devem depender de triggers de banco como origem principal das regras de negocio.
 
-Triggers podem existir para necessidades técnicas, mas não devem ser o orquestrador principal do produto.
+Triggers podem existir para necessidades tecnicas, mas nao devem ser o orquestrador principal do produto.
 
-## Fluxo padrão
+## Fluxo padrao
 
 ```text
 Use Case
@@ -94,7 +98,7 @@ Use Case
   -> Domain Event
   -> Event Bus
   -> Event Handler
-  -> Queue/Worker quando necessário
+  -> Queue/Worker quando necessario
 ```
 
 ## Exemplo: gol registrado
@@ -106,20 +110,20 @@ RegisterGoalUseCase
   -> EventBus.publish
 ```
 
-Handlers possíveis:
+Handlers possiveis:
 
 ```text
 Statistics.OnGoalRegistered
   -> recalcula artilharia ou agenda job
 
 PlayerProfile.OnGoalRegistered
-  -> atualiza projeções do atleta impactado
+  -> atualiza projecoes do atleta impactado
 
 Social.OnGoalRegistered
   -> atualiza feed ou prepara card
 
 Experience.OnGoalRegistered
-  -> concede experiência
+  -> concede experiencia
 
 Notifications.OnGoalRegistered
   -> notifica interessados
@@ -127,16 +131,16 @@ Notifications.OnGoalRegistered
 
 ## Event Bus
 
-O Event Bus é responsável por publicar eventos para handlers registrados.
+O Event Bus e responsavel por publicar eventos para handlers registrados.
 
-Na primeira versão, pode ser implementado internamente no backend.
+Na primeira versao, pode ser implementado internamente no backend.
 
 Em escala maior, pode evoluir para:
 
 - queue dedicada;
 - pub/sub;
 - message broker;
-- worker assíncrono;
+- worker assincrono;
 - outbox pattern.
 
 ## Handlers
@@ -145,23 +149,23 @@ Handlers reagem a eventos.
 
 Regras:
 
-1. Handler deve ter responsabilidade única.
-2. Handler deve ser idempotente quando possível.
-3. Handler não deve modificar o evento recebido.
-4. Handler não deve assumir ordem global de execução, salvo quando explicitamente garantido.
-5. Handler pode chamar use cases do próprio domínio.
+1. Handler deve ter responsabilidade unica.
+2. Handler deve ser idempotente quando possivel.
+3. Handler nao deve modificar o evento recebido.
+4. Handler nao deve assumir ordem global de execucao, salvo quando explicitamente garantido.
+5. Handler pode chamar use cases do proprio dominio.
 
-## Eventos síncronos e assíncronos
+## Eventos sincronos e assincronos
 
-### Síncronos
+### Sincronos
 
-Usar quando a consistência for obrigatória para concluir o fluxo principal.
+Usar quando a consistencia for obrigatoria para concluir o fluxo principal.
 
 Exemplo:
 
-- atualizar placar dentro da mesma transação de registro de gol.
+- atualizar placar dentro da mesma transacao de registro de gol.
 
-### Assíncronos
+### Assincronos
 
 Usar quando o efeito colateral puder ocorrer depois.
 
@@ -171,8 +175,8 @@ Exemplo:
 - recalcular ranking pesado;
 - enviar push;
 - atualizar feed derivado;
-- consolidar estatísticas históricas.
-- consolidar projeções do perfil do atleta.
+- consolidar estatisticas historicas;
+- consolidar projecoes do perfil do atleta.
 
 ## Filas
 
@@ -186,15 +190,15 @@ Domain Event
   -> Job
 ```
 
-## Idempotência
+## Idempotencia
 
 Handlers e jobs devem ser idempotentes.
 
-Isso significa que processar o mesmo evento mais de uma vez não deve gerar duplicidade ou corrupção.
+Isso significa que processar o mesmo evento mais de uma vez nao deve gerar duplicidade ou corrupcao.
 
-Estratégias:
+Estrategias:
 
-- event_id único;
+- event_id unico;
 - idempotency_key;
 - unique constraints;
 - processed_events table;
@@ -203,32 +207,32 @@ Estratégias:
 
 ## Retry
 
-Falhas transitórias devem ter retry.
+Falhas transitorias devem ter retry.
 
 Exemplos:
 
 - erro de rede;
 - timeout em storage;
 - falha ao gerar imagem;
-- indisponibilidade temporária de serviço externo.
+- indisponibilidade temporaria de servico externo.
 
-Falhas permanentes devem ser registradas para análise.
+Falhas permanentes devem ser registradas para analise.
 
 ## Dead Letter Queue futura
 
 Quando houver volume, jobs que falham repetidamente devem ir para uma Dead Letter Queue.
 
-A DLQ permite investigação sem bloquear a fila principal.
+A DLQ permite investigacao sem bloquear a fila principal.
 
 ## Outbox Pattern futuro
 
-Quando eventos precisarem ser confiáveis entre banco e fila, considerar Outbox Pattern.
+Quando eventos precisarem ser confiaveis entre banco e fila, considerar Outbox Pattern.
 
 Fluxo:
 
 ```text
-Transação principal
-  -> grava dado de negócio
+Transacao principal
+  -> grava dado de negocio
   -> grava evento em outbox
   -> worker publica evento
   -> marca como publicado
@@ -236,27 +240,27 @@ Transação principal
 
 ## Realtime
 
-Supabase Realtime pode ser usado para experiência ao vivo.
+Supabase Realtime pode ser usado para experiencia ao vivo.
 
 Casos recomendados:
 
 - placar ao vivo;
 - gols;
 - feed;
-- notificações leves;
-- atualizações de partida.
+- notificacoes leves;
+- atualizacoes de partida.
 
-Realtime não substitui Domain Events.
+Realtime nao substitui Domain Events.
 
-Domain Events organizam o backend.
-Realtime entrega atualização para o cliente.
+Domain Events organizam o backend.  
+Realtime entrega atualizacao para o cliente.
 
 ## Regras
 
-1. Eventos devem representar fatos que já aconteceram.
-2. Eventos não devem carregar regras de UI.
-3. Eventos devem ter nomes em inglês técnico.
-4. Handlers podem falhar sem desfazer a ação principal, salvo quando a consistência for obrigatória.
-5. Eventos críticos devem ser idempotentes.
-6. Eventos devem preservar rastreabilidade histórica quando impactarem estatísticas, ranking ou auditoria.
-7. Domínios devem preferir eventos a chamadas diretas quando houver efeitos colaterais entre módulos.
+1. Eventos devem representar fatos que ja aconteceram.
+2. Eventos nao devem carregar regras de UI.
+3. Eventos devem ter nomes em ingles tecnico.
+4. Handlers podem falhar sem desfazer a acao principal, salvo quando a consistencia for obrigatoria.
+5. Eventos criticos devem ser idempotentes.
+6. Eventos devem preservar rastreabilidade historica quando impactarem estatisticas, ranking ou auditoria.
+7. Dominios devem preferir eventos a chamadas diretas quando houver efeitos colaterais entre modulos.

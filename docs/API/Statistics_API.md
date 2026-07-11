@@ -24,7 +24,7 @@ GET /api/v1/teams/:team_id/rankings
 
 Estatísticas devem declarar claramente:
 
-- o que já é confiável no MVP;
+- o que já é confiável no estado atual do produto;
 - o que é parcial;
 - o que ainda não existe por falta de scout ou camada operacional mais fina.
 
@@ -32,7 +32,7 @@ Estatísticas devem declarar claramente:
 
 Retorna estatísticas consolidadas do atleta com base no histórico factual já persistido no app.
 
-## Fontes mínimas do MVP
+## Fontes mínimas do estado atual do produto
 
 - `match_players`
 - `matches`
@@ -90,7 +90,7 @@ Retorna estatísticas consolidadas do atleta com base no histórico factual já 
   },
   "limitations": [
     "Assists depend on explicit goal registration with assist_player_id.",
-    "Advanced tactical metrics are not part of the MVP.",
+    "Advanced tactical metrics are not part of the current product scope.",
     "Only finalized matches are considered in result-based metrics."
   ]
 }
@@ -122,7 +122,7 @@ Retorna estatísticas consolidadas do atleta com base no histórico factual já 
 - `by_team`
   - deve consolidar histórico do atleta por time.
 
-## Fora do MVP
+## Fora do estado atual do produto
 
 - minutos jogados;
 - plus/minus;

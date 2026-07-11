@@ -1,24 +1,28 @@
 ---
 title: AI Development Guidelines
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-10
 related_documents:
-  - Architecture/Architecture_Principles.md
-  - Architecture/Recommended_Project_Structure.md
-  - Backend/Backend_Architecture.md
-  - Database/Database_Architecture.md
-  - Architecture/Event_Driven_Strategy.md
+  - ../Documentation_Index.md
+  - ../Release_1_0/Source_of_Truth_Map.md
+  - ../Architecture/Architecture_Principles.md
+  - ../Architecture/Recommended_Project_Structure.md
+  - ../Backend/Backend_Architecture.md
+  - ../Database/Tables.md
+  - ../Database/Relationships.md
+  - ../Database/Entity_Relationships.md
+  - ../Architecture/Event_Driven_Strategy.md
 ---
 
 # AI Development Guidelines
 
 ## Objetivo
 
-Orientar IAs e desenvolvedores humanos na criação, alteração e revisão de código do FUTSTATS.
+Orientar IAs e desenvolvedores humanos na criacao, alteracao e revisao de codigo do FUTSTATS.
 
-Este documento deve ser lido antes de gerar código para o projeto.
+Este documento deve ser lido antes de gerar codigo para o projeto.
 
 ## Regra principal
 
@@ -27,43 +31,64 @@ Nunca comece pela tecnologia.
 Comece perguntando:
 
 ```text
-A qual domínio isso pertence?
+A qual dominio isso pertence?
 ```
 
 Depois pergunte:
 
 ```text
-Qual caso de uso representa essa ação?
+Qual caso de uso representa essa acao?
 ```
 
-## Arquitetura obrigatória
+## Arquitetura obrigatoria
 
 O FUTSTATS usa:
 
 - Modular Monolith;
 - Clean Architecture;
-- DDD tático;
+- DDD tatico;
 - Domain Events;
 - Repository Pattern;
 - Supabase como infraestrutura;
-- React Native como camada de experiência.
+- React Native como camada de experiencia.
 
-## Antes de criar código
+## Ordem minima de consulta
+
+Antes de criar ou alterar codigo relevante, a IA deve consultar nesta ordem:
+
+1. `Documentation_Index.md`
+2. `Release_1_0/Source_of_Truth_Map.md`
+3. `Architecture/Architecture_Principles.md`
+4. `Backend/Backend_Architecture.md`
+5. `Architecture/Event_Driven_Strategy.md`
+6. o documento do dominio afetado em `Domain/`
+7. a API da area afetada em `API/`
+8. os mapas de banco em `Database/Tables.md`, `Database/Relationships.md` e `Database/Entity_Relationships.md`, quando houver impacto estrutural
+9. a `Implementation/Database/Table_Spec_*.md` correspondente, quando houver impacto em persistencia
+10. a tela ou fluxo correspondente em `Frontend/Screens/`, quando houver impacto de superficie
+
+## Regra para banco
+
+- `Database/Tables.md`, `Database/Relationships.md` e `Database/Entity_Relationships.md` sao mapas de alto nivel.
+- A verdade detalhada de colunas, enums, constraints, checks, unicidade e semantica de persistencia esta nas `Implementation/Database/Table_Spec_*.md`.
+- `Database/Database_Architecture.md`, quando citado em material legado, nao substitui os mapas nem as `Table_Spec_*`.
+
+## Antes de criar codigo
 
 Toda IA deve identificar:
 
-1. Domínio afetado.
+1. Dominio afetado.
 2. Caso de uso principal.
 3. Entidades envolvidas.
-4. Value objects necessários.
-5. Repositórios necessários.
+4. Value objects necessarios.
+5. Repositorios necessarios.
 6. Eventos emitidos.
 7. Handlers afetados.
 8. Tabelas envolvidas.
-9. Regras de autorização.
-10. Testes necessários.
+9. Regras de autorizacao.
+10. Testes necessarios.
 
-## Estrutura obrigatória
+## Estrutura obrigatoria
 
 Novas funcionalidades devem seguir:
 
@@ -77,7 +102,7 @@ modules/{module}/
 
 ## O que nunca fazer
 
-Não colocar regra de negócio em:
+Nao colocar regra de negocio em:
 
 - controllers;
 - routes;
@@ -85,15 +110,15 @@ Não colocar regra de negócio em:
 - SQL trigger complexa;
 - React Native screen;
 - componentes visuais;
-- arquivos shared genéricos;
-- migration sem documentação;
+- arquivos shared genericos;
+- migration sem documentacao;
 - Edge Function isolada sem caso de uso.
 
 ## Supabase
 
 Supabase deve ser usado por adaptadores de infraestrutura.
 
-Use cases não devem chamar Supabase diretamente.
+Use cases nao devem chamar Supabase diretamente.
 
 Errado:
 
@@ -110,24 +135,24 @@ SupabaseMatchRepository -> supabase.from(...)
 
 ## React Native
 
-React Native não deve conter regra central de negócio.
+React Native nao deve conter regra central de negocio.
 
 Pode conter:
 
 - tela;
-- navegação;
+- navegacao;
 - estado de UI;
 - cache;
 - fila offline;
 - i18n;
-- integração com Share API;
-- experiência visual.
+- integracao com Share API;
+- experiencia visual.
 
-Não deve decidir sozinho regras históricas ou críticas do produto.
+Nao deve decidir sozinho regras historicas ou criticas do produto.
 
 ## Eventos
 
-Quando uma ação gera efeitos colaterais em outros domínios, usar Domain Events.
+Quando uma acao gera efeitos colaterais em outros dominios, usar Domain Events.
 
 Exemplo:
 
@@ -137,18 +162,18 @@ GoalRegistered
 
 Pode gerar:
 
-- recalcular estatísticas;
+- recalcular estatisticas;
 - atualizar ranking;
 - gerar card;
 - atualizar feed;
-- enviar notificação;
-- conceder experiência.
+- enviar notificacao;
+- conceder experiencia.
 
-A IA não deve criar uma função gigante que faça tudo em sequência dentro do mesmo use case.
+A IA nao deve criar uma funcao gigante que faca tudo em sequencia dentro do mesmo use case.
 
 ## Shared
 
-Usar shared apenas para elementos genéricos.
+Usar shared apenas para elementos genericos.
 
 Permitido:
 
@@ -161,7 +186,7 @@ Permitido:
 - date helper;
 - base errors.
 
-Não permitido:
+Nao permitido:
 
 - Match rules;
 - Player rules;
@@ -171,7 +196,7 @@ Não permitido:
 
 ## Repository Pattern
 
-Para persistência, criar contrato interno e implementação externa.
+Para persistencia, criar contrato interno e implementacao externa.
 
 Exemplo:
 
@@ -182,7 +207,7 @@ modules/matches/infra/repositories/SupabaseMatchRepository.ts
 
 ## Value Objects
 
-Usar value objects quando houver validação ou comportamento recorrente.
+Usar value objects quando houver validacao ou comportamento recorrente.
 
 Exemplos:
 
@@ -196,45 +221,45 @@ Exemplos:
 
 ## Commands e Queries
 
-Usar commands para alterações.
+Usar commands para alteracoes.
 
 Usar queries para leitura.
 
-Separar quando o recurso tiver leitura complexa, estatísticas, rankings ou dashboards.
+Separar quando o recurso tiver leitura complexa, estatisticas, rankings ou dashboards.
 
 ## Banco de dados
 
 Ao propor tabelas ou migrations:
 
-1. Usar nomes técnicos em inglês.
+1. Usar nomes tecnicos em ingles.
 2. Usar UUIDs.
 3. Considerar auditabilidade.
 4. Considerar RLS.
-5. Considerar índices.
-6. Preservar histórico quando impactar partidas, jogadores ou estatísticas.
-7. Não colocar regra de negócio complexa em triggers.
+5. Considerar indices.
+6. Preservar historico quando impactar partidas, jogadores ou estatisticas.
+7. Nao colocar regra de negocio complexa em triggers.
 
 ## RLS
 
-RLS é obrigatório para proteger dados sensíveis.
+RLS e obrigatorio para proteger dados sensiveis.
 
-Mas RLS não substitui regras de aplicação.
+Mas RLS nao substitui regras de aplicacao.
 
-A IA deve sugerir ambos quando necessário:
+A IA deve sugerir ambos quando necessario:
 
-- política de acesso no banco;
-- validação de negócio no use case.
+- politica de acesso no banco;
+- validacao de negocio no use case.
 
 ## Offline-first
 
-Ao criar fluxo relacionado a partidas, gols, jogadores ou placar, considerar conectividade instável.
+Ao criar fluxo relacionado a partidas, gols, jogadores ou placar, considerar conectividade instavel.
 
-Recomendações:
+Recomendacoes:
 
 - UUID gerado no cliente;
 - idempotency_key;
 - fila local;
-- sincronização posterior;
+- sincronizacao posterior;
 - tratamento de conflito;
 - status de sync.
 
@@ -242,31 +267,31 @@ Recomendações:
 
 Toda funcionalidade relevante deve sugerir testes para:
 
-- domínio;
+- dominio;
 - use case;
-- repository quando aplicável;
+- repository quando aplicavel;
 - handler de evento;
-- controller quando aplicável.
+- controller quando aplicavel.
 
-Domain e Application devem ser testáveis sem Supabase real.
+Domain e Application devem ser testaveis sem Supabase real.
 
-## Checklist antes de finalizar uma resposta de código
+## Checklist antes de finalizar uma resposta de codigo
 
 A IA deve verificar:
 
-1. O código respeita o domínio correto?
-2. Há regra de negócio fora do lugar?
-3. O use case depende de interface, não de SDK?
-4. Eventos foram usados quando há efeitos colaterais?
-5. Shared não recebeu regra específica?
+1. O codigo respeita o dominio correto?
+2. Ha regra de negocio fora do lugar?
+3. O use case depende de interface, nao de SDK?
+4. Eventos foram usados quando ha efeitos colaterais?
+5. Shared nao recebeu regra especifica?
 6. Supabase ficou em infra?
-7. React Native ficou como experiência?
-8. Há testes sugeridos?
-9. Há impacto em documentação?
-10. Há impacto em banco/RLS?
+7. React Native ficou como experiencia?
+8. Ha testes sugeridos?
+9. Ha impacto em documentacao?
+10. Ha impacto em banco/RLS?
 
 ## Regra final
 
-A IA deve proteger a arquitetura mesmo quando o pedido do usuário for apenas "crie uma função".
+A IA deve proteger a arquitetura mesmo quando o pedido do usuario for apenas "crie uma funcao".
 
-Toda função nova deve nascer no lugar certo, com responsabilidade clara e sem acoplamento desnecessário.
+Toda funcao nova deve nascer no lugar certo, com responsabilidade clara e sem acoplamento desnecessario.

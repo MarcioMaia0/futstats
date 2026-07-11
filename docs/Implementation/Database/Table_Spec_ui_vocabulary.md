@@ -39,7 +39,7 @@ Permitir que a mesma chave canonica de interface seja apresentada em `TECHNICAL`
 ## Regras
 
 - `vocabulary_key` deve ser tecnica e canonica, por exemplo `goalkeeper_mistake`.
-- O MVP deve suportar pelo menos os modos `TECHNICAL`, `VARZEA` e `RESENHA`.
+- O estado atual do produto deve suportar pelo menos os modos `TECHNICAL`, `VARZEA` e `RESENHA`.
 - Se uma chave nao existir no modo escolhido, o fallback deve ser `TECHNICAL`.
 - Essa tabela nao substitui i18n completo; ela cobre a camada de tom e dialeto do produto.
 - `label` e `description` sao conteudo de experiencia e podem mudar sem alterar o dado esportivo.

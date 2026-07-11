@@ -1,50 +1,61 @@
 ---
 title: Architecture Principles
 status: Approved
-version: 1.0.1
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-07
+last_update: 2026-07-10
 related_documents:
-  - Architecture/README.md
-  - Architecture/Event_Driven_Strategy.md
-  - Architecture/Recommended_Project_Structure.md
-  - Backend/Backend_Architecture.md
-  - Database/Database_Architecture.md
-  - Backend/Jobs_and_Queues.md
-  - AI/AI_Development_Guidelines.md
+  - ./README.md
+  - ./Event_Driven_Strategy.md
+  - ./Recommended_Project_Structure.md
+  - ../Backend/Backend_Architecture.md
+  - ../Backend/Jobs_and_Queues.md
+  - ../Documentation_Index.md
+  - ../Release_1_0/Source_of_Truth_Map.md
+  - ../Database/Tables.md
+  - ../Database/Relationships.md
+  - ../Database/Entity_Relationships.md
+  - ../AI/AI_Development_Guidelines.md
 ---
 
 # Architecture Principles
 
 ## Objetivo
 
-Definir os princípios arquiteturais oficiais do FUTSTATS para orientar desenvolvimento humano e assistido por IA.
+Definir os principios arquiteturais oficiais do FUTSTATS para orientar desenvolvimento humano e assistido por IA.
 
-Este documento deve ser tratado como a referência principal para decisões técnicas estruturais do projeto.
+Este documento deve ser tratado como a referencia principal para decisoes tecnicas estruturais do projeto.
 
-## Decisão arquitetural oficial
+## Decisao arquitetural oficial
 
 O FUTSTATS adota uma arquitetura baseada em:
 
 1. Modular Monolith.
 2. Clean Architecture.
-3. Domain-Driven Design tático.
+3. Domain-Driven Design tatico.
 4. Domain Events.
 5. Event-driven internal architecture.
 6. Repository Pattern.
 7. CQRS leve quando fizer sentido.
-8. Supabase como infraestrutura, não como núcleo de negócio.
-9. React Native como camada de experiência, não como fonte de regra de negócio.
+8. Supabase como infraestrutura, nao como nucleo de negocio.
+9. React Native como camada de experiencia, nao como fonte de regra de negocio.
 
 ## Filosofia central
 
-Tudo no FUTSTATS pertence primeiro a um domínio de negócio.
+Tudo no FUTSTATS pertence primeiro a um dominio de negocio.
 
-Tecnologias como Supabase, React Native, Edge Functions, Storage, Realtime, banco local, APIs e bibliotecas são ferramentas para entregar os domínios, não o centro da arquitetura.
+Tecnologias como Supabase, React Native, Edge Functions, Storage, Realtime, banco local, APIs e bibliotecas sao ferramentas para entregar os dominios, nao o centro da arquitetura.
 
-## Domínios principais
+## Regra documental complementar
 
-Os domínios oficiais iniciais são:
+- A governanca da documentacao comeca em `Documentation_Index.md`.
+- A fonte correta de cada assunto deve ser localizada em `Release_1_0/Source_of_Truth_Map.md`.
+- Para banco, os mapas de alto nivel ficam em `Database/`.
+- O contrato detalhado de persistencia fica em `Implementation/Database/Table_Spec_*.md`.
+
+## Dominios principais
+
+Os dominios oficiais iniciais sao:
 
 - Identity
 - Teams
@@ -55,26 +66,26 @@ Os domínios oficiais iniciais são:
 - Referees
 - Experience
 
-Cada domínio deve conter suas próprias regras, casos de uso, entidades, eventos, contratos e testes.
+Cada dominio deve conter suas proprias regras, casos de uso, entidades, eventos, contratos e testes.
 
-## Regra de dependência
+## Regra de dependencia
 
-As dependências de código devem apontar para dentro.
+As dependencias de codigo devem apontar para dentro.
 
-Camadas internas não devem conhecer detalhes externos.
+Camadas internas nao devem conhecer detalhes externos.
 
 Exemplos:
 
-- Domain não conhece Supabase.
-- Domain não conhece React Native.
-- Domain não conhece HTTP.
-- Application não deve depender diretamente de SDKs externos.
+- Domain nao conhece Supabase.
+- Domain nao conhece React Native.
+- Domain nao conhece HTTP.
+- Application nao deve depender diretamente de SDKs externos.
 - Infrastructure implementa contratos definidos pelas camadas internas.
-- Presentation apenas traduz entrada e saída.
+- Presentation apenas traduz entrada e saida.
 
-## Camadas padrão por módulo
+## Camadas padrao por modulo
 
-Cada módulo relevante deve seguir a estrutura:
+Cada modulo relevante deve seguir a estrutura:
 
 ```text
 module/
@@ -86,7 +97,7 @@ module/
 
 ### Domain
 
-Contém o coração do negócio.
+Contem o coracao do negocio.
 
 Pode conter:
 
@@ -98,14 +109,14 @@ Pode conter:
 - invariants
 - business errors
 
-Não pode conter:
+Nao pode conter:
 
 - Supabase SDK
 - React Native
 - HTTP controllers
 - SQL direto
 - chamadas de API externa
-- lógica de tela
+- logica de tela
 
 ### Application
 
@@ -121,11 +132,11 @@ Pode conter:
 - queries
 - transaction boundaries
 
-A camada de application coordena o fluxo, mas não deve conter detalhes de infraestrutura.
+A camada de application coordena o fluxo, mas nao deve conter detalhes de infraestrutura.
 
 ### Infrastructure
 
-Implementa detalhes técnicos.
+Implementa detalhes tecnicos.
 
 Pode conter:
 
@@ -142,7 +153,7 @@ Infrastructure deve obedecer contratos definidos por Domain ou Application.
 
 ### Presentation
 
-Recebe entrada e entrega saída.
+Recebe entrada e entrega saida.
 
 Pode conter:
 
@@ -152,32 +163,32 @@ Pode conter:
 - presenters
 - API response mappers
 
-Presentation não deve conter regra de negócio.
+Presentation nao deve conter regra de negocio.
 
 ## Modular Monolith
 
-O FUTSTATS deve começar como um monólito modular bem organizado.
+O FUTSTATS deve comecar como um monolito modular bem organizado.
 
 Isso significa:
 
-- um único deploy principal;
-- módulos separados por domínio;
-- baixo acoplamento entre módulos;
-- contratos explícitos;
-- comunicação por eventos quando houver efeitos colaterais;
-- possibilidade futura de extrair módulos sem reescrever o sistema inteiro.
+- um unico deploy principal;
+- modulos separados por dominio;
+- baixo acoplamento entre modulos;
+- contratos explicitos;
+- comunicacao por eventos quando houver efeitos colaterais;
+- possibilidade futura de extrair modulos sem reescrever o sistema inteiro.
 
-Microsserviços não são a arquitetura inicial recomendada.
+Microsservicos nao sao a arquitetura inicial recomendada.
 
-## DDD tático
+## DDD tatico
 
-O projeto deve usar DDD de forma pragmática.
+O projeto deve usar DDD de forma pragmatica.
 
 Conceitos recomendados:
 
 - Entities
 - Value Objects
-- Aggregates quando necessário
+- Aggregates quando necessario
 - Domain Events
 - Repositories
 - Domain Services
@@ -187,7 +198,7 @@ Evitar DDD cerimonial excessivo quando a regra for simples.
 
 ## Domain Events
 
-Eventos representam fatos que já aconteceram.
+Eventos representam fatos que ja aconteceram.
 
 Exemplos:
 
@@ -198,11 +209,11 @@ Exemplos:
 - RefereeReviewed
 - PostPublished
 
-Eventos devem ser disparados por casos de uso ou entidades, não por triggers de banco como mecanismo principal de negócio.
+Eventos devem ser disparados por casos de uso ou entidades, nao por triggers de banco como mecanismo principal de negocio.
 
-## Comunicação entre domínios
+## Comunicacao entre dominios
 
-Domínios não devem chamar diretamente detalhes internos de outros domínios.
+Dominios nao devem chamar diretamente detalhes internos de outros dominios.
 
 Preferir:
 
@@ -210,7 +221,7 @@ Preferir:
 Use Case
   -> Domain Event
   -> Event Bus
-  -> Handler de outro domínio
+  -> Handler de outro dominio
 ```
 
 Exemplo:
@@ -225,22 +236,22 @@ RegisterGoalUseCase
 
 ## Jobs e efeitos colaterais
 
-Efeitos colaterais assíncronos devem ser modelados como jobs ou handlers.
+Efeitos colaterais assincronos devem ser modelados como jobs ou handlers.
 
 Exemplos:
 
-- recalcular estatísticas;
+- recalcular estatisticas;
 - gerar cards;
-- enviar notificações;
+- enviar notificacoes;
 - atualizar rankings;
-- processar denúncias;
-- consolidar reputação de árbitros.
+- processar denuncias;
+- consolidar reputacao de arbitros.
 
-Jobs devem ser idempotentes, rastreáveis e possuir retry quando críticos.
+Jobs devem ser idempotentes, rastreaveis e possuir retry quando criticos.
 
 ## Supabase
 
-Supabase é uma escolha adequada para o FUTSTATS, mas deve ser tratado como infraestrutura.
+Supabase e uma escolha adequada para o FUTSTATS, mas deve ser tratado como infraestrutura.
 
 Supabase pode ser usado para:
 
@@ -255,7 +266,7 @@ Supabase pode ser usado para:
 - constraints;
 - auditabilidade.
 
-Supabase não deve ser o lugar principal das regras de negócio.
+Supabase nao deve ser o lugar principal das regras de negocio.
 
 ### RLS
 
@@ -267,14 +278,14 @@ RLS pode controlar:
 - escrita;
 - update;
 - delete;
-- isolamento por usuário, time ou papel.
+- isolamento por usuario, time ou papel.
 
-RLS não substitui regras de negócio da aplicação.
+RLS nao substitui regras de negocio da aplicacao.
 
 Exemplo:
 
-- RLS pode impedir que um usuário edite uma partida de outro time.
-- Application decide se uma partida finalizada há muito tempo ainda pode ser alterada.
+- RLS pode impedir que um usuario edite uma partida de outro time.
+- Application decide se uma partida finalizada ha muito tempo ainda pode ser alterada.
 
 ### Triggers
 
@@ -282,53 +293,53 @@ Triggers devem ser usadas com cuidado.
 
 Podem ser usadas para:
 
-- timestamps técnicos;
+- timestamps tecnicos;
 - auditoria;
-- sincronização técnica;
-- criação de perfil público após criação de conta;
-- consistência simples e local.
+- sincronizacao tecnica;
+- criacao de perfil publico apos criacao de conta;
+- consistencia simples e local.
 
-Não devem ser usadas como orquestrador principal de regras de negócio complexas.
+Nao devem ser usadas como orquestrador principal de regras de negocio complexas.
 
 ### Edge Functions
 
-Edge Functions podem executar tarefas técnicas ou assíncronas.
+Edge Functions podem executar tarefas tecnicas ou assincronas.
 
-Elas podem implementar workers, integrações e processamento de mídia, mas devem ser acionadas a partir de eventos ou filas sempre que possível.
+Elas podem implementar workers, integracoes e processamento de midia, mas devem ser acionadas a partir de eventos ou filas sempre que possivel.
 
 ## React Native
 
-React Native é a camada de experiência mobile.
+React Native e a camada de experiencia mobile.
 
 Pode conter:
 
 - UI;
-- navegação;
+- navegacao;
 - estado local;
 - cache;
 - fila offline;
 - i18n e modos de linguagem;
-- integração com compartilhamento nativo.
+- integracao com compartilhamento nativo.
 
-Não deve conter regra de negócio central que precise ser preservada no backend.
+Nao deve conter regra de negocio central que precise ser preservada no backend.
 
 ## Offline-first
 
-O FUTSTATS deve considerar conectividade instável como cenário normal.
+O FUTSTATS deve considerar conectividade instavel como cenario normal.
 
-Recomendações:
+Recomendacoes:
 
 - gerar UUIDs no client;
-- registrar ações offline como comandos;
-- manter fila local de sincronização;
+- registrar acoes offline como comandos;
+- manter fila local de sincronizacao;
 - sincronizar em segundo plano;
 - usar idempotency keys;
-- versionar registros sensíveis;
+- versionar registros sensiveis;
 - resolver conflitos explicitamente.
 
 ## Repository Pattern
 
-Casos de uso não devem acessar Supabase diretamente.
+Casos de uso nao devem acessar Supabase diretamente.
 
 Eles devem depender de interfaces.
 
@@ -339,7 +350,7 @@ MatchRepository
   -> SupabaseMatchRepository
 ```
 
-Isso protege o domínio contra mudanças de tecnologia.
+Isso protege o dominio contra mudancas de tecnologia.
 
 ## CQRS leve
 
@@ -348,20 +359,20 @@ O FUTSTATS pode separar comandos e consultas quando houver ganho claro.
 Commands alteram estado.  
 Queries leem estado.
 
-Essa separação é especialmente útil em:
+Essa separacao e especialmente util em:
 
-- estatísticas;
+- estatisticas;
 - rankings;
 - dashboards;
 - feed;
-- relatórios;
+- relatorios;
 - snapshots.
 
-Não é obrigatório usar CQRS completo em todo o sistema.
+Nao e obrigatorio usar CQRS completo em todo o sistema.
 
 ## Shared
 
-Shared deve conter apenas código verdadeiramente genérico.
+Shared deve conter apenas codigo verdadeiramente generico.
 
 Permitido:
 
@@ -376,15 +387,15 @@ Permitido:
 - common value objects;
 - event bus contracts.
 
-Evitar colocar regras de negócio em shared.
+Evitar colocar regras de negocio em shared.
 
-Se algo só faz sentido no FUTSTATS, provavelmente pertence a um domínio.
+Se algo so faz sentido no FUTSTATS, provavelmente pertence a um dominio.
 
-Se algo só faz sentido em partidas, pertence a Matches.
+Se algo so faz sentido em partidas, pertence a Matches.
 
 ## Testabilidade
 
-Regras de domínio e casos de uso devem ser testáveis sem:
+Regras de dominio e casos de uso devem ser testaveis sem:
 
 - banco real;
 - Supabase;
@@ -393,25 +404,25 @@ Regras de domínio e casos de uso devem ser testáveis sem:
 - rede;
 - storage externo.
 
-Infrastructure deve ser substituível por mocks, fakes ou in-memory repositories.
+Infrastructure deve ser substituivel por mocks, fakes ou in-memory repositories.
 
-## Regras obrigatórias
+## Regras obrigatorias
 
-1. Todo recurso nasce em um domínio.
-2. Toda regra de negócio vive em Domain ou Application.
-3. Infrastructure não decide regra de negócio.
-4. Presentation não decide regra de negócio.
-5. Supabase não é o cérebro do sistema.
-6. React Native não é o cérebro do sistema.
-7. Domínios se comunicam por eventos quando houver efeitos colaterais relevantes.
-8. Shared não pode virar depósito de código sem dono.
-9. Casos de uso devem representar ações claras do produto.
-10. Toda decisão que impacta histórico deve preservar rastreabilidade.
+1. Todo recurso nasce em um dominio.
+2. Toda regra de negocio vive em Domain ou Application.
+3. Infrastructure nao decide regra de negocio.
+4. Presentation nao decide regra de negocio.
+5. Supabase nao e o cerebro do sistema.
+6. React Native nao e o cerebro do sistema.
+7. Dominios se comunicam por eventos quando houver efeitos colaterais relevantes.
+8. Shared nao pode virar deposito de codigo sem dono.
+9. Casos de uso devem representar acoes claras do produto.
+10. Toda decisao que impacta historico deve preservar rastreabilidade.
 
 ## Quando simplificar
 
-Nem toda funcionalidade precisa de cerimônia completa.
+Nem toda funcionalidade precisa de cerimonia completa.
 
 Funcionalidades simples podem ter menos arquivos, desde que respeitem as fronteiras principais.
 
-A arquitetura deve proteger o produto, não sufocar a entrega.
+A arquitetura deve proteger o produto, nao sufocar a entrega.

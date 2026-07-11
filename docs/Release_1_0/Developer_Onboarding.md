@@ -1,9 +1,9 @@
 ---
 title: Developer Onboarding
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 related_documents: []
 ---
 
@@ -19,7 +19,7 @@ Orientar o início do trabalho técnico no FUTSTATS.
 2. Ler Product Vision.
 3. Ler Product Principles.
 4. Ler Domain README.
-5. Ler MVP Strategy.
+5. Ler Launch Snapshot Strategy como material histórico de contexto.
 6. Ler Database Architecture.
 7. Ler API Conventions.
 8. Ler Backend Architecture.

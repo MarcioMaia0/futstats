@@ -1,9 +1,9 @@
 ---
 title: Auth API
 status: Draft
-version: 1.1.0
+version: 1.2.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
 related_documents:
   - ../ADR/ADR_012_Identity_On_Supabase_Auth.md
   - ../Frontend/Screens/Welcome.md
@@ -98,7 +98,6 @@ Cria conta por e-mail, `person` e o `public.users` minimo.
 
 - `auth.users.email`
 - `auth.users.encrypted_password`
-- `persons.full_name`
 - `persons.nickname`
 - `persons.search_name`
 - `public.users.username`
@@ -138,8 +137,9 @@ Cria conta por e-mail, `person` e o `public.users` minimo.
 - `contact_phone` e opcional e nao verificado.
 - O cadastro por e-mail nunca cria `player`.
 - No cadastro por e-mail:
-  - `persons.full_name` deve receber o nome informado quando houver;
-  - `persons.nickname` deve receber o mesmo valor quando nao houver apelido separado neste fluxo;
+  - `display_name` alimenta `persons.nickname` como apelido canonico inicial da pessoa;
+  - `persons.full_name` pode permanecer `null` nesse fluxo simples;
+  - `persons.search_name` deve ser derivado do `nickname` resolvido;
   - `public.users.display_name` continua sendo o nome de contexto da plataforma.
 
 ### `POST /api/v1/auth/sign-in`
@@ -236,7 +236,7 @@ Inicia o fluxo de Google ou Apple.
 
 #### Regras
 
-- Providers validos no MVP: `GOOGLE`, `APPLE`.
+- Providers validos no lancamento atual: `GOOGLE`, `APPLE`.
 - Apple so deve ser oferecido no iOS na camada de tela, mas o contrato aceita ambos.
 
 ### `POST /api/v1/auth/social/complete`
@@ -320,7 +320,7 @@ Solicita envio de codigo OTP para telefone.
 
 - O canal previsto para este fluxo e `WHATSAPP`.
 - `channel` permanece no contrato por clareza tecnica, mas a UI nao precisa expor seletor enquanto houver apenas um canal suportado.
-- No MVP, o fluxo fica fora do lancamento e atras de feature flag por depender de servico pago.
+- No lancamento atual, o fluxo fica fora da experiencia visivel e atras de feature flag por depender de servico pago.
 - Rate limit e cooldown obrigatorios.
 
 ### `POST /api/v1/auth/phone/verify-code`

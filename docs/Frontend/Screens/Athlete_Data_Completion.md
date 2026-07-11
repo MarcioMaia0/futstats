@@ -1,12 +1,13 @@
 ---
 title: Screen: Athlete Data Completion
 status: Draft
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
 related_documents:
   - ../../Domain/Players.md
   - ../../API/Players_API.md
+  - ../../Implementation/Database/Table_Spec_person_social_connections.md
   - Player_Profile.md
   - Join_Team_Search.md
 ---
@@ -72,10 +73,11 @@ Ela não edita:
 Formulário em blocos:
 
 1. identidade esportiva;
-2. modalidades;
-3. posições por modalidade;
-4. preferências esportivas;
-5. dados complementares.
+2. redes sociais da pessoa;
+3. modalidades;
+4. posições por modalidade;
+5. preferências esportivas;
+6. dados complementares.
 
 ### Bloco inferior
 
@@ -123,7 +125,34 @@ Regras:
 - avatar é opcional;
 - nome, apelido e avatar pertencem a `persons`, mesmo estando dentro do fluxo de atleta.
 
-### Seção 2: modalidades
+### Seção 2: redes sociais da pessoa
+
+Campos:
+
+- lista editável por plataforma:
+  - `INSTAGRAM`
+  - `TIKTOK`
+  - `YOUTUBE`
+- `handle`
+- `channel_url`
+- `is_visible`
+
+Regras:
+
+- esta seção edita dados de `person_social_connections`, não de `players`;
+- a UI pode usar navegação compacta por ícones, seguindo o mesmo padrão mental usado para redes do time;
+- cada plataforma pode existir no máximo uma vez;
+- cada item precisa de ao menos:
+  - `handle`; ou
+  - `channel_url`
+- `is_visible = true` significa que a rede poderá aparecer no perfil público;
+- a ordem visual pode seguir ordem fixa do produto no estado atual:
+  - Instagram
+  - TikTok
+  - YouTube
+- como a API pública já devolve a coleção pronta, a tela de edição não precisa inventar outra semântica de ordenação neste momento.
+
+### Seção 3: modalidades
 
 Campos:
 
@@ -138,7 +167,7 @@ Regras:
 - a seleção de modalidade controla as posições disponíveis na seção seguinte;
 - pelo menos uma modalidade é necessária para `BASIC_COMPLETE`.
 
-### Seção 3: posições por modalidade
+### Seção 4: posições por modalidade
 
 Campos:
 
@@ -151,7 +180,7 @@ Regras:
 - a UI deve organizar as posições agrupadas por modalidade;
 - pelo menos uma posição válida associada a modalidade escolhida é necessária para `BASIC_COMPLETE`.
 
-### Seção 4: preferências esportivas
+### Seção 5: preferências esportivas
 
 Campos:
 
@@ -163,7 +192,7 @@ Regras:
 - usar linguagem simples;
 - persistir em `players.dominant_foot`.
 
-### Seção 5: dados complementares
+### Seção 6: dados complementares
 
 Campos:
 
@@ -215,6 +244,7 @@ Regras:
 - `persons.full_name`
 - `persons.nickname`
 - `persons.avatar_media_id`
+- `person_social_connections`
 - `players.dominant_foot`
 - `players.birth_date`
 - `players.height_cm`
@@ -237,7 +267,7 @@ Regras:
 
 - `GET /api/v1/players/:playerId`
 
-### Salvamento
+### Salvamento do perfil declarado
 
 - `PATCH /api/v1/players/:playerId`
 
@@ -267,6 +297,41 @@ Payload conceitual:
 }
 ```
 
+### Salvamento das redes sociais da pessoa
+
+- `PATCH /api/v1/players/:playerId/social-connections`
+
+Payload conceitual:
+
+```json
+{
+  "social_connections": [
+    {
+      "platform": "INSTAGRAM",
+      "handle": "@marcio",
+      "channel_url": "https://instagram.com/marcio",
+      "is_visible": true,
+      "display_order": 0
+    },
+    {
+      "platform": "YOUTUBE",
+      "handle": "@marciotv",
+      "channel_url": "https://youtube.com/@marciotv",
+      "is_visible": false,
+      "display_order": 1
+    }
+  ]
+}
+```
+
+Regra:
+
+- a tela pode salvar em duas etapas:
+  - perfil declarado do atleta;
+  - redes sociais da pessoa;
+- ou orquestrar ambos no mesmo fluxo visual com duas chamadas coordenadas;
+- falha ao salvar redes sociais não deve apagar alterações válidas do perfil declarado já persistidas, e vice-versa.
+
 ## Regras de UX
 
 - o formulário deve parecer útil, não burocrático;
@@ -276,6 +341,8 @@ Payload conceitual:
 - o modo `complete` pode destacar de forma leve o que ainda falta;
 - `Deixar para depois` deve ser visível no contexto de complementação;
 - a seleção de modalidades deve abrir progressivamente as posições válidas;
+- a seção de redes sociais deve ser simples e opcional;
+- a tela deve deixar claro, em linguagem leve, que essas redes pertencem à pessoa e aparecem no perfil público apenas quando marcadas como visíveis;
 - mobile first, com blocos bem claros e sem poluição.
 
 ## Estados da tela
@@ -291,6 +358,7 @@ Payload conceitual:
 - `ImagePreviewCard`
 - `ImageAcquisitionFlow`
 - `useTemporaryUpload`
+- componente reutilizável de edição de redes sociais por plataforma, alinhado ao padrão de times
 
 Consumidores relacionados:
 

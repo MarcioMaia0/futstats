@@ -19,7 +19,7 @@ A adoção inicial deve vir da resenha e compartilhamento.
 
 ## Decisão
 
-Priorizar fluxos sociais no MVP.
+Priorizar fluxos sociais no recorte inicial de aquisição.
 
 ## Consequências
 

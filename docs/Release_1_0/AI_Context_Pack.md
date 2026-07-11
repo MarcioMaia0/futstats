@@ -1,9 +1,9 @@
 ---
 title: AI Context Pack
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 related_documents: []
 ---
 
@@ -20,7 +20,7 @@ O FUTSTATS é uma plataforma para futebol amador e várzea. O produto deve entre
 ## Princípios que a IA deve respeitar
 
 1. Não tornar recursos avançados obrigatórios.
-2. Não transformar o MVP em ferramenta pesada de análise.
+2. Não transformar o primeiro valor operacional em ferramenta pesada de análise.
 3. Priorizar fluxos rápidos e sociais.
 4. Manter código, banco, APIs e enums em inglês.
 5. Manter explicações e conteúdo de documentação em português.
@@ -33,7 +33,7 @@ O FUTSTATS é uma plataforma para futebol amador e várzea. O produto deve entre
 ## Prompt base sugerido
 
 ```text
-Você está trabalhando no projeto FUTSTATS. Antes de implementar, leia a documentação relevante em FUTSTATS_Docs. Respeite o princípio central: o sistema nunca deve exigir comportamento analítico para entregar valor. Use inglês para código, banco, APIs e enums. Use português para explicações. Priorize MVP casual-first, com camadas avançadas opcionais.
+Você está trabalhando no projeto FUTSTATS. Antes de implementar, leia a documentação relevante em FUTSTATS_Docs. Respeite o princípio central: o sistema nunca deve exigir comportamento analítico para entregar valor. Use inglês para código, banco, APIs e enums. Use português para explicações. Priorize fluxo casual-first, com camadas avançadas opcionais.
 ```
 
 ## Restrições

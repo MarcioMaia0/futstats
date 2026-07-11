@@ -29,13 +29,13 @@ Transformar dados factuais do produto em indicadores úteis sem inventar precis�
 4. Rankings devem considerar contexto.
 5. Alterações recalculam agregados.
 6. O domínio deve distinguir estatística completa de estatística parcial.
-7. O MVP do atleta deve priorizar números defensáveis: partidas, titularidade, gols, assistências registradas, resultados e recortes por modalidade/time.
+7. O perfil de atleta no estado atual do produto deve priorizar números defensáveis: partidas, titularidade, gols, assistências registradas, resultados e recortes por modalidade/time.
 
 ## Plus/Minus
 
 Calculado apenas quando escalações e substituições forem suficientes.
 
-## Estatísticas de atleta no MVP
+## Estatísticas de atleta no estado atual do produto
 
 Conjunto mínimo confiável:
 
@@ -81,7 +81,7 @@ Essa inferência deve combinar:
 - a inferência não deve sobrescrever o que o atleta declara que joga;
 - a inferência existe para ordenar relevância visual e leitura analítica, não para rotular de forma rígida.
 
-## Limitações explícitas do MVP
+## Limitações explícitas do estado atual do produto
 
 - assistência não registrada não pode ser inferida;
 - minutos jogados não existem sem camada temporal suficiente;

@@ -1,9 +1,17 @@
 ---
 title: Endpoint Detail Players
 status: Draft
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
+related_documents:
+  - ../../API/Players_API.md
+  - ../../API/Statistics_API.md
+  - ../../Implementation/Database/Table_Spec_players.md
+  - ../../Implementation/Database/Table_Spec_person_social_connections.md
+  - ../../Implementation/Database/Table_Spec_player_match_statistics.md
+  - ../../Implementation/Database/Table_Spec_player_gallery_items.md
+  - ../../Implementation/UX/Flows/Player_Claim_Flow.md
 ---
 
 # Endpoint Detail Players
@@ -22,7 +30,7 @@ POST /api/v1/players/{playerId}/claim
 GET /api/v1/players/{playerId}/statistics
 GET /api/v1/players/{playerId}/timeline
 GET /api/v1/players/{playerId}/gallery
-GET /api/v1/players/{playerId}/cards
+PATCH /api/v1/players/{playerId}/social-connections
 ```
 
 ## Regras
@@ -34,6 +42,7 @@ GET /api/v1/players/{playerId}/cards
 - `GET /players/{playerId}` deve separar:
   - dados de `person`;
   - dados de `player`;
+  - redes sociais de `person`;
   - posições/modalidades declaradas;
   - histórico factual consolidado.
 - `PATCH /players/{playerId}` não pode alterar histórico factual de partida.
@@ -52,6 +61,29 @@ GET /api/v1/players/{playerId}/cards
 - `recent_matches`
 - `permissions`
 
+### Regra de leitura do avatar
+
+- `person.avatar_url` pode ser exposto como URL já resolvida para a UI;
+- a origem canônica persistida do avatar da pessoa continua sendo `persons.avatar_media_id`.
+- `person.social_connections` vem de `person_social_connections` e deve respeitar `is_visible` na leitura pública.
+- a leitura pública não precisa expor `connection_status`; ela pode expor apenas os links já visíveis.
+
+### Formato público recomendado de `person.social_connections`
+
+Cada item deve expor:
+
+- `platform`
+- `handle`
+- `channel_url`
+- `display_order`
+
+Regras:
+
+- a coleção já deve vir filtrada para `is_visible = true`;
+- a coleção já deve vir ordenada para consumo direto da UI;
+- `is_visible` não precisa ser devolvido quando a própria resposta já respeita esse filtro;
+- `connection_status` não pertence ao payload público do perfil do atleta.
+
 ## GET /api/v1/players/{playerId}/statistics
 
 ### Deve retornar
@@ -62,7 +94,7 @@ GET /api/v1/players/{playerId}/cards
 - `coverage`
 - `limitations`
 
-### Métricas mínimas do MVP
+### Métricas mínimas do estado atual do produto
 
 - `matches_played`
 - `starter_matches`
@@ -107,7 +139,7 @@ GET /api/v1/players/{playerId}/cards
 - `items`
 - `pagination`
 
-### Tipos iniciais do MVP
+### Tipos iniciais do estado atual do produto
 
 - `TEAM_JOINED`
 - `PLAYER_WELCOME_POST`
@@ -186,6 +218,31 @@ GET /api/v1/players/{playerId}/cards
 - o patch deve persistir em transação coerente entre `persons`, `players`, `player_modalities` e `player_positions`;
 - `profile_completeness_status` deve ser recalculado pelo backend, e não confiado ao cliente.
 
+## PATCH /api/v1/players/{playerId}/social-connections
+
+### Pode atualizar
+
+- `person_social_connections.handle`
+- `person_social_connections.channel_url`
+- `person_social_connections.is_visible`
+- `person_social_connections.display_order`
+
+### Não pode atualizar
+
+- dados estatísticos do atleta;
+- galeria social do atleta;
+- posts publicados por time;
+- tokens ou credenciais externas.
+
+### Comportamento esperado
+
+- a operação deve agir sobre a `person` vinculada ao `player`;
+- o conjunto enviado pela tela pode ser tratado como estado final suportado;
+- o backend deve validar unicidade por `platform` dentro da mesma pessoa;
+- o backend deve validar domínio compatível com a plataforma quando `channel_url` existir;
+- o backend pode manter `connection_status = PENDING` quando não houver conexão real com a plataforma;
+- a tabela canônica de persistência é `person_social_connections`.
+
 ## POST /api/v1/players/{playerId}/claim
 
 ### Pode operar em dois modos
@@ -198,26 +255,39 @@ GET /api/v1/players/{playerId}/cards
 - o `player` do usuário autenticado é o destino canônico da operação;
 - um `player` criado apenas para uso operacional do time pode ser origem de merge;
 - o sistema deve mover a referência histórica para o destino, e não copiar estatísticas derivadas manualmente.
+- quando a origem vier de um time, o merge também deve consolidar a camada contextual daquele time.
 
 ### Tabelas operacionais mínimas para reatribuição
 
+- `team_members`, quando houver contexto de time na origem
 - `team_players`
 - `match_players`
 - `match_goals.player_id`
 - `match_goals.assist_player_id`
-- `match_attendance_responses`
+- `match_attendance_responses`, quando a origem contextual ainda apontar para `team_member` operacional
+- `match_ratings.target_match_player_id`, quando a nota depender da atuacao contextual da partida
 - `match_ratings.target_player_id`
 - `player_modalities`
 - `player_positions`
 
 ### Conflitos esperados
 
+- Se já existir `team_member` ativo para a mesma `person` no mesmo `team`, a origem não pode sobreviver como integrante ativo duplicado.
 - Se já existir `team_players` ativo para `team_id + target_player_id`, a origem não pode gerar segundo vínculo ativo redundante.
 - Se já existir `match_players` para `match_id + team_id + target_player_id`, o backend deve consolidar as linhas de contexto da partida antes de remover a origem.
 - Se `match_players` precisar ser consolidado, o backend também deve reapontar dependências por `match_player_id`, como:
   - `match_players_positions`
   - `match_events`
   - `match_substitutions`
+
+### Regra de consolidação contextual do time
+
+- se a origem operacional existir dentro de um time:
+  - o backend deve localizar o `source_team_member_id`;
+  - deve localizar ou criar o `target_team_member_id` da pessoa real no mesmo time;
+  - deve consolidar `team_players` em favor do `target_team_member_id`;
+  - deve reapontar histórico contextual que pertença ao integrante do time, como presença em compromissos;
+  - e só depois pode remover ou inutilizar a origem contextual redundante, sem mantê-la como registro ativo útil separado.
 
 ### Pós-condição obrigatória
 
@@ -236,7 +306,7 @@ GET /api/v1/players/{playerId}/cards
 Ao usar este documento como contexto para implementação, a IA deve:
 
 1. preservar o princípio de uso casual simples;
-2. não criar campos obrigatórios que bloqueiem o MVP;
+2. não criar campos obrigatórios que bloqueiem o primeiro valor operacional;
 3. respeitar separação entre dado canônico e texto de interface;
 4. manter compatibilidade com evolução futura;
 5. sugerir migrations, testes e endpoints quando alterar domínio.

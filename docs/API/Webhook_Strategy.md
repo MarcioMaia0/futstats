@@ -31,4 +31,4 @@ Preparar estratégia futura de webhooks.
 
 ## Regra
 
-Webhooks não fazem parte do MVP, mas a arquitetura de eventos deve permitir futura exposição externa.
+Webhooks não fazem parte do recorte atual de lançamento, mas a arquitetura de eventos deve permitir futura exposição externa.

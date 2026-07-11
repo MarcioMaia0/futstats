@@ -10,6 +10,7 @@ related_documents:
   - ../API/Auth_API.md
   - ../Architecture/Domain_Event_Catalog.md
   - ../Implementation/Database/Table_Spec_persons.md
+  - ../Implementation/Database/Table_Spec_person_social_connections.md
   - ../Implementation/Database/Table_Spec_users.md
   - ../Implementation/Database/Table_Spec_players.md
   - ../Implementation/Database/Table_Spec_accounts.md
@@ -29,7 +30,8 @@ Definir as fronteiras entre autenticação, pessoa canônica, presença na plata
 - `person`
   - identidade canônica da pessoa no ecossistema FUTSTATS;
   - pode existir com ou sem conta;
-  - pode existir com ou sem perfil esportivo.
+  - pode existir com ou sem perfil esportivo;
+  - é dona dos links sociais públicos da pessoa.
 - `user`
   - presença daquela `person` dentro da plataforma autenticada;
   - corresponde a `public.users`.
@@ -93,11 +95,19 @@ Tabelas relevantes:
 
 - `auth.users` como camada de conta;
 - `persons` como camada canônica de pessoa;
+- `person_social_connections` como camada de redes sociais da pessoa;
 - `users` como camada de presença na plataforma;
 - `players` para identidade esportiva;
 - `user_team_roles` para papéis de gestão por contexto.
 
 Não existe tabela `accounts` própria; `accounts` é apenas camada conceitual mapeada em `auth.users`.
+
+## Regra de redes sociais da pessoa
+
+- a pessoa usa `person_social_connections` como fonte canônica de redes sociais;
+- a estrutura deve seguir o mesmo padrão-base de `team_social_connections`, sempre que isso não violar o contexto;
+- no estado atual do produto, a principal regra pública é:
+  - exibir apenas conexões com `is_visible = true`.
 
 ## Casos de uso do domínio Identity
 

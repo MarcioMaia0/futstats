@@ -1,9 +1,9 @@
 ---
 title: Final Validation Checklist
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 related_documents: []
 ---
 
@@ -25,7 +25,7 @@ related_documents: []
 - [x] Banco em inglês.
 - [x] UI internacionalizável.
 
-## MVP
+## Recorte inicial
 
 - [x] Fluxo casual definido.
 - [x] Partida rápida definida.

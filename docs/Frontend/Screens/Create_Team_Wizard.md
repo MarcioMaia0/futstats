@@ -69,7 +69,7 @@ Coletar o único dado obrigatório do wizard.
 
 - `name` é obrigatório;
 - o nome deve ser curto, claro e legível;
-- a validação de formato deve ser simples no MVP;
+- a validação de formato deve ser simples no fluxo atual;
 - se houver slug técnico depois, ele deve ser derivado no backend e não exigido da pessoa aqui.
 
 ## Etapa 2: Escudo do time
@@ -365,7 +365,7 @@ Cadastrar a quadra principal do time no contexto da criação, sem transformar i
 
 ### Regra de localidade macro e micro
 
-- `teams` usam apenas localidade macro no MVP:
+- `teams` usam apenas localidade macro no estado atual do produto:
   - `region_state`
   - `region_city`
   - `region_zone` opcional;
@@ -376,7 +376,7 @@ Cadastrar a quadra principal do time no contexto da criação, sem transformar i
 
 ### Decisão de UX
 
-- Para o MVP, `primary_venue` deve usar mini-fluxo interno, e não tela separada.
+- No estado atual do produto, `primary_venue` deve usar mini-fluxo interno, e não tela separada.
 - A razão principal é preservar continuidade e reduzir atrito em um ponto opcional do wizard.
 - Como a quadra principal ainda é um complemento e não uma entidade que a pessoa precisa administrar profundamente nesse momento, abrir outra tela traria peso desnecessário.
 - Se no futuro o cadastro de quadra ganhar mais campos obrigatórios, mídia própria, agenda, preço, disponibilidade ou múltiplas quadras, essa decisão pode evoluir para fluxo dedicado.
@@ -413,6 +413,7 @@ Cadastrar a quadra principal do time no contexto da criação, sem transformar i
 Ao concluir:
 
 - cria `team`;
+- cria `team_member` ativo da pessoa fundadora;
 - cria vínculo de gestão em `user_team_roles` com `DIRECTOR`;
 - persiste escudo, se existir;
 - persiste modalidade, localidade, cores e demais dados preenchidos;

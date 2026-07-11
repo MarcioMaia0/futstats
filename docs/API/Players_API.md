@@ -1,9 +1,17 @@
 ---
 title: Players API
 status: Draft
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
+related_documents:
+  - ./Statistics_API.md
+  - ../Domain/Players.md
+  - ../Frontend/Screens/Player_Profile.md
+  - ../Implementation/Database/Table_Spec_players.md
+  - ../Implementation/Database/Table_Spec_person_social_connections.md
+  - ../Implementation/Database/Table_Spec_player_match_statistics.md
+  - ../Implementation/Database/Table_Spec_player_gallery_items.md
 ---
 
 # Players API
@@ -18,6 +26,7 @@ POST /api/v1/players/:playerId/claim
 GET /api/v1/players/:playerId/statistics
 GET /api/v1/players/:playerId/timeline
 GET /api/v1/players/:playerId/gallery
+PATCH /api/v1/players/:playerId/social-connections
 ```
 
 ## Objetivo
@@ -48,7 +57,15 @@ Retorna o perfil de leitura do atleta.
     "id": "uuid",
     "nickname": "Marcio",
     "full_name": "Marcio Silva",
-    "avatar_url": "https://..."
+    "avatar_url": "https://...",
+    "social_connections": [
+      {
+        "platform": "INSTAGRAM",
+        "handle": "@marcio",
+        "channel_url": "https://instagram.com/marcio",
+        "display_order": 0
+      }
+    ]
   },
   "declared_profile": {
     "modalities": [
@@ -102,8 +119,18 @@ Retorna o perfil de leitura do atleta.
 ### Regras
 
 - `person.nickname` é o principal texto visual do cabeçalho.
+- `person.avatar_url` é leitura derivada para consumo da UI; a origem canônica da mídia da pessoa continua sendo `persons.avatar_media_id`.
 - `declared_profile` é derivado de `player_modalities` + `player_positions` + `modality_positions`.
 - `historical_positions_by_modality` vem de histórico factual do app e não deve sobrescrever o declarado.
+- `person.social_connections` vem de `person_social_connections` e pertence à pessoa, não ao `player`.
+- na leitura pública do perfil, esse bloco já deve vir filtrado para conexões com `is_visible = true`.
+- na leitura pública, `person.social_connections` deve expor apenas o necessário para renderização:
+  - `platform`
+  - `handle`
+  - `channel_url`
+  - `display_order`
+- a resposta deve vir ordenada por `display_order asc`, com fallback estável por plataforma quando necessário.
+- `is_visible` e `connection_status` não precisam ser expostos no `GET /api/v1/players/:playerId` público quando a lista já vier filtrada.
 - `active_teams` deve considerar apenas vínculos ativos em `team_players`.
 - `permissions` depende de dono do perfil, claim e visibilidade.
 - `inferred_play_style` é leitura derivada e contextual, nunca classificação fixa do atleta.
@@ -157,6 +184,7 @@ Atualiza dados do perfil esportivo declarado do atleta.
 - posições jogadas em partida;
 - estatísticas calculadas;
 - vínculo oficial com time.
+- links sociais da pessoa em patch dedicado.
 
 ### Regras
 
@@ -165,6 +193,48 @@ Atualiza dados do perfil esportivo declarado do atleta.
 - `person.avatar_upload_token`, quando enviado, deve promover mídia temporária compatível com avatar.
 - o backend deve sincronizar `player_modalities` e `player_positions` com base em `declared_profile`.
 - o backend deve recalcular `player.profile_completeness_status` ao fim do patch.
+
+## PATCH /api/v1/players/:playerId/social-connections
+
+Atualiza as redes sociais públicas da pessoa vinculada ao atleta.
+
+### Regra de fronteira
+
+- a borda continua sendo o perfil do atleta, porque este é o fluxo de edição atual da UI;
+- a persistência real acontece em `person_social_connections`;
+- o dono conceitual dessas redes é `person`, não `player`.
+
+### Payload conceitual
+
+```json
+{
+  "social_connections": [
+    {
+      "platform": "INSTAGRAM",
+      "handle": "@marcio",
+      "channel_url": "https://instagram.com/marcio",
+      "is_visible": true,
+      "display_order": 0
+    },
+    {
+      "platform": "YOUTUBE",
+      "handle": "@marciotv",
+      "channel_url": "https://youtube.com/@marciotv",
+      "is_visible": true,
+      "display_order": 1
+    }
+  ]
+}
+```
+
+### Regras
+
+- deve aceitar substituição do conjunto final suportado pela pessoa no estado atual;
+- cada `platform` pode aparecer no máximo uma vez;
+- cada item deve conter ao menos `handle` ou `channel_url`;
+- o backend deve validar formato e domínio compatível com a plataforma;
+- o backend pode manter `connection_status` em `PENDING` quando existir apenas identidade pública sem conexão real;
+- o backend não deve misturar este patch com galerias ou mídia publicada pelo time.
 
 ## POST /api/v1/players/:playerId/claim
 
@@ -175,6 +245,7 @@ Regra:
 - o claim nunca pode apagar ou reiniciar histórico esportivo existente.
 - o `player` canônico do usuário deve ser preservado como destino final do histórico consolidado.
 - quando existir um `player` operacional criado por time para a mesma pessoa, o claim pode disparar merge para o `player` canônico.
+- quando o merge vier de um contexto de time, ele também pode exigir consolidação do vínculo contextual daquele time.
 
 ### Payload conceitual
 
@@ -194,6 +265,9 @@ Regra:
 
 - `MERGE_OPERATIONAL_PLAYER` exige usuário autenticado e `player` canônico de destino identificado.
 - `source_player_id` representa o `player` operacional que será consolidado no destino.
+- quando a origem vier de um atleta operacional criado por time, o merge deve considerar duas camadas:
+  - camada esportiva global (`player`);
+  - camada contextual do time (`team_member` e `team_player`).
 - O sistema deve reatribuir fatos operacionais da origem para o destino, em vez de somar manualmente projeções.
 - O sistema deve preservar o histórico anterior já existente no destino.
 - O sistema deve tratar conflitos de unicidade e duplicidade antes de concluir a operação.
@@ -201,15 +275,30 @@ Regra:
 
 ### Tabelas operacionais mínimas afetadas
 
+- `team_members`, quando houver contexto de time na origem
 - `team_players`
 - `match_players`
 - `match_goals.player_id`
 - `match_goals.assist_player_id`
-- `match_attendance_responses`
-- `match_ratings.target_player_id`
+- `match_attendance_responses`, quando a origem contextual ainda apontar para `team_member` operacional
+- `match_ratings.target_match_player_id`, quando a nota estiver amarrada à atuação específica da partida
+- `match_ratings.target_player_id`, para agregações e leituras derivadas por atleta
 - `player_modalities`
 - `player_positions`
-- `teams.default_coach_player_id`, quando aplicável
+
+### Regra de consolidação contextual no time
+
+- se o merge vier de um atleta operacional já vinculado a um time:
+  - o backend deve identificar o `source_team_member_id` ligado à origem operacional;
+  - o backend deve identificar ou criar o `target_team_member_id` da pessoa real naquele mesmo time;
+  - o backend deve consolidar o vínculo esportivo do time em favor do `target_team_member_id`;
+  - depois da consolidação e do reapontamento do histórico útil, o `integrante de origem do time (source_team_member)` não precisa ser preservado como registro operacional separado;
+  - o backend pode remover ou inutilizar definitivamente o `source_team_member_id`, desde que a trilha auditável da operação permaneça preservada fora dele.
+- quando existir histórico contextual do time ligado ao `source_team_member_id`, como presença em compromissos:
+  - esse histórico deve ser reapontado para o `target_team_member_id`, quando a semântica indicar que se trata da mesma pessoa.
+- quando existir histórico de notas ligado ao atleta operacional:
+  - o backend deve preservar a coerência entre a atuação contextual da partida (`target_match_player_id`) e a agregação por atleta (`target_player_id`);
+  - se houver consolidação de linhas em `match_players`, as dependências de `match_ratings` também devem ser reapontadas antes da inutilização da origem.
 
 ### Regras de segurança
 
@@ -315,14 +404,14 @@ Ela deve responder coisas como:
 }
 ```
 
-## Tipos iniciais do MVP
+## Tipos iniciais
 
 - `TEAM_JOINED`
 - `PLAYER_WELCOME_POST`
 - `MATCH_APPEARANCE`
 - `PROFILE_CLAIMED`
 
-## Fontes iniciais do MVP
+## Fontes iniciais
 
 - aprovação efetiva com vínculo em `team_players`;
 - posts `TEAM_EVENT` com `metadata.event_type = PLAYER_WELCOME`;

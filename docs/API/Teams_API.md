@@ -1,11 +1,12 @@
 ---
 title: Teams API
 status: Draft
-version: 1.2.0
+version: 1.3.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
 related_documents:
   - ../Architecture/Media_Storage_Strategy.md
+  - ./Scheduled_Matches_API.md
   - ../Frontend/Screens/Create_Team_Wizard.md
   - ../Frontend/Screens/Team_Settings.md
   - ../Implementation/Database/Table_Spec_media_assets.md
@@ -21,7 +22,11 @@ related_documents:
 
 ## Objetivo
 
-Definir os contratos principais do domínio `Teams`, com foco inicial no fluxo de criação progressiva de time, aprovação de entrada em time e conexões sociais do time.
+Definir os contratos principais do domínio `Teams`, com foco no fluxo de criação progressiva de time, aprovação de entrada em time e conexões sociais do time.
+
+Este documento não cobre agenda de jogos, liberação para o time ou presença em compromissos.
+
+Esses comportamentos pertencem a `Scheduled_Matches_API.md`.
 
 ## Rotas
 
@@ -136,8 +141,10 @@ Cria um time e concede papel inicial de gestão para a pessoa autenticada.
 - O mapeamento visual para a interface pertence a `team_settings`, e não ao contrato de criação do time.
 - O endpoint cria:
   - `team`
+  - `team_member` ativo da pessoa fundadora
   - vínculo em `user_team_roles` com `role = DIRECTOR`
 - A criação do time deve ser atômica: se falhar a vinculação de gestão, o time não deve ficar órfão.
+- A criação do time também não deve deixar a pessoa fundadora sem pertencimento canônico ao próprio time.
 - Se houver promoção de escudo, o fluxo deve se comportar como uma operação logicamente atômica: o time não deve nascer apontando para uma mídia inválida ou não confirmada.
 
 #### Response 201
@@ -157,6 +164,7 @@ Cria um time e concede papel inicial de gestão para a pessoa autenticada.
     "primary_venue_id": "uuid-venue"
   },
   "membership": {
+    "team_member_id": "uuid-team-member",
     "role": "DIRECTOR"
   }
 }
@@ -194,11 +202,11 @@ GET /api/v1/teams/search?q=ajax&limit=10
 
 - Endpoint exige sessão autenticada.
 - O objetivo desta rota é busca operacional de times, não listagem completa.
-- `q` deve exigir quantidade mínima de caracteres para evitar busca vazia ou ampla demais no MVP.
-- Recomendação inicial para o MVP:
+- `q` deve exigir quantidade mínima de caracteres para evitar busca vazia ou ampla demais no fluxo atual.
+- Recomendação operacional atual:
   - mínimo de `2` caracteres.
 - `limit` deve respeitar teto seguro.
-- Recomendação inicial para o MVP:
+- Recomendação operacional atual:
   - padrão `10`
   - máximo `20`
 - A ordenação deve priorizar relevância de nome.
@@ -345,7 +353,7 @@ Atualiza os dados públicos e preferências da conexão do time para uma platafo
 - O patch é parcial.
 - `handle` e `channel_url` podem ser preenchidos mesmo sem OAuth completo.
 - `publish_events_enabled = true` só deve ser aceito quando a conexão estiver `CONNECTED`.
-- No MVP, prefira rejeitar com erro explícito quando a conexão ainda não estiver válida.
+- No estado atual do produto, prefira rejeitar com erro explícito quando a conexão ainda não estiver válida.
 
 ### `POST /api/v1/teams/:team_id/social-connections/:platform/connect/start`
 
@@ -536,7 +544,7 @@ Cria uma solicitação de entrada para a própria pessoa autenticada no time inf
   - grava `source_context`, quando informado.
 - Após a criação bem-sucedida, o backend deve disparar o evento de domínio `TeamJoinRequestCreated`.
 - A partir desse evento, o sistema deve gerar notificação in-app para a gestão do time.
-- No MVP, a notificação deve ser direcionada a integrantes com `DIRECTOR` ou `PRESIDENT`.
+- No estado atual do produto, a notificação deve ser direcionada a integrantes com `DIRECTOR` ou `PRESIDENT`.
 - Falha de notificação não deve desfazer a criação da solicitação.
 - Esta rota não cria:
   - `user_team_roles`;
@@ -717,28 +725,40 @@ Aprova a solicitação e resolve, na mesma transação, a função inicial da pe
     - `source_team_player_id` deve pertencer ao mesmo `team_id` da rota;
     - a linha apontada deve representar um atleta operacional pré-existente do time;
     - o sistema deve garantir ou criar o `player` canônico da `person` do usuário solicitante;
+    - o sistema deve garantir ou criar o `team_member` canônico da pessoa solicitante naquele time;
     - o sistema deve executar merge operacional da origem para o destino canônico.
 - O merge operacional deve:
+  - localizar o `source_team_member_id` vinculado ao `source_team_player_id`;
+  - localizar ou criar o `target_team_member_id` da pessoa solicitante no mesmo time;
+  - consolidar o vínculo esportivo oficial do time em favor do `target_team_member_id`;
   - reatribuir fatos históricos baseados em `player_id` para o `player` canônico;
+  - reapontar histórico contextual do time quando ele depender do integrante operacional de origem;
   - preservar histórico prévio do `player` canônico;
   - resolver conflitos de unicidade antes do commit;
   - reconstruir leituras derivadas do atleta ao final.
-- Tabelas operacionais que devem ser consideradas no merge de `player_id`:
+- Tabelas operacionais que devem ser consideradas no merge esportivo e na consolidação contextual:
+  - `team_members`, quando houver contexto operacional de origem no time
   - `team_players`
   - `match_players`
   - `match_goals.player_id`
   - `match_goals.assist_player_id`
-  - `match_attendance_responses`
-  - `match_ratings.target_player_id`
+  - `match_ratings.target_match_player_id`, quando a nota estiver amarrada à atuação específica da partida
+  - `match_ratings.target_player_id`, para agregações e leituras derivadas por atleta
   - `player_modalities`
   - `player_positions`
-  - `teams.default_coach_player_id`, quando existir uso esportivo do próprio atleta
 - Tabelas de projeção do perfil do atleta não devem ser atualizadas manualmente linha a linha nesse fluxo:
   - elas devem ser reconstruídas a partir dos fatos operacionais após o merge.
 - Se houver conflito em `match_players` por já existir, na mesma partida e no mesmo time, uma linha para o `player` de destino:
   - a API deve consolidar o contexto no nível de `match_players`;
   - reapontar dependências por `match_player_id`;
   - e só então remover ou inutilizar a origem redundante.
+- Se houver notas da partida ligadas ao atleta operacional:
+  - a API deve manter a coerência entre `match_ratings.target_match_player_id` e `match_ratings.target_player_id`;
+  - se a consolidação alterar a linha contextual de `match_players`, as notas dependentes também devem ser reapontadas antes da remoção da origem.
+- Se houver conflito em `team_members` por a pessoa solicitante já possuir integrante ativo no mesmo time:
+  - o sistema deve consolidar o contexto no nível de `team_member`;
+  - reapontar vínculos esportivos e históricos contextuais para o integrante canônico;
+  - e só então remover ou inutilizar a origem contextual redundante.
 - A solicitação só pode ser resolvida uma única vez.
 - A primeira ação válida de gestão consome a pendência.
 - Se outra pessoa gestora tentar agir depois da resolução:

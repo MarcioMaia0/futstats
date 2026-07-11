@@ -1,9 +1,9 @@
 ---
 title: Table Spec player_match_statistics
 status: Draft
-version: 1.0.0
+version: 1.2.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
 related_documents:
   - Table_Spec_match_players.md
   - Table_Spec_match_goals.md
@@ -80,6 +80,8 @@ A modalidade vem de `matches.modality`.
 - deve existir no máximo uma linha por `player_id + match_id + team_id`;
 - esta tabela não substitui `match_players`, `match_goals` ou `match_events`;
 - ela é projeção reconstruível;
+- métricas do atleta devem ser separadas por quadro;
+- se o atleta atuar em mais de um quadro do mesmo compromisso esportivo, devem existir múltiplas linhas nesta tabela porque cada quadro nasce como uma `match` diferente;
 - `recorded_assists` deve refletir apenas assistências explicitamente registradas;
 - `minutes_played` só deve ser preenchido quando houver base factual suficiente;
 - `positions_json` pode guardar múltiplas posições exercidas no jogo quando a camada operacional suportar isso com segurança;

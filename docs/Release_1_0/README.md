@@ -1,11 +1,10 @@
 ---
 title: Release 1.0 Readiness
 status: Review
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
-related_documents:
-  []
+last_update: 2026-07-09
+related_documents: []
 ---
 
 # Release 1.0 Readiness
@@ -21,7 +20,7 @@ Consolidar os critérios necessários para considerar a documentação do FUTSTA
 - Domínios principais descritos.
 - Banco, backend, API, frontend, UX, IA, segurança e operações documentados.
 - Decisões arquiteturais registradas.
-- MVP definido.
+- Recorte inicial de lançamento definido.
 - Critérios de aceite documentados.
 - Próximos passos claros.
 
@@ -31,4 +30,4 @@ A documentação está próxima de uma versão inicial consolidada, mas ainda de
 
 ## Próxima etapa recomendada
 
-Criar backlog técnico real a partir dos documentos de Implementation e iniciar prototipação UX do fluxo de partida rápida.
+Criar backlog técnico real a partir dos documentos de `Implementation` e iniciar prototipação UX do fluxo de partida rápida.

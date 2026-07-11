@@ -1,0 +1,63 @@
+A combinação de React Native no frontend e Supabase no backend possui uma sinergia fantástica com os requisitos arquiteturais e de produto documentados para o FUTSTATS.
+
+Abaixo, detalho como essas duas tecnologias se encaixam perfeitamente para resolver os principais desafios do projeto:
+
+1. Desafio Offline-First vs. Supabase + React Native
+O Requisito: Jogos de várzea ocorrem em campos/ginásios com conexões instáveis. O app precisa registrar placares, gols e atletas localmente e sincronizar em segundo plano quando a internet voltar (
+Offline First Strategy
+).
+
+A Sinergia:
+
+UUIDs Canônicos no Client: A documentação exige "identificadores temporários no cliente". O Supabase utiliza PostgreSQL (que trabalha nativamente com UUIDs). Ao criar partidas, gols e jogadores offline no React Native, você pode gerar UUIDs diretamente no dispositivo. Quando a sincronização ocorrer, não haverá conflitos de IDs autoincrementais no banco de dados.
+Persistência Local e React Query: No React Native, você pode usar um banco local leve (como SQLite, WatermelonDB ou Realm) para a fila de ações offline. Ao integrar com o @tanstack/react-query (React Query) consumindo o SDK do Supabase, você ganha gerenciamento de cache de servidor, retentativas automáticas quando a conexão volta (retry loops) e invalidação de cache nativa de forma simples.
+2. Modos de Linguagem da UI vs. React Native i18n
+O Requisito: A interface do app deve mudar o tom conforme a escolha do usuário (Technical, Varzea, Resenha), mas os dados persistidos no banco devem ser sempre em inglês técnico canônico (
+Language Modes
+).
+
+A Sinergia:
+
+i18n por Tom de Voz: No React Native, em vez de usar bibliotecas de tradução apenas para idiomas (PT-BR, EN), você pode usar o i18next para gerenciar os tons de voz como "locales" ou arquivos de tradução diferentes (ex: pt-BR-technical.json, pt-BR-varzea.json, pt-BR-resenha.json).
+Desacoplamento Completo: O banco do Supabase armazena enums de eventos como goalkeeper_mistake ou line_break_pass. O React Native simplesmente lê essa string do Supabase e a passa pela chave de tradução do i18next. O banco permanece leve e rápido, e a lógica de experiência do usuário fica 100% no cliente.
+3. Registro Rápido vs. Supabase Row Level Security (RLS)
+O Requisito: Controlar quem pode editar placares de partidas (ex: apenas diretores daquele time específico) mantendo a segurança dos dados (
+Permissions Model
+).
+
+A Sinergia:
+
+Segurança no Banco (RLS): O Supabase brilha ao permitir que regras de segurança complexas sejam escritas diretamente no PostgreSQL usando Row Level Security (RLS).
+Exemplo Prático: Você pode configurar uma política RLS no Supabase onde um UPDATE na tabela matches só é permitido se o auth.uid() do usuário logado estiver associado à tabela team_members do time da partida com a role de director. Isso elimina a necessidade de construir uma camada complexa de autorização no seu código backend.
+4. Experiência Social em Tempo Real vs. Supabase Realtime
+O Requisito: Permitir que torcedores, familiares e jogadores acompanhem os gols e o placar em tempo real no feed do aplicativo (
+Matches Domain
+).
+
+A Sinergia:
+
+Sincronização Websocket Sem Esforço: O Supabase possui uma engine de Realtime nativa. Com pouquíssimas linhas de código no React Native, você pode assinar eventos de insert/update na tabela match_goals ou matches.
+Se o diretor do time atualiza o placar à beira do campo, todos os usuários que estão com o feed do app aberto no React Native verão o placar atualizar e a animação do gol pular na tela instantaneamente, sem precisar recarregar a página.
+5. Geração de Cards e Efeitos Colaterais vs. Edge Functions
+O Requisito: Ao finalizar uma partida ou registrar um gol, o sistema deve disparar efeitos colaterais como recalcular estatísticas de artilharia, atualizar snapshots e gerar a imagem do card de jogo para compartilhar (
+Background Jobs
+).
+
+A Sinergia:
+
+Postgres Triggers + Edge Functions: No Supabase, você pode configurar um Trigger no banco de dados para que, sempre que uma partida for atualizada para finished, uma Edge Function (escrita em TypeScript rodando em Deno) seja chamada.
+Geração dos Cards: Essa Edge Function pode processar o cálculo das estatísticas, salvar o histórico e renderizar dinamicamente a imagem do card do resultado usando uma biblioteca de geração de imagem (como Satori/HTML-to-image). A imagem final é salva diretamente no Supabase Storage (CDN), e o link público é enviado via Push Notification ou disponibilizado no React Native para compartilhamento nativo do sistema (usando a API Share do React Native).
+6. Separação de Identity (Account / User / Player) vs. Supabase Auth
+O Requisito: Separar a credencial de login (Account) dos perfis do aplicativo (User), permitindo que perfis de atletas (Player) existam sem conta criada e sobrevivam à exclusão de usuários (
+Identity Domain
+).
+
+A Sinergia:
+
+Supabase Auth (auth.users): O Supabase gerencia nativamente a tabela de login e autenticação na tabela protegida auth.users.
+Você pode configurar um Trigger no banco do Supabase que, no momento do cadastro (cadastro na tabela auth.users), cria de forma síncrona uma linha na sua tabela pública users.
+A tabela players fica totalmente exposta na sua camada pública de dados. O processo de "reivindicação de perfil" (onde um user_id é anexado de forma nullable a um player_id) é resolvido com uma transação simples no banco de dados, mantendo a integridade histórica dos gols marcados, mesmo que o usuário exclua sua conta.
+Resumo da Análise
+A escolha de React Native + Supabase é extremamente sinérgica para o FUTSTATS. Ela permite que você desenvolva o frontend e o backend de maneira unificada (usando TypeScript), reduza o custo inicial de servidores com a infraestrutura serveless do Supabase (Edge Functions, Realtime, RLS e Auth), e mantenha uma excelente performance mobile mesmo em ambientes de conectividade instável.
+
+Deseja aprofundar o planejamento em alguma dessas integrações específicas (como o modelo de dados no Supabase ou o fluxo offline do React Native)?

@@ -87,7 +87,7 @@ Especificar autenticação, bootstrap de sessão e onboarding mínimo do domíni
 Ao usar este documento como contexto para implementação, a IA deve:
 
 1. preservar o princípio de uso casual simples;
-2. não criar campos obrigatórios que bloqueiem o MVP;
+2. não criar campos obrigatórios que bloqueiem o primeiro valor operacional;
 3. respeitar separação entre dado canônico e texto de interface;
 4. manter compatibilidade com evolução futura;
 5. sugerir migrations, testes e endpoints quando alterar domínio;

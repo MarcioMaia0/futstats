@@ -1,11 +1,10 @@
 ---
 title: Outstanding Decisions
 status: Review
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
-related_documents:
-  []
+last_update: 2026-07-09
+related_documents: []
 ---
 
 # Outstanding Decisions
@@ -16,9 +15,9 @@ Listar decisões que ainda devem ser validadas pelo fundador ou pela equipe ante
 
 ## Decisões pendentes
 
-### OD-001: Profundidade do MVP
+### OD-001: Profundidade do recorte inicial
 
-Definir se o MVP terá apenas placar/gols/compartilhamento ou se também incluirá agenda e elenco básico.
+Definir se o recorte inicial terá apenas placar, gols e compartilhamento ou se também incluirá agenda e elenco básico.
 
 ### OD-002: Login obrigatório
 
@@ -40,10 +39,10 @@ Definir se haverá plano pago no lançamento ou apenas validação gratuita.
 
 Definir se vídeos serão hospedados no FUTSTATS ou apenas vinculados por URL externa no início.
 
-### OD-007: IA no MVP
+### OD-007: IA no recorte inicial
 
-Definir se IA entra no MVP apenas como arquitetura preparada ou como funcionalidade real.
+Definir se IA entra no recorte inicial apenas como arquitetura preparada ou como funcionalidade real.
 
 ## Recomendação
 
-Para acelerar o lançamento, o MVP deve priorizar uso social e partida rápida. Mídia pesada, IA e scout avançado podem ser ativados depois.
+Para acelerar o lançamento, o recorte inicial deve priorizar uso social e partida rápida. Mídia pesada, IA e scout avançado podem ser ativados depois.

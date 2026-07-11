@@ -39,4 +39,4 @@ Funcionalidades analíticas profundas que dependem de muita base de dados.
 
 ## Regra
 
-Nenhum recurso avançado deve atrasar a entrega do fluxo casual do MVP.
+Nenhum recurso avançado deve atrasar a entrega do fluxo casual do primeiro valor operacional.

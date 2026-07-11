@@ -1,13 +1,14 @@
 ---
 title: Screen: Player Profile
 status: Draft
-version: 1.0.0
+version: 1.2.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
 related_documents:
   - ../../Implementation/Core_Flows/Player_Profile_Implementation.md
   - ../../API/Players_API.md
   - ../../Domain/Players.md
+  - ../../Implementation/Database/Table_Spec_person_social_connections.md
 ---
 
 # Screen: Player Profile
@@ -28,6 +29,7 @@ Elementos obrigatórios:
 - avatar;
 - apelido em destaque visual principal;
 - nome completo em linha secundária, quando existir e quando a regra de exibição permitir;
+- ícones das redes sociais públicas da pessoa, quando existirem e estiverem visíveis;
 - selo simples de perfil do atleta;
 - CTA de edição apenas para o próprio dono do perfil;
 - CTA de completar perfil apenas para o próprio dono do perfil quando `profile_completeness_status = INCOMPLETE`.
@@ -40,7 +42,7 @@ Elementos do resumo:
 - posições declaradas por modalidade;
 - perna dominante, quando existir;
 - quantidade de times atuais;
-- métricas-resumo disponíveis no MVP, como jogos e gols, quando já houver leitura consolidada.
+- métricas-resumo disponíveis no estado atual do produto, como jogos e gols, quando já houver leitura consolidada.
 - leitura interpretativa do perfil esportivo quando houver base suficiente.
 
 ## Bloco 3: times atuais
@@ -60,6 +62,8 @@ Elementos:
 - posições em que efetivamente atuou no histórico;
 - estatísticas esportivas consolidadas disponíveis;
 - gráfico temporal de desempenho;
+- prévia da galeria social do atleta no escopo geral;
+- CTA para abrir galeria completa;
 - cards/posts/eventos futuros quando o produto evoluir.
 
 Regra central:
@@ -75,18 +79,38 @@ Elementos opcionais:
 - altura;
 - peso.
 
-Regra de MVP:
+Regra do estado atual:
 
-- estes dados podem existir na edição do atleta, mas não precisam compor o card público principal do MVP;
+- estes dados podem existir na edição do atleta, mas não precisam compor o card público principal do estado atual do produto;
 - quando exibidos, devem ficar em bloco secundário e nunca competir com apelido, modalidades e histórico.
+
+## Bloco 6: galeria e navegação por contexto
+
+Elementos opcionais no estado evoluído do perfil:
+
+- aba geral com dados de todas as modalidades;
+- filtro rápido por time dentro da aba geral;
+- navegação lateral por modalidade;
+- dentro de cada modalidade, filtro por time daquela modalidade;
+- prévia com até quatro itens recentes por contexto;
+- CTA `Galeria` levando para o escopo correto:
+  - geral;
+  - modalidade;
+  - modalidade + time, quando aplicável.
+
+Regra:
+
+- a estrutura visual do perfil pode ser a mesma entre visão geral e visão por modalidade;
+- o que muda é a hidratação dos dados e filtros ativos.
 
 ## Campos
 
 ### Leitura principal
 
-- `person.avatar_media_id`
+- `person.avatar_url` ou leitura resolvida equivalente a partir de `persons.avatar_media_id`
 - `person.nickname`
 - `person.full_name`
+- `person.social_connections[]`
 - `player.dominant_foot`
 - `player.birth_date`
 - `player.height_cm`
@@ -100,6 +124,8 @@ Regra de MVP:
 - `inferred_play_style`
 - `recent_matches[]`
 - `historical_positions_by_modality[]`
+- `gallery_preview_general[]`, quando a tela optar por hidratação agregada
+- `gallery_preview_by_modality[]`, quando a tela optar por hidratação agregada
 
 ### Edição
 
@@ -115,12 +141,19 @@ Os dados editáveis ficam em fluxo próprio de edição/complementação do perf
   - quem é o atleta;
   - em quais modalidades atua;
   - do que joga.
+- As redes sociais mostradas no topo pertencem à `person`, não ao `player`.
+- O topo do perfil deve consumir apenas redes já filtradas por `is_visible = true`.
+- O topo deve receber as redes já ordenadas pela API para não duplicar regra de ordenação na UI.
 - O perfil deve funcionar para `player` com ou sem `user` vinculado.
 - O histórico não pode ser perdido na reivindicação do perfil.
 - Estatística avançada deve ficar em aba separada ou bloco progressivo.
 - O perfil do atleta deve diferenciar explicitamente:
   - `declarado pelo atleta`;
   - `registrado pelo app`.
+- A galeria deve respeitar separação entre:
+  - visão geral;
+  - visão por modalidade;
+  - visão por time.
 - Quando houver inferência de perfil esportivo:
   - ela deve ser mostrada como tendência contextual;
   - nunca como rótulo fixo e imutável.
@@ -135,14 +168,14 @@ Os dados editáveis ficam em fluxo próprio de edição/complementação do perf
 
 - O perfil pode existir e ser visualizado mesmo sem conta vinculada.
 - Quando houver `user` vinculado, regras de privacidade da conta podem limitar acesso ao perfil conforme `user_preferences.profile_visibility`.
-- No MVP, o núcleo público do perfil é:
+- No estado atual do produto, o núcleo público do perfil é:
   - avatar;
   - apelido;
   - modalidades declaradas;
   - posições declaradas;
   - times atuais;
   - histórico factual e estatísticas permitidas.
-- Dados físicos e de nascimento não precisam aparecer por padrão no perfil público do MVP.
+- Dados físicos e de nascimento não precisam aparecer por padrão no perfil público do estado atual do produto.
 
 ## Variações de contexto
 
@@ -186,6 +219,8 @@ Quando o atleta ainda tiver pouquíssimos dados, a tela deve continuar útil com
 - abrir histórico do atleta;
 - abrir estatísticas detalhadas;
 - abrir time atual;
+- abrir galeria geral do atleta;
+- abrir galeria filtrada por modalidade;
 - iniciar reivindicação do player quando aplicável;
 - iniciar complementação do perfil quando aplicável.
 

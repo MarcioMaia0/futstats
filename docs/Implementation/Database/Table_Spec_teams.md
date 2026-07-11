@@ -1,9 +1,9 @@
 ---
 title: Table Spec teams
 status: Draft
-version: 1.2.0
+version: 1.3.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
 related_documents:
   - ../../API/Teams_API.md
   - Table_Spec_user_team_roles.md
@@ -34,7 +34,6 @@ Representar times e sua identidade básica.
 - `region_city` (text, nullable)
 - `region_zone` (text, nullable)
 - `primary_venue_id` (uuid, FK -> `venues.id`, nullable)
-- `default_coach_player_id` (uuid, FK -> `players.id`, nullable)
 - `created_by_user_id` (uuid, FK -> `users.id`)
 - `created_at`
 - `updated_at`
@@ -61,6 +60,7 @@ Representar times e sua identidade básica.
 - as modalidades preferenciais do time devem ser persistidas em estrutura própria de associação, e não em uma única coluna singular em `teams`.
 - `home_match_capability` representa a capacidade estrutural do time de mandar jogos, e não o papel do time em uma partida específica.
 - `primary_venue_id` é opcional.
+- técnico padrão do time não deve ser persistido em `teams`; esse contrato pertence a `team_staff_defaults`, apontando para `person_id`.
 - `created_by_user_id` registra quem concluiu a criação.
 - histórico pertence ao time.
 - o time só deve ser persistido ao final do wizard, nunca em etapas intermediárias.

@@ -1,15 +1,19 @@
 ---
 title: Backend Architecture
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-10
 related_documents:
-  - Architecture/Architecture_Principles.md
-  - Architecture/Recommended_Project_Structure.md
-  - Architecture/Event_Driven_Strategy.md
-  - Backend/Jobs_and_Queues.md
-  - Database/Database_Architecture.md
+  - ../Architecture/Architecture_Principles.md
+  - ../Architecture/Recommended_Project_Structure.md
+  - ../Architecture/Event_Driven_Strategy.md
+  - ./Jobs_and_Queues.md
+  - ../Documentation_Index.md
+  - ../Release_1_0/Source_of_Truth_Map.md
+  - ../Database/Tables.md
+  - ../Database/Relationships.md
+  - ../Database/Entity_Relationships.md
 ---
 
 # Backend Architecture
@@ -18,7 +22,7 @@ related_documents:
 
 Definir a estrutura backend recomendada para o FUTSTATS.
 
-O backend deve proteger regras de negócio, organizar os domínios do produto e manter infraestrutura desacoplada do núcleo da aplicação.
+O backend deve proteger regras de negocio, organizar os dominios do produto e manter infraestrutura desacoplada do nucleo da aplicacao.
 
 ## Arquitetura oficial
 
@@ -26,12 +30,18 @@ O backend deve seguir:
 
 - Modular Monolith;
 - Clean Architecture;
-- Domain-Driven Design tático;
+- Domain-Driven Design tatico;
 - Domain Events;
 - Repository Pattern;
 - CQRS leve quando fizer sentido.
 
-## Organização base
+## Regra complementar para persistencia
+
+- O backend deve consultar os mapas de banco em `Database/` para entender o recorte estrutural.
+- O backend deve consultar a `Implementation/Database/Table_Spec_*.md` correspondente para contrato real de persistencia antes de propor tabela, coluna, enum, constraint, indice ou relacao.
+- Material legado que cite `Database/Database_Architecture.md` nao substitui as `Table_Spec_*`.
+
+## Organizacao base
 
 ```text
 src/
@@ -50,7 +60,7 @@ src/
   config/
 ```
 
-## Estrutura de cada módulo
+## Estrutura de cada modulo
 
 ```text
 modules/{module}/
@@ -63,7 +73,7 @@ modules/{module}/
 
 ## Domain
 
-Responsável pelas regras essenciais do negócio.
+Responsavel pelas regras essenciais do negocio.
 
 Pode conter:
 
@@ -75,7 +85,7 @@ Pode conter:
 - business errors;
 - invariants.
 
-Não pode conter:
+Nao pode conter:
 
 - Supabase SDK;
 - SQL direto;
@@ -83,12 +93,12 @@ Não pode conter:
 - rotas;
 - React Native;
 - HTTP;
-- lógica de tela;
-- integrações externas.
+- logica de tela;
+- integracoes externas.
 
 ## Application
 
-Responsável por orquestrar ações do sistema.
+Responsavel por orquestrar acoes do sistema.
 
 Pode conter:
 
@@ -99,7 +109,7 @@ Pode conter:
 - DTOs;
 - ports;
 - handlers de eventos;
-- regras de autorização de negócio.
+- regras de autorizacao de negocio.
 
 Exemplos:
 
@@ -110,11 +120,11 @@ Exemplos:
 - RecalculateStatisticsUseCase
 - GenerateMatchCardUseCase
 
-Application não deve depender diretamente de Supabase ou outro SDK externo.
+Application nao deve depender diretamente de Supabase ou outro SDK externo.
 
 ## Infrastructure
 
-Responsável por detalhes técnicos.
+Responsavel por detalhes tecnicos.
 
 Pode conter:
 
@@ -131,7 +141,7 @@ Infrastructure implementa contratos definidos em Domain ou Application.
 
 ## Presentation
 
-Responsável por adaptar entrada e saída.
+Responsavel por adaptar entrada e saida.
 
 Pode conter:
 
@@ -141,7 +151,7 @@ Pode conter:
 - response presenters;
 - HTTP-specific mappers.
 
-Presentation não deve conter regra de negócio.
+Presentation nao deve conter regra de negocio.
 
 ## Fluxo recomendado
 
@@ -167,7 +177,7 @@ MatchController.registerGoal
   -> emit GoalRegistered
   -> Statistics handler recalcula ranking
   -> Social handler prepara card/feed
-  -> Experience handler atualiza experiência
+  -> Experience handler atualiza experiencia
 ```
 
 ## Repositories
@@ -182,7 +192,7 @@ StatisticsRepository
 PostRepository
 ```
 
-Implementações técnicas ficam em infra.
+Implementacoes tecnicas ficam em infra.
 
 ```text
 SupabaseMatchRepository
@@ -192,7 +202,7 @@ SupabaseTeamRepository
 
 ## Eventos
 
-Casos de uso podem emitir eventos quando uma ação relevante ocorrer.
+Casos de uso podem emitir eventos quando uma acao relevante ocorrer.
 
 Eventos representam fatos passados.
 
@@ -205,21 +215,21 @@ Exemplos:
 - RefereeReviewed
 - PostPublished
 
-Eventos não devem carregar regra de UI.
+Eventos nao devem carregar regra de UI.
 
 ## Jobs e workers
 
-Processos pesados ou assíncronos devem ser executados por jobs/workers.
+Processos pesados ou assincronos devem ser executados por jobs/workers.
 
 Exemplos:
 
 - gerar card de partida;
-- recalcular estatísticas;
-- enviar notificações;
+- recalcular estatisticas;
+- enviar notificacoes;
 - atualizar rankings;
-- processar denúncias.
+- processar denuncias.
 
-Jobs devem ser idempotentes e rastreáveis.
+Jobs devem ser idempotentes e rastreaveis.
 
 ## Supabase
 
@@ -239,25 +249,25 @@ Permitido:
 
 Evitar:
 
-- colocar regra de negócio complexa em triggers;
+- colocar regra de negocio complexa em triggers;
 - acessar Supabase diretamente em use cases;
 - deixar o banco orquestrar o fluxo principal do sistema.
 
-## Autorização
+## Autorizacao
 
-A autorização deve ter duas camadas:
+A autorizacao deve ter duas camadas:
 
 1. RLS no banco para proteger acesso aos dados.
-2. Regras de negócio na aplicação para decisões contextuais.
+2. Regras de negocio na aplicacao para decisoes contextuais.
 
 Exemplo:
 
-- RLS impede alteração por usuário sem vínculo com o time.
-- Application decide se uma partida finalizada pode ou não ser alterada.
+- RLS impede alteracao por usuario sem vinculo com o time.
+- Application decide se uma partida finalizada pode ou nao ser alterada.
 
 ## Shared
 
-Shared deve conter apenas elementos genéricos.
+Shared deve conter apenas elementos genericos.
 
 Permitido:
 
@@ -270,13 +280,13 @@ Permitido:
 - UUID helpers;
 - date helpers.
 
-Não permitido:
+Nao permitido:
 
 - CreateMatch;
 - RegisterGoal;
 - CalculateStatistics;
 - GenerateMatchCard;
-- regras específicas de domínio.
+- regras especificas de dominio.
 
 ## Testes
 
@@ -288,10 +298,10 @@ Prioridade de testes:
 4. Repository integration tests.
 5. API/controller tests.
 
-Domain e Application devem ser testáveis sem banco real.
+Domain e Application devem ser testaveis sem banco real.
 
 ## Regra final
 
-Cada módulo deve possuir seus próprios casos de uso, DTOs, entidades, repositórios, eventos e testes.
+Cada modulo deve possuir seus proprios casos de uso, DTOs, entidades, repositorios, eventos e testes.
 
-A arquitetura deve permitir evolução de longo prazo sem bloquear a velocidade de desenvolvimento.
+A arquitetura deve permitir evolucao de longo prazo sem bloquear a velocidade de desenvolvimento.

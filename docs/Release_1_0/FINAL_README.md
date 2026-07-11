@@ -1,9 +1,9 @@
 ---
 title: FUTSTATS Documentation Release 1.0
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 related_documents: []
 ---
 
@@ -40,7 +40,7 @@ O legado histórico é consequência natural do uso contínuo, não o principal 
 
 Esta release é considerada uma base 1.0 de documentação, pronta para:
 
-- guiar o MVP;
+- guiar o recorte inicial de lançamento;
 - orientar desenvolvimento;
 - alimentar ferramentas de IA;
 - apoiar conversas com parceiros;

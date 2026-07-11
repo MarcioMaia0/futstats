@@ -1,10 +1,12 @@
 ---
 title: Product Principles
 status: Draft
-version: 0.5.1
+version: 0.6.0
 owner: Product Architecture
-last_update: 2026-07-07
-related_documents: [Product_Overview.md, Product_Vision.md]
+last_update: 2026-07-09
+related_documents:
+  - Product_Overview.md
+  - Product_Vision.md
 ---
 
 # Product Principles
@@ -15,14 +17,14 @@ Definir os princípios permanentes que devem orientar toda decisão de produto, 
 
 ## P-001: Entregar valor desde o primeiro jogo
 
-O usuário precisa sentir utilidade no primeiro contato. Isso significa que registrar uma partida, marcar o placar, indicar quem fez os gols e compartilhar o resultado deve ser rápido, claro e divertido.
+A pessoa precisa sentir utilidade no primeiro contato. Registrar uma partida, marcar o placar, indicar quem fez os gols e compartilhar o resultado deve ser rápido, claro e divertido.
 
 ### Implicações
 
-- O MVP deve priorizar fluxos curtos.
+- O primeiro valor operacional deve priorizar fluxos curtos.
 - Campos avançados devem ser opcionais.
 - O primeiro resultado compartilhável é mais importante que relatórios complexos.
-- O usuário não deve precisar entender scout para usar o app.
+- A pessoa não deve precisar entender scout para usar o app.
 
 ## P-002: Nunca exigir comportamento analítico para entregar valor
 
@@ -37,14 +39,14 @@ O FUTSTATS deve atender tanto o usuário casual quanto o analítico. O usuário 
 
 ## P-003: O social é porta de entrada
 
-A adoção inicial provavelmente virá pelo compartilhamento, pela resenha, pelos cards, pelos perfis e pela vontade de aparecer.
+A adoção inicial tende a vir pelo compartilhamento, pela resenha, pelos cards, pelos perfis e pela vontade de aparecer.
 
 ### Implicações
 
 - Resultado deve gerar conteúdo compartilhável.
 - Perfil do atleta deve ter apelo visual.
 - A linguagem deve poder ser descontraída.
-- O feed e os cards devem ser tratados como recursos centrais, não periféricos.
+- O feed e os cards devem ser tratados como recursos centrais.
 
 ## P-004: Inteligência é evolução progressiva
 
@@ -59,7 +61,7 @@ O FUTSTATS deve permitir que times avancem para estatísticas, scout, quadras, a
 
 ## P-005: Legado é consequência do uso
 
-Guardar a história do futebol amador é importante, mas esse valor ganha força com o tempo. No começo, o usuário compra a utilidade imediata.
+Guardar a história do futebol amador é importante, mas esse valor ganha força com o tempo. No começo, a pessoa compra a utilidade imediata.
 
 ### Implicações
 
@@ -77,11 +79,11 @@ O FUTSTATS deve dar ferramentas profissionais à várzea sem transformar a cultu
 - A resenha deve coexistir com estatística.
 - Apelidos são importantes.
 - Linguagem configurável é essencial.
-- Design deve ser moderno, mas com identidade esportiva e popular.
+- O design deve ser moderno, mas com identidade esportiva e popular.
 
 ## P-007: Dados canônicos, apresentação flexível
 
-O banco, APIs e código usam inglês técnico. A interface apresenta os termos conforme modo de linguagem.
+Banco, APIs e código usam inglês técnico. A interface apresenta os termos conforme modo de linguagem.
 
 ### Exemplo
 
@@ -93,7 +95,7 @@ O banco, APIs e código usam inglês técnico. A interface apresenta os termos c
 
 ## P-008: Recursos avançados devem gerar benefício claro
 
-Se uma funcionalidade exige mais trabalho do usuário, ela precisa devolver valor proporcional.
+Se uma funcionalidade exige mais trabalho, ela precisa devolver valor proporcional.
 
 ## Checklist para novas funcionalidades
 

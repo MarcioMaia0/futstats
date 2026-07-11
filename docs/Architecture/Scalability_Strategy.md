@@ -16,7 +16,7 @@ Definir como o FUTSTATS deve crescer tecnicamente.
 
 ## Estratégia
 
-O MVP pode começar com arquitetura modular em monólito bem organizado. A separação física em serviços deve acontecer apenas quando houver escala, necessidade operacional ou limites claros de domínio.
+O produto pode começar com arquitetura modular em monólito bem organizado. A separação física em serviços deve acontecer apenas quando houver escala, necessidade operacional ou limites claros de domínio.
 
 ## Camadas que devem escalar
 

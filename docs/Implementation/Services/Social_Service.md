@@ -53,7 +53,7 @@ Especificar o serviço social.
 ## Política de retry
 
 - Retry automático só deve ocorrer para falhas transitórias.
-- No MVP, usar no máximo 3 tentativas totais por plataforma e por post.
+- No estado atual do produto, usar no máximo 3 tentativas totais por plataforma e por post.
 - Backoff recomendado:
   - tentativa inicial;
   - retry 1 em 5 minutos;
@@ -82,7 +82,7 @@ Especificar o serviço social.
 
 Ao usar este documento como contexto para implementação, a IA deve:
 1. preservar o princípio de uso casual simples;
-2. não criar campos obrigatórios que bloqueiem o MVP;
+2. não criar campos obrigatórios que bloqueiem o primeiro valor operacional;
 3. respeitar separação entre dado canônico e texto de interface;
 4. manter compatibilidade com evolução futura;
 5. sugerir migrations, testes e endpoints quando alterar domínio.

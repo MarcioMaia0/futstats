@@ -27,7 +27,7 @@ O FUTSTATS nasce focado em futsal, mas deve ficar aberto para society e campo de
    - `starters_count`: inteiro com padrão derivado da modalidade (`FUTSAL` = 5, `SOCIETY` = 7, `FIELD` = 11), editável para variações locais.
 2. Times possuem `default_modality`, herdada na criação de partidas para não adicionar fricção ao fluxo casual.
 3. `modality` não substitui `match_type` (amistoso, campeonato etc.); são conceitos independentes.
-4. O MVP opera com `FUTSAL` como padrão; nenhuma tela exige escolher modalidade para registrar partida.
+4. O estado atual do produto opera com `FUTSAL` como padrão; nenhuma tela exige escolher modalidade para registrar partida.
 
 ## Consequências
 

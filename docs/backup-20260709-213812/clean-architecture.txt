@@ -1,0 +1,80 @@
+A Clean Architecture (Arquitetura Limpa), popularizada por Robert C. Martin (conhecido como "Uncle Bob"), é um padrão de design de software que tem como objetivo principal a separação de preocupações (Separation of Concerns).
+
+Ela foi desenhada para criar sistemas que sejam fáceis de manter, altamente testáveis e independentes de tecnologias externas, que costumam mudar com frequência (como frameworks, bancos de dados e interfaces visuais).
+
+Abaixo estão as características essenciais, a estrutura e os benefícios desse padrão:
+
+1. A Regra de Dependência (O Princípio Fundamental)
+A Clean Architecture é visualizada como uma série de círculos concêntricos (camadas que envolvem umas às outras).
+
+A regra de ouro desse padrão é: as dependências de código só podem apontar para dentro.
+
+As camadas internas nunca sabem nada sobre o que acontece nas camadas externas.
+Uma classe na camada interna não pode importar, instanciar ou fazer referência a nada da camada externa (por exemplo, a regra de negócio não sabe que o banco de dados é o Supabase ou que a interface é o React Native).
+2. As Quatro Camadas Clássicas
+text
+
+
+       ┌────────────────────────────────────────────────────────┐
+       │             Frameworks & Drivers (Externo)             │  <- Supabase SDK, React Native UI, Express
+       │    ┌──────────────────────────────────────────────┐    │
+       │    │      Interface Adapters (Adaptadores)        │    │  <- Controllers, Presenters, Gateways
+       │    │    ┌────────────────────────────────────┐    │    │
+       │    │    │      Use Cases (Casos de Uso)      │    │    │  <- Regras de Negócio da Aplicação
+       │    │    │    ┌──────────────────────────┐    │    │    │
+       │    │    │    │   Entities (Entidades)   │    │    │    │  <- Regras de Negócio Corporativas
+       │    │    │    └──────────────────────────┘    │    │    │
+       │    │    └────────────────────────────────────┘    │    │
+       │    └──────────────────────────────────────────────┘    │
+       └────────────────────────────────────────────────────────┘
+A. Entidades (Entities)
+É o coração do sistema. Representa as regras e objetos de negócio mais globais e fundamentais.
+
+Características: Contém as regras que não mudam mesmo se o aplicativo mudar de formato. No futebol, por exemplo, a regra de que "um time joga com 5 jogadores no futsal" ou "um gol soma 1 ponto ao placar" são entidades e regras essenciais de domínio, independentes de software.
+Isolamento: São puras. Não importam nenhuma biblioteca ou framework.
+B. Casos de Uso (Use Cases ou Interactors)
+Contêm as regras de negócio específicas da aplicação. Eles orquestram o fluxo de dados de e para as Entidades.
+
+Características: Definem as ações que o usuário pode realizar. Exemplo: CreateMatch, RegisterGoal, AddPlayerToTeam.
+Isolamento: Eles sabem o que a aplicação faz, mas não sabem como o dado é exibido ou persistido.
+C. Adaptadores de Interface (Interface Adapters)
+Esta camada traduz os dados no formato mais conveniente para as entidades e casos de uso, convertendo-os para o formato exigido por agentes externos (e vice-versa).
+
+Características: Aqui ficam os Controllers (que recebem requisições HTTP ou cliques da tela), os Presenters (que formatam dados para visualização) e os Gateways (interfaces de repositórios para comunicação com o banco de dados).
+D. Frameworks e Drivers (Frameworks & Drivers)
+É a camada mais externa do círculo.
+
+Características: Onde a tecnologia física de fato reside: a biblioteca de interface de usuário (React Native), o cliente do banco de dados (Supabase SDK), servidores web, sistemas de arquivos, etc.
+Isolamento: É a camada mais propensa a mudanças. Se você quiser trocar de framework, é apenas essa casca que deve ser alterada.
+3. As 5 Principais Características (Benefícios)
+Independência de Frameworks: O software não fica refém de uma biblioteca ou ferramenta específica. O framework é tratado como uma ferramenta de entrega (um detalhe), e não como a fundação do sistema.
+Testabilidade Extrema: Como as regras de negócio (Entidades e Casos de Uso) não conhecem banco de dados ou UI, você consegue escrever testes unitários extremamente rápidos e isolados para elas, sem precisar subir um simulador de celular ou conectar a um banco real.
+Independência da UI (Interface do Usuário): A interface do usuário pode mudar de um aplicativo móvel (React Native) para uma aplicação Web ou até mesmo uma linha de comando (CLI) sem que nenhuma linha de regra de negócio precise ser reescrita.
+Independência do Banco de Dados: Você pode trocar o banco de dados (ex: migrar do PostgreSQL no Supabase para um banco local SQLite) alterando apenas os adaptadores externos. A lógica de negócio permanece intacta.
+Independência de Agentes Externos: Suas regras de negócio simplesmente não sabem nada sobre o mundo exterior, o que as protege contra bugs causados por atualizações de terceiros.
+4. Como ocorre a comunicação? (Inversão de Dependência)
+Se o Caso de Uso (camada interna) não pode apontar para fora, como ele consegue salvar dados no banco (camada externa)?
+
+A Clean Architecture resolve isso usando o DIP (Dependency Inversion Principle - Princípio da Inversão de Dependência):
+
+O Caso de Uso define uma Interface (um contrato) indicando o que precisa. Exemplo:
+typescript
+
+
+interface PlayerRepository {
+  save(player: Player): Promise<void>;
+}
+A camada externa de Infraestrutura (adaptador do Supabase) implementa essa interface:
+typescript
+
+
+class SupabasePlayerRepository implements PlayerRepository {
+  async save(player: Player) {
+    // Código específico do Supabase para persistir o dado
+    await supabase.from('players').insert(player);
+  }
+}
+Em tempo de execução, o Caso de Uso recebe o SupabasePlayerRepository via Injeção de Dependência. O fluxo de execução aponta para fora, mas o fluxo de dependência aponta para dentro (para a Interface).
+Quando usar e quando evitar?
+Quando usar: Em projetos de médio a grande porte, com alta probabilidade de evolução de regras de negócio, onde a testabilidade é crucial e várias pessoas vão mexer no código simultaneamente.
+Quando evitar (YAGNI - You Aren't Gonna Need It): Em MVPs extremamente simples e pequenos (aplicações puramente CRUD), onde a separação em tantas camadas pode gerar uma complexidade desnecessária de arquivos (overengineering).

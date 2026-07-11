@@ -152,7 +152,7 @@ Retorna os papéis contextuais de time da pessoa autenticada e os vínculos mín
 
 - Endpoint exige sessão autenticada.
 - O retorno representa papéis contextuais de time da pessoa, não papéis esportivos.
-- No MVP, os valores válidos de `role` são `DIRECTOR`, `PRESIDENT` e `COMMITTEE`.
+- No estado atual do produto, os valores válidos de `role` são `DIRECTOR`, `PRESIDENT` e `COMMITTEE`.
 - `PRESIDENT` tem o mesmo peso operacional de `DIRECTOR`; a diferença é de nomenclatura de negócio.
 - `COMMITTEE` representa integrante interno do time sem gestão.
 - `granted_at` corresponde a `user_team_roles.created_at`.
@@ -175,7 +175,6 @@ Atualiza os dados da presença da pessoa autenticada na plataforma em `public.us
 ```json
 {
   "display_name": "Marcio",
-  "nickname": "Marcinho",
   "avatar_url": "https://cdn.example.com/avatar.jpg",
   "contact_phone": "+5511999999999",
   "region_state": "SP",
@@ -205,6 +204,7 @@ Atualiza os dados da presença da pessoa autenticada na plataforma em `public.us
 - O endpoint não altera `public.user_preferences`.
 - O endpoint não altera papéis, vínculos de time nem identidade esportiva.
 - O endpoint também não substitui os campos canônicos de `persons`, como `full_name` e `nickname`.
+- Se o produto quiser editar `persons.full_name`, `persons.nickname` ou `persons.avatar_media_id`, isso deve acontecer em contrato específico da camada de pessoa/atleta, não em `PATCH /api/v1/me`.
 
 #### Response 200
 

@@ -1,9 +1,9 @@
 ---
 title: Documentation Readiness Report
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 related_documents: []
 ---
 
@@ -11,7 +11,7 @@ related_documents: []
 
 ## Objetivo
 
-Avaliar se a documentação atual está pronta para apoiar o início do desenvolvimento do MVP.
+Avaliar se a documentação atual está pronta para apoiar o início do desenvolvimento do recorte inicial de lançamento.
 
 ## Resultado
 
@@ -29,7 +29,7 @@ A documentação está pronta para orientar o início do desenvolvimento, desde 
 - IA documentada com limites.
 - Segurança, QA, operações e analytics documentados.
 - ADRs iniciais registrados.
-- Especificações de MVP iniciadas.
+- Especificações do recorte inicial documentadas.
 
 ## Pontos que ainda podem evoluir
 

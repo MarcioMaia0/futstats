@@ -1,9 +1,9 @@
 ---
 title: Database Tables
 status: Draft
-version: 0.5.0
+version: 0.6.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
 related_documents: []
 ---
 
@@ -23,19 +23,27 @@ Camada conceitual de autenticação. Na implementação atual, corresponde a `au
 
 ### users
 
-Representa a pessoa dentro da plataforma.
+Representa a presença autenticada da pessoa dentro da plataforma.
 
 ### persons
 
 Representa a identidade canônica da pessoa, com ou sem conta no app.
 
-### roles
+### person_social_connections
 
-Reserva para papéis de gestão customizáveis, caso o projeto evolua além do enum do MVP.
+Representa os links sociais públicos da pessoa canônica, reutilizáveis por atleta, dirigente, comissão, técnico e outros papéis.
+
+### user_preferences
+
+Preferências da experiência da pessoa no app.
 
 ### user_team_roles
 
-Relaciona pessoas, times e permissões de gestão contextuais.
+Papéis contextuais de gestão ou participação interna do usuário autenticado no time.
+
+### roles
+
+Reserva conceitual para futura evolução de papéis customizáveis, além do enum atual do produto.
 
 ## Teams
 
@@ -43,27 +51,55 @@ Relaciona pessoas, times e permissões de gestão contextuais.
 
 Representa um time.
 
+### team_members
+
+Representa o pertencimento-base entre pessoa e time.
+
 ### team_players
 
-Relaciona jogadores a times.
+Representa o vínculo esportivo oficial entre integrante-atleta e time.
+
+### team_player_frame_defaults
+
+Pré-configuração logística de quadro por modalidade para leitura de presença e organização do elenco.
+
+### team_staff_defaults
+
+Configuração padrão de staff do time, hoje focada em técnico por modalidade.
 
 ### team_settings
 
-Define configurações do time.
+Configurações operacionais e de experiência do time.
 
-### team_invites
+### team_social_connections
 
-Controla convites.
+Conexões sociais do time com plataformas externas.
+
+### team_join_requests
+
+Solicitações para entrar em um time.
+
+### team_blocks
+
+Bloqueios de interação aplicados por gestores do time.
 
 ## Players
 
 ### players
 
-Representa perfil esportivo.
+Representa o perfil esportivo canônico do atleta.
+
+### player_modalities
+
+Modalidades declaradas do atleta.
+
+### player_positions
+
+Posições declaradas do atleta por modalidade.
 
 ### player_match_statistics
 
-Projeção do desempenho do atleta por partida.
+Projeção do desempenho factual do atleta por partida.
 
 ### player_profile_summary
 
@@ -101,97 +137,97 @@ Série temporal pronta para gráficos do atleta.
 
 Inferência contextual do estilo de jogo do atleta.
 
-### player_claims
+## Scheduled Matches
 
-Controla reivindicação de perfis.
+### scheduled_matches
 
-### player_attributes
+Representa o compromisso futuro de jogo antes da partida operacional.
 
-Atributos avaliáveis do jogador.
+### match_attendance_responses
+
+Respostas de presença ao compromisso agendado, por integrante do time.
 
 ## Matches
 
 ### matches
 
-Representa a partida.
-
-### match_events
-
-Eventos da partida.
+Representa a partida operacional. No estado atual, cada `match` já representa um quadro específico.
 
 ### match_players
 
-Atletas relacionados a uma partida por time, inclusive avulsos.
+Atletas relacionados à partida por time, inclusive avulsos.
 
 ### match_players_positions
 
-Posições usadas no contexto da partida.
+Posições realmente usadas pelo atleta no contexto daquela partida.
 
 ### match_staff
 
 Staff efetivo da partida, como técnico.
 
-### match_attendance_responses
+### match_operator_assignments
 
-Respostas de presença para jogos agendados.
+Distribuição de responsabilidades operacionais da partida entre usuários autenticados.
+
+### match_events
+
+Linha fina de acontecimentos e scout contextual da partida.
 
 ### match_substitutions
 
 Substituições detalhadas da partida.
 
+### match_goals
+
+Camada operacional sensível de gols e leitura de placar.
+
+### match_opponent_players
+
+Elenco adversário contextual daquela partida.
+
 ### match_ratings
 
-Notas dos participantes da partida.
+Notas sociais e contextuais da partida para jogadores e técnico, separando `PEER` e `GENERAL`.
+
+### match_cards
+
+Cards compartilháveis gerados a partir da partida.
 
 ### match_status_history
 
-Histórico de status.
+Possível evolução futura para trilha de estados da partida. Não é tabela canônica do estado atual.
 
 ### match_links
 
-Vínculo entre jogos, como primeiro e segundo quadro.
+Possível evolução futura para relacionar partidas entre si. Não é tabela canônica do estado atual.
 
 ## Venues and Opponents
 
 ### venues
 
-Locais e quadras.
+Locais, quadras e campos.
 
 ### local_opponents
 
 Adversários privados por time.
 
+### local_opponent_players
+
+Jogadores adversários privados, reutilizáveis, ligados a um `local_opponent`.
+
 ## Referees
 
 ### referees
 
-Cadastro de árbitros.
+Cadastro mestre de árbitros formais.
 
 ### match_referees
 
-Árbitros vinculados à partida.
+Arbitragem efetiva vinculada à partida, podendo ser formal, ad-hoc ou externa não identificada.
 
 ### referee_reviews
 
-Avaliações de arbitragem.
-
-## Experience
-
-### themes
-
-Temas visuais.
-
-### user_preferences
-
-Preferências pessoais.
-
-### team_experience_settings
-
-Preferências do time.
-
-### ui_vocabulary
-
-Vocabulário por modo de linguagem.
+Avaliações da atuação da arbitragem na partida.
 
 ## Social
 
@@ -209,26 +245,26 @@ Reações.
 
 ### follows
 
-Seguidores.
+Relações de seguir entre usuários, times e atletas.
 
 ### media_assets
 
-Imagens e vídeos.
+Imagens e vídeos persistidos.
 
-### team_blocks
+### notifications
 
-Bloqueios de interação aplicados por gestores do time.
+Notificações da plataforma.
+
+### post_distribution_attempts
+
+Persistência operacional das tentativas de distribuição externa de posts.
 
 ## Statistics
 
 ### metric_definitions
 
-Define métricas.
+Define métricas e semânticas analíticas.
 
 ### statistics_snapshots
 
-Snapshots agregados.
-
-### team_match_statistics
-
-Estatísticas do time por partida.
+Snapshots agregados prontos para leitura mais rápida.

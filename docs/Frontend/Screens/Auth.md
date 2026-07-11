@@ -36,7 +36,7 @@ Criar conta ou entrar pelo caminho de e-mail e senha. Tela unica com alternancia
 - `username` - obrigatorio, unico (handle publico `@usuario`); regras: minusculas, letras, numeros, `_` e `.`, 3 a 20 caracteres, sem espaco, handles reservados bloqueados; com verificacao de disponibilidade. Origem: `public.users.username`.
 - `display_name` - obrigatorio. Origem: `public.users.display_name`.
 - `email` - obrigatorio, formato de e-mail. Origem: `auth.users.email`.
-- `phone` - opcional, formato E.164 (telefone de contato, nao verificado). Origem: `public.users.contact_phone`.
+- `contact_phone` - opcional, formato E.164 (telefone de contato, nao verificado). Origem: `public.users.contact_phone`.
 - `password` - obrigatorio, minimo 8 caracteres; campo unico com botao "mostrar senha". Nunca persistido em claro.
 - `terms_accepted` - checkbox obrigatorio. Origem: `public.users.terms_accepted_at`.
 
@@ -49,7 +49,7 @@ Criar conta ou entrar pelo caminho de e-mail e senha. Tela unica com alternancia
 
 - Validacao inline; nao revelar se um e-mail existe em fluxos sensiveis.
 - `auth_provider` gravado como `EMAIL`.
-- Cadastro cria registro de autenticacao em `auth.users` e perfil minimo em `public.users`; nunca cria `player`.
+- Cadastro cria registro de autenticacao em `auth.users`, cria `persons`, cria perfil minimo em `public.users`; nunca cria `player`.
 - Verificacao de e-mail: o usuario entra imediatamente; um lembrete persistente pede a confirmacao, exigida so antes de acoes sensiveis.
 - Se o e-mail informado ja pertencer a uma conta social (Google ou Apple), o vinculo exige antes a confirmacao do e-mail; no sentido inverso, login social com e-mail verificado sobre conta de e-mail existente faz vinculo automatico.
 - Depois de `sign-up` ou `sign-in`, a decisao entre Home e `Complete Profile` deve seguir `GET /api/v1/me -> onboarding.requires_complete_profile`.
@@ -67,5 +67,5 @@ Criar conta ou entrar pelo caminho de e-mail e senha. Tela unica com alternancia
 - Criar conta submete `POST /api/v1/auth/sign-up`.
 - Entrar submete `POST /api/v1/auth/sign-in`.
 - Consulta de disponibilidade de `username` usa `GET /api/v1/auth/username-availability`.
-- Criar conta com sucesso cria `auth.users`, `public.users` e `public.user_preferences` com defaults.
+- Criar conta com sucesso cria `auth.users`, `persons`, `public.users` e `public.user_preferences` com defaults.
 - Verificacao de e-mail segue a politica do provedor de auth.

@@ -1,7 +1,9 @@
 ﻿# FUTSTATS Documentation Manifest
 
-Generated on: 2026-07-08
-Total files: 404
+Generated on: 2026-07-10
+Total files: 450
+
+Note: backup folders `docs/backup-*` are intentionally excluded from this manifest.
 
 - `ADR/ADR_001_Modular_Documentation.md`
 - `ADR/ADR_002_English_Canonical_Naming.md`
@@ -73,6 +75,7 @@ Total files: 404
 - `API/Rate_Limiting.md`
 - `API/README.md`
 - `API/Referees_API.md`
+- `API/Scheduled_Matches_API.md`
 - `API/Social_API.md`
 - `API/Statistics_API.md`
 - `API/Teams_API.md`
@@ -91,6 +94,7 @@ Total files: 404
 - `Architecture/Offline_First_Strategy.md`
 - `Architecture/Offline_Strategy.md`
 - `Architecture/Permissions_Model.md`
+- `Architecture/Player_Profile_Read_Model_Strategy.md`
 - `Architecture/README.md`
 - `Architecture/Recommended_Project_Structure.md`
 - `Architecture/Runtime_Architecture.md`
@@ -182,6 +186,7 @@ Total files: 404
 - `Frontend/Design_System_Integration.md`
 - `Frontend/Design_System_Tokens.md`
 - `Frontend/Frontend_Architecture.md`
+- `Frontend/Match_Operation_Reusables.md`
 - `Frontend/Naming_Conventions.md`
 - `Frontend/Navigation_Model.md`
 - `Frontend/Offline_UI.md`
@@ -189,11 +194,15 @@ Total files: 404
 - `Frontend/Reusable_Building_Blocks.md`
 - `Frontend/Routing.md`
 - `Frontend/Screens/Auth.md`
+- `Frontend/Screens/Athlete_Data_Completion.md`
 - `Frontend/Screens/Complete_Profile.md`
+- `Frontend/Screens/Create_Team_Wizard.md`
 - `Frontend/Screens/Feed.md`
 - `Frontend/Screens/Forgot_Password.md`
 - `Frontend/Screens/Home_Dashboard.md`
+- `Frontend/Screens/Join_Team_Search.md`
 - `Frontend/Screens/Language_Settings.md`
+- `Frontend/Screens/Lineup_And_Live_Operation.md`
 - `Frontend/Screens/Match_Detail.md`
 - `Frontend/Screens/Match_Scoreboard.md`
 - `Frontend/Screens/Phone_Otp.md`
@@ -212,6 +221,14 @@ Total files: 404
 - `Frontend/Screens/Welcome.md`
 - `Frontend/State_Management.md`
 - `Frontend/Stitch_Conversion_Guide.md`
+- `Future_Ideas/Match_Links.md`
+- `Future_Ideas/Match_Operation_Assignments.md`
+- `Future_Ideas/Match_Status_History.md`
+- `Future_Ideas/Player_Attributes.md`
+- `Future_Ideas/Player_Claims.md`
+- `Future_Ideas/README.md`
+- `Future_Ideas/Roles_Catalog.md`
+- `Future_Ideas/Team_Experience_Settings.md`
 - `Implementation/AI/AI_Assistant_Spec.md`
 - `Implementation/AI/Prompting_Guide.md`
 - `Implementation/Analytics/Event_Tracking_Plan_Historical.md`
@@ -219,6 +236,7 @@ Total files: 404
 - `Implementation/API/Endpoint_Detail_Matches.md`
 - `Implementation/API/Endpoint_Detail_Players.md`
 - `Implementation/API/Endpoint_Detail_Referees.md`
+- `Implementation/API/Endpoint_Detail_Scheduled_Matches.md`
 - `Implementation/API/Endpoint_Detail_Social.md`
 - `Implementation/API/Endpoint_Detail_Teams.md`
 - `Implementation/API/Endpoints/Auth_Endpoints.md`
@@ -229,8 +247,8 @@ Total files: 404
 - `Implementation/API/Endpoints/Social_Endpoints.md`
 - `Implementation/API/Endpoints/Statistics_Endpoints.md`
 - `Implementation/API/Endpoints/Team_Endpoints.md`
-- `Implementation/API/MVP_API_Contract.md`
-- `Implementation/Backlog/MVP_Sprint_Plan.md`
+- `Implementation/API/Launch_Snapshot_API_Map.md`
+- `Implementation/Backlog/Launch_Snapshot_Sprint_Plan.md`
 - `Implementation/Backlog/Product_Backlog.md`
 - `Implementation/Core_Flows/Advanced_Match_Implementation.md`
 - `Implementation/Core_Flows/Player_Profile_Implementation.md`
@@ -238,21 +256,46 @@ Total files: 404
 - `Implementation/Core_Flows/Share_Card_Implementation.md`
 - `Implementation/Core_Flows/Team_Profile_Implementation.md`
 - `Implementation/Data_Model/Future_Data_Model.md`
-- `Implementation/Data_Model/MVP_Data_Model.md`
+- `Implementation/Data_Model/Launch_Snapshot_Data_Model.md`
+- `Implementation/Match_Operation_Phase_1_Checklist.md`
+- `Implementation/Match_Operation_Technical_Contract.md`
 - `Implementation/Database/Table_Spec_accounts.md`
 - `Implementation/Database/Table_Spec_audit_logs.md`
 - `Implementation/Database/Table_Spec_comments.md`
 - `Implementation/Database/Table_Spec_follows.md`
+- `Implementation/Database/Table_Spec_local_opponent_players.md`
 - `Implementation/Database/Table_Spec_local_opponents.md`
+- `Implementation/Database/Table_Spec_match_attendance_responses.md`
 - `Implementation/Database/Table_Spec_match_cards.md`
 - `Implementation/Database/Table_Spec_match_events.md`
 - `Implementation/Database/Table_Spec_match_goals.md`
+- `Implementation/Database/Table_Spec_match_operator_assignments.md`
+- `Implementation/Database/Table_Spec_match_opponent_players.md`
+- `Implementation/Database/Table_Spec_match_players.md`
+- `Implementation/Database/Table_Spec_match_players_positions.md`
 - `Implementation/Database/Table_Spec_match_ratings.md`
 - `Implementation/Database/Table_Spec_match_referees.md`
+- `Implementation/Database/Table_Spec_match_staff.md`
+- `Implementation/Database/Table_Spec_match_substitutions.md`
 - `Implementation/Database/Table_Spec_matches.md`
 - `Implementation/Database/Table_Spec_media_assets.md`
 - `Implementation/Database/Table_Spec_metric_definitions.md`
+- `Implementation/Database/Table_Spec_modality_positions.md`
 - `Implementation/Database/Table_Spec_notifications.md`
+- `Implementation/Database/Table_Spec_persons.md`
+- `Implementation/Database/Table_Spec_person_social_connections.md`
+- `Implementation/Database/Table_Spec_player_gallery_group_counters.md`
+- `Implementation/Database/Table_Spec_player_gallery_items.md`
+- `Implementation/Database/Table_Spec_player_match_statistics.md`
+- `Implementation/Database/Table_Spec_player_modalities.md`
+- `Implementation/Database/Table_Spec_player_performance_series.md`
+- `Implementation/Database/Table_Spec_player_positions.md`
+- `Implementation/Database/Table_Spec_player_profile_summary.md`
+- `Implementation/Database/Table_Spec_player_statistics_by_modality.md`
+- `Implementation/Database/Table_Spec_player_statistics_by_team_modality.md`
+- `Implementation/Database/Table_Spec_player_statistics_summary.md`
+- `Implementation/Database/Table_Spec_player_style_inference.md`
+- `Implementation/Database/Table_Spec_player_timeline_items.md`
 - `Implementation/Database/Table_Spec_players.md`
 - `Implementation/Database/Table_Spec_post_distribution_attempts.md`
 - `Implementation/Database/Table_Spec_posts.md`
@@ -260,11 +303,15 @@ Total files: 404
 - `Implementation/Database/Table_Spec_referee_reviews.md`
 - `Implementation/Database/Table_Spec_referees.md`
 - `Implementation/Database/Table_Spec_roles.md`
+- `Implementation/Database/Table_Spec_scheduled_matches.md`
 - `Implementation/Database/Table_Spec_statistics_snapshots.md`
 - `Implementation/Database/Table_Spec_team_blocks.md`
 - `Implementation/Database/Table_Spec_team_join_requests.md`
+- `Implementation/Database/Table_Spec_team_members.md`
+- `Implementation/Database/Table_Spec_team_player_frame_defaults.md`
 - `Implementation/Database/Table_Spec_team_players.md`
 - `Implementation/Database/Table_Spec_team_social_connections.md`
+- `Implementation/Database/Table_Spec_team_staff_defaults.md`
 - `Implementation/Database/Table_Spec_team_settings.md`
 - `Implementation/Database/Table_Spec_teams.md`
 - `Implementation/Database/Table_Spec_themes.md`
@@ -279,12 +326,12 @@ Total files: 404
 - `Implementation/Operations/Beta_Launch_Checklist.md`
 - `Implementation/Operations/Monitoring_Checklist.md`
 - `Implementation/Operations/Release_Process.md`
-- `Implementation/QA/Acceptance_Core_MVP.md`
-- `Implementation/QA/MVP_Acceptance_Tests.md`
+- `Implementation/QA/Launch_Snapshot_Acceptance_Core.md`
+- `Implementation/QA/Launch_Snapshot_Acceptance_Tests.md`
 - `Implementation/QA/Test_Cases_Matches.md`
 - `Implementation/QA/Test_Cases_Social.md`
 - `Implementation/QA/Test_Cases_Statistics.md`
-- `Implementation/Security/MVP_Privacy_Rules.md`
+- `Implementation/Security/Launch_Snapshot_Privacy_Rules.md`
 - `Implementation/Security/Permission_Matrix.md`
 - `Implementation/Security/Privacy_Rules.md`
 - `Implementation/Services/Auth_Service.md`
@@ -297,7 +344,9 @@ Total files: 404
 - `Implementation/Services/Media_Service.md`
 - `Implementation/Services/Notification_Service.md`
 - `Implementation/Services/Notification_Service_Spec.md`
+- `Implementation/Services/Player_Profile_Read_Model_Service.md`
 - `Implementation/Services/Player_Service_Spec.md`
+- `Implementation/Services/Scheduled_Match_Service.md`
 - `Implementation/Services/Referee_Service.md`
 - `Implementation/Services/Social_Service.md`
 - `Implementation/Services/Statistics_Service.md`
@@ -311,7 +360,7 @@ Total files: 404
 - `Implementation/UX/Flows/Player_Claim_Flow.md`
 - `Implementation/UX/Flows/Quick_Match_Flow.md`
 - `Implementation/UX/Flows/Share_Result_Flow.md`
-- `Implementation/UX/MVP_Wireframe_Text.md`
+- `Implementation/UX/Launch_Snapshot_Wireframe_Text.md`
 - `Implementation/UX/Progressive_Disclosure_Detail.md`
 - `MANIFEST.md`
 - `Monetization/Monetization_Strategy.md`
@@ -332,10 +381,10 @@ Total files: 404
 - `Product/Investor_Narrative.md`
 - `Product/Language_Modes.md`
 - `Product/Metrics_and_KPIs.md`
-- `Product/MVP_Strategy.md`
+- `Product/Launch_Snapshot_Strategy.md`
 - `Product/Personas.md`
 - `Product/PRD_Advanced_Statistics.md`
-- `Product/PRD_MVP.md`
+- `Product/Launch_Scope_Snapshot.md`
 - `Product/PRD_Social_Experience.md`
 - `Product/Pricing_and_Plans.md`
 - `Product/Product_Decisions.md`
@@ -356,7 +405,7 @@ Total files: 404
 - `QA/QA_Strategy.md`
 - `QA/README.md`
 - `QA/Regression_Test_Plan.md`
-- `QA/Test_Cases_MVP.md`
+- `QA/Launch_Snapshot_Test_Cases.md`
 - `QA/Test_Data_Strategy.md`
 - `QA/Test_Strategy.md`
 - `README.md`
@@ -368,7 +417,7 @@ Total files: 404
 - `Release_1_0/Final_Validation_Checklist.md`
 - `Release_1_0/Future_Documentation_Work.md`
 - `Release_1_0/Handoff_Guide.md`
-- `Release_1_0/MVP_Build_Sequence.md`
+- `Release_1_0/Launch_Snapshot_Build_Sequence.md`
 - `Release_1_0/Open_Issues.md`
 - `Release_1_0/Outstanding_Decisions.md`
 - `Release_1_0/README.md`
@@ -380,6 +429,8 @@ Total files: 404
 - `Security/README.md`
 - `Security/Role_Based_Access_Control.md`
 - `Security/Security_Principles.md`
+- `clean-architecture.txt`
+- `sinergia_reacte_supabase_x_projeto.txt`
 - `Templates/ADR_Template.md`
 - `Templates/Document_Template.md`
 - `UX/Accessibility.md`

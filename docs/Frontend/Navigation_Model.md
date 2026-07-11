@@ -15,7 +15,7 @@ related_documents:
 
 Documentar a navegacao principal do produto e servir como referencia oficial para organizacao de abas, entradas e percursos principais.
 
-## Abas iniciais do MVP
+## Abas iniciais do produto
 
 - Home
 - Matches

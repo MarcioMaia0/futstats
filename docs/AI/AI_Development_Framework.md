@@ -1,18 +1,20 @@
 ---
 title: AI Development Framework
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-10
 related_documents:
-  - AI/AI_Development_Guidelines.md
-  - AI/Agent_Roles.md
-  - AI/Agent_Workflows.md
-  - AI/Decision_Protocols.md
-  - AI/Code_Generation_Checklist.md
-  - AI/Review_Checklist.md
-  - AI/Prompt_Playbook.md
-  - Architecture/Architecture_Principles.md
+  - ./AI_Development_Guidelines.md
+  - ./Agent_Roles.md
+  - ./Agent_Workflows.md
+  - ./Decision_Protocols.md
+  - ./Code_Generation_Checklist.md
+  - ./Review_Checklist.md
+  - ./Prompt_Playbook.md
+  - ../Documentation_Index.md
+  - ../Release_1_0/Source_of_Truth_Map.md
+  - ../Architecture/Architecture_Principles.md
 ---
 
 # AI Development Framework
@@ -33,14 +35,23 @@ Velocidade so e aceitavel quando preserva consistencia.
 
 Antes de criar ou alterar codigo relevante, uma IA deve consultar:
 
-1. `Architecture/Architecture_Principles.md`
-2. `Architecture/Recommended_Project_Structure.md`
-3. `Backend/Backend_Architecture.md`
-4. `Database/Database_Architecture.md`
-5. `Architecture/Event_Driven_Strategy.md`
-6. `AI/AI_Development_Guidelines.md`
-7. o documento do dominio afetado em `Domain/`
-8. os documentos especificos da area afetada
+1. `Documentation_Index.md`
+2. `Release_1_0/Source_of_Truth_Map.md`
+3. `Architecture/Architecture_Principles.md`
+4. `Architecture/Recommended_Project_Structure.md`
+5. `Backend/Backend_Architecture.md`
+6. `Architecture/Event_Driven_Strategy.md`
+7. `AI/AI_Development_Guidelines.md`
+8. o documento do dominio afetado em `Domain/`
+9. os documentos especificos da area afetada
+
+## Regra de navegacao tecnica
+
+Quando houver impacto de banco:
+
+1. consultar primeiro os mapas em `Database/Tables.md`, `Database/Relationships.md` e `Database/Entity_Relationships.md`;
+2. consultar depois a `Implementation/Database/Table_Spec_*.md` correspondente;
+3. so entao propor ajuste em API, servico, tela, job ou projecao derivada.
 
 ## Componentes do framework
 
@@ -99,12 +110,14 @@ A IA cria ou atualiza documentacao, indices e rastreabilidade.
 Quando houver conflito entre agentes ou sugestoes, prevalece esta ordem:
 
 1. Documentacao oficial aprovada
-2. Architecture Principles
-3. Regras de dominio
-4. Seguranca e privacidade
-5. Integridade historica dos dados
-6. Simplicidade de produto
-7. Preferencias de implementacao
+2. `Documentation_Index.md`
+3. `Release_1_0/Source_of_Truth_Map.md`
+4. Architecture Principles
+5. Regras de dominio
+6. Seguranca e privacidade
+7. Integridade historica dos dados
+8. Simplicidade de produto
+9. Preferencias de implementacao
 
 ## Regra de ouro
 

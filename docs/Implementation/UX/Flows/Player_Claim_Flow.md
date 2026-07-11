@@ -1,9 +1,9 @@
 ---
 title: Player Claim Flow
 status: Draft
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
 related_documents:
   - ../../../API/Players_API.md
   - ../../../API/Teams_API.md
@@ -30,6 +30,7 @@ Definir o fluxo de reivindicação de atleta quando já existe histórico operac
 - O `player` operacional criado pelo time é origem temporária.
 - O sistema deve reatribuir fatos operacionais da origem para o destino.
 - O sistema não deve copiar nem somar manualmente estatísticas derivadas.
+- Quando o atleta operacional existir dentro de um time, o sistema também deve consolidar o vínculo contextual desse time.
 
 ## Modos iniciais
 
@@ -51,7 +52,10 @@ Definir o fluxo de reivindicação de atleta quando já existe histórico operac
 7. Se houver vínculo com atleta operacional:
    - o backend garante o `target_player_id` do usuário;
    - identifica o `source_player_id` operacional;
+   - identifica o `source_team_member_id`, quando a origem vier de um time;
+   - identifica ou cria o `target_team_member_id` da pessoa real naquele time;
    - reatribui fatos históricos da origem para o destino;
+   - consolida o vínculo contextual do time em favor da pessoa real;
    - resolve conflitos de unicidade;
    - reconstrói as projeções derivadas do destino.
 
@@ -65,22 +69,26 @@ Definir o fluxo de reivindicação de atleta quando já existe histórico operac
 
 ## Tabelas operacionais mínimas do merge
 
+- `team_members`
 - `team_players`
 - `match_players`
 - `match_goals.player_id`
 - `match_goals.assist_player_id`
-- `match_attendance_responses`
+- `match_attendance_responses`, quando dependente do integrante contextual de origem
 - `match_ratings.target_player_id`
 - `player_modalities`
 - `player_positions`
-- `teams.default_coach_player_id`, quando aplicável
 
 ## Conflitos esperados
 
+- `team_members`
+  - se a pessoa real já possuir integrante ativo no mesmo time, a origem contextual não pode continuar como duplicidade ativa.
 - `team_players`
   - se destino já estiver ativo no mesmo time, não pode nascer vínculo ativo duplicado.
 - `match_players`
   - se origem e destino já coexistirem na mesma partida/time, a camada de contexto da partida precisa ser consolidada.
+- `match_attendance_responses`
+  - se presença histórica estiver ligada ao integrante operacional do time, ela deve ser reapontada para o integrante real consolidado.
 - Dependências por `match_player_id`
   - quando houver consolidação de `match_players`, também devem ser reapontadas:
     - `match_players_positions`
@@ -92,6 +100,7 @@ Definir o fluxo de reivindicação de atleta quando já existe histórico operac
 - O `player` de destino vira a única referência canônica para leitura do atleta.
 - As projeções do perfil do atleta devem ser reconstruídas.
 - A operação deve deixar trilha auditável.
+- O `integrante de origem do time (source_team_member)` não precisa ser mantido como registro útil separado depois da consolidação.
 
 ## Critérios de aceite
 

@@ -28,9 +28,9 @@ Gate contextual de autenticação. Surge quando um visitante não autenticado te
 ## Comportamento
 
 - Apresentação em bottom sheet, dispensável.
-- Métodos condensados no MVP: Google, Apple no iOS e e-mail.
+- Métodos condensados no lançamento atual: Google, Apple no iOS e e-mail.
 - "Outras formas de entrar" leva às telas completas.
-- Telefone via WhatsApp fica atrás de feature flag e oculto no MVP.
+- Telefone via WhatsApp fica atrás de feature flag e oculto no lançamento atual.
 - Mensagem contextual por ação, com fallback genérico.
 - Após autenticar, a aplicação deve consultar `GET /api/v1/me`.
 - Se `onboarding.requires_complete_profile = true`, encaminha para `Complete Profile`.

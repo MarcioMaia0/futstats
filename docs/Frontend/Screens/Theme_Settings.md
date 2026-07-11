@@ -32,7 +32,7 @@ Permitir que a pessoa escolha como a interface deve ser colorida e de onde vem o
 ## Regras de UX
 
 - Priorizar clareza e simplicidade.
-- Exibir apenas as tres escolhas principais no MVP.
+- Exibir apenas as tres escolhas principais no estado atual do produto.
 - `Tema do time` so deve aparecer quando a pessoa estiver vinculada a pelo menos um time com tema padrao configurado.
 - Se a pessoa estiver em mais de um time, usar o time em contexto atual; na ausencia de contexto, usar o ultimo time ativo.
 - Quando o time nao tiver tema configurado, mostrar fallback para Claro ou Escuro sem erro visual.

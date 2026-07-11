@@ -42,6 +42,8 @@ Representar atletas e seu histórico esportivo.
   - presença da pessoa dentro do app, vinculada 1:1 a `auth.users`;
 - `players`
   - identidade esportiva opcional da pessoa;
+- `team_members`
+  - pertencimento contextual da pessoa a um time;
 - `team_players`
   - vínculo oficial do atleta com um time;
 - `match_players`
@@ -63,9 +65,9 @@ Representar atletas e seu histórico esportivo.
   - elenco;
   - escalação;
   - gols;
-  - presença;
   - substituições;
   - histórico bruto da partida.
+- presença em compromisso não pertence ao `player`; ela pertence ao integrante contextual do time.
 - Esses `players` operacionais não precisam gerar automaticamente todas as projeções avançadas do perfil do atleta.
 
 ## Regra de projeção estatística
@@ -84,6 +86,7 @@ Representar atletas e seu histórico esportivo.
 ## Regras de vínculo
 
 - Um atleta pode existir globalmente sem pertencer a nenhum time.
+- Uma pessoa pode pertencer a um time sem ser atleta, via `team_members`.
 - Um atleta pode pertencer a vários times via `team_players`.
 - Um atleta avulso de uma partida não deve virar `team_player` automaticamente.
 - O mesmo `player` pode acumular histórico em partidas de times diferentes.
@@ -95,20 +98,23 @@ Representar atletas e seu histórico esportivo.
 - Nesse cenário:
   - o `player` do usuário é o destino canônico;
   - o `player` operacional do time é a origem temporária;
+  - o `team_member` operacional do time também pode ser origem contextual temporária;
   - o sistema deve reatribuir os registros históricos da origem para o destino;
+  - o sistema deve consolidar o vínculo contextual do time em favor da pessoa real;
   - o sistema não deve apagar o histórico do destino;
   - o sistema não deve somar estatísticas manualmente em tabelas derivadas.
 - A consolidação correta é:
   - reatribuir os fatos operacionais;
   - resolver conflitos de unicidade;
   - reconstruir projeções derivadas do atleta consolidado.
+- Depois da consolidação contextual do time, o `integrante de origem do time (source_team_member)` não precisa ser preservado como registro operacional separado.
 - Isso permite que a mesma pessoa preserve histórico vindo de múltiplos times que tenham criado registros operacionais antes de ela entrar no app.
 
 ## Relação com partida
 
 - Jogadores relacionados para o jogo ficam em `match_players`.
 - Técnico efetivo da partida fica em `match_staff`.
-- Presença/ausência confirmada fica em `match_attendance_responses`.
+- Presença/ausência confirmada fica em `match_attendance_responses`, ligada ao integrante contextual do time.
 - Posições efetivamente usadas na partida ficam em `match_players_positions`.
 
 ## Leitura de perfil

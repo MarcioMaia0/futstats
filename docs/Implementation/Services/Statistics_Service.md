@@ -21,7 +21,7 @@ Especificar o serviço de estatísticas.
 - gerar snapshots;
 - identificar limitações por falta de dados.
 
-## Recorte obrigatório do MVP para atleta
+## Recorte obrigatório atual para atleta
 
 O serviço deve sustentar `GET /api/v1/players/:player_id/statistics` com:
 
@@ -49,7 +49,7 @@ O serviço deve sustentar `GET /api/v1/players/:player_id/statistics` com:
 - Métrica avançada deve declarar pré-condições.
 - Snapshots devem registrar versão do cálculo.
 - Reprocessamentos devem ser idempotentes.
-- Assistências do MVP devem ser tratadas como `recorded_assists`, nunca como verdade absoluta quando o registro não for obrigatório.
+- Assistências do estado atual do produto devem ser tratadas como `recorded_assists`, nunca como verdade absoluta quando o registro não for obrigatório.
 - Métricas de resultado devem considerar apenas partidas finalizadas.
 - O serviço não deve inferir minutos, scout fino ou plus/minus sem base factual suficiente.
 - Inferência de estilo de jogo deve combinar dado declarado e dado observado.
@@ -96,7 +96,7 @@ Com confiança, por exemplo:
 Ao usar este documento como contexto para implementação, a IA deve:
 
 1. preservar o princípio de uso casual simples;
-2. não criar campos obrigatórios que bloqueiem o MVP;
+2. não criar campos obrigatórios que bloqueiem o primeiro valor operacional;
 3. respeitar separação entre dado canônico e texto de interface;
 4. manter compatibilidade com evolução futura;
 5. sugerir migrations, testes e endpoints quando alterar domínio.

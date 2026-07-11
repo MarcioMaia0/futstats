@@ -1,35 +1,47 @@
 ---
 title: Quick Match Implementation
 status: Draft
-version: 0.9.0
+version: 1.0.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-10
+related_documents:
+  - ../../API/Matches_API.md
+  - ../../Frontend/Screens/Match_Operation.md
+  - ../Database/Table_Spec_matches.md
+  - ../Database/Table_Spec_match_goals.md
+  - ./Share_Card_Implementation.md
 ---
 
 # Quick Match Implementation
 
 ## Objetivo
 
-Especificar o fluxo de partida rápida, principal porta de entrada do FUTSTATS para usuários casuais.
+Especificar o fluxo de partida rapida, principal porta de entrada do FUTSTATS para usuarios casuais.
 
 ## Contexto
 
-A partida rápida deve permitir que qualquer pessoa registre um jogo em poucos segundos. O foco inicial é placar, autores dos gols e compartilhamento. Escalação, scout, quadra, árbitro e adversário completo são camadas opcionais.
+A partida rapida deve permitir que qualquer pessoa registre um jogo em poucos segundos. O foco inicial e:
+
+- placar;
+- autores dos gols quando conhecidos;
+- compartilhamento simples do resultado.
+
+Escalacao completa, scout fino, eventos detalhados e operacao colaborativa continuam pertencendo ao fluxo avancado.
 
 ## Fluxo base
 
-1. Usuário toca em `New Match`.
-2. Seleciona ou cria um time.
-3. Informa adversário simples ou usa texto livre.
-4. Registra placar.
-5. Opcionalmente adiciona autores dos gols.
-6. Gera card compartilhável.
-7. Finaliza ou salva como rascunho.
+1. Usuario toca em `Novo jogo`.
+2. Seleciona um time ou cria um contexto minimo.
+3. Informa adversario simples ou usa texto livre.
+4. Registra o placar.
+5. Opcionalmente adiciona autores dos gols pelo fluxo rapido.
+6. Pode gerar card compartilhavel.
+7. Finaliza ou salva para continuar depois, conforme politica operacional.
 
-## Dados mínimos
+## Dados minimos
 
 - `team_id`
-- `opponent_name` ou `local_opponent_id`
+- `opponent_name` ou referencia operacional equivalente
 - `home_score`
 - `opponent_score`
 - `match_date`
@@ -42,37 +54,45 @@ A partida rápida deve permitir que qualquer pessoa registre um jogo em poucos s
 - goal authors;
 - assists;
 - match type;
-- frame;
+- age category;
+- frame label;
 - media;
 - comments.
 
 ## API sugerida
 
 ```http
-POST /matches/quick
-PATCH /matches/{matchId}/score
-POST /matches/{matchId}/goals
-POST /matches/{matchId}/share-card
+POST /api/v1/matches
+PATCH /api/v1/matches/{matchId}
+POST /api/v1/matches/{matchId}/goals/quick
+POST /api/v1/cards/match-result
 ```
 
-## Decisão
+## Regras
 
-Partida rápida nunca deve exigir scout avançado.
+- Partida rapida nunca deve exigir scout avancado.
+- O mesmo agregado `matches` atende o fluxo rapido e o avancado.
+- O fluxo rapido nao deve recriar rotas paralelas como `POST /matches/quick`.
+- Se o usuario depois enriquecer a partida, isso acontece sobre a mesma `match`.
+- O compartilhamento visual e derivado da partida, mas a geracao do card pertence ao agregado `cards`.
 
+## Decisao
 
-## Critérios de qualidade
+O fluxo rapido e uma porta de entrada simplificada do mesmo dominio operacional da partida, nao um produto paralelo.
 
-- O fluxo deve funcionar para usuário casual sem exigir cadastro excessivo.
-- Recursos avançados devem ser progressivos e opcionais.
-- O comportamento deve preservar consistência entre frontend, backend, API e banco.
-- Todas as entidades técnicas, payloads, enums e nomes internos devem usar inglês.
-- Textos exibidos ao usuário devem passar por camada de linguagem/configuração.
+## Criterios de qualidade
+
+- O fluxo deve funcionar para usuario casual sem exigir cadastro excessivo.
+- Recursos avancados devem ser progressivos e opcionais.
+- O comportamento deve preservar consistencia entre frontend, backend, API e banco.
+- Todas as entidades tecnicas, payloads, enums e nomes internos devem usar ingles.
+- Textos exibidos ao usuario devem passar por camada de linguagem/configuracao.
 
 ## Regras para IA
 
-Ao usar este documento como contexto para implementação, a IA deve:
-1. preservar o princípio de uso casual simples;
-2. não criar campos obrigatórios que bloqueiem o MVP;
-3. respeitar separação entre dado canônico e texto de interface;
-4. manter compatibilidade com evolução futura;
-5. sugerir migrations, testes e endpoints quando alterar domínio.
+Ao usar este documento como contexto para implementacao, a IA deve:
+1. preservar o principio de uso casual simples;
+2. nao criar campos obrigatorios que bloqueiem o primeiro valor operacional;
+3. respeitar separacao entre dado canonico e texto de interface;
+4. manter compatibilidade com evolucao futura;
+5. sugerir migrations, testes e endpoints quando alterar dominio.

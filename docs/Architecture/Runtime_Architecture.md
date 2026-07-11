@@ -41,4 +41,4 @@ Repositories / Event Bus / Jobs
 
 ## Decisão
 
-O runtime deve priorizar experiência rápida no MVP e desacoplar tarefas analíticas em pipelines assíncronos.
+O runtime deve priorizar experiência rápida no primeiro valor operacional e desacoplar tarefas analíticas em pipelines assíncronos.

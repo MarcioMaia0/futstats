@@ -9,6 +9,8 @@ related_documents:
   - ../Frontend/Screens/Join_Team_Search.md
   - ../Frontend/Screens/Team_Settings.md
   - ../Implementation/Database/Table_Spec_teams.md
+  - ../Implementation/Database/Table_Spec_team_members.md
+  - ../Implementation/Database/Table_Spec_team_players.md
   - ../Implementation/Database/Table_Spec_user_team_roles.md
   - ../Implementation/Database/Table_Spec_venues.md
   - ../Implementation/Database/Table_Spec_team_social_connections.md
@@ -28,9 +30,9 @@ Definir times como unidade central de organização.
 4. Histórico pertence ao time.
 5. Time pode ter adversários locais privados.
 6. Time pode ter múltiplos administradores.
-7. Quem cria o time recebe papel inicial `DIRECTOR`.
+7. Quem cria o time vira integrante canônico do próprio time e recebe papel inicial `DIRECTOR`.
 8. O time só deve ser persistido ao concluir o fluxo de criação.
-9. Escudo, localidade, quadra principal, cores e presença social são dados progressivos, não bloqueios do MVP.
+9. Escudo, localidade, quadra principal, cores e presença social são dados progressivos, não bloqueios do primeiro valor operacional.
 10. O time pode declarar múltiplas modalidades preferenciais sem ficar limitado a elas.
 11. Capacidade de mando é atributo estrutural do time, não atributo de uma partida.
 
@@ -50,7 +52,7 @@ Definir times como unidade central de organização.
 
 ## Observações de domínio
 
-- `PRESIDENT` e `DIRECTOR` têm o mesmo peso operacional no MVP.
+- `PRESIDENT` e `DIRECTOR` têm o mesmo peso operacional no estado atual do produto.
 - A diferença entre esses papéis é de nomenclatura de negócio.
 - `COMMITTEE` representa integrante interno do time sem papel de gestão e sem identidade esportiva de jogador.
 - Quadra principal pode ser cadastrada na criação, mas continua opcional.
@@ -60,10 +62,32 @@ Definir times como unidade central de organização.
 - O domínio deve distinguir:
   - criação mínima do time;
   - completude operacional do time.
+- O dominio deve distinguir:
+  - pertencimento base ao time;
+  - vinculo esportivo;
+  - papel de gestao.
 - `home_match_capability` deve aceitar:
   - `HAS_HOME_VENUE`
   - `NO_HOME_VENUE`
   - `NOT_DEFINED_YET`
+
+## Regra de pertencimento ao time
+
+- `team_members` e a camada canonica de pertencimento ao time.
+- Toda pessoa que fizer parte do time em contexto interno deve existir primeiro como `team_member`.
+- `team_members` liga `team` com `person`.
+- `team_players` nao substitui `team_members`.
+- `user_team_roles` nao substitui `team_members`.
+- Leituras de papel ou funcao do integrante devem considerar combinacao de camadas:
+  - `team_members`
+  - `team_players`
+  - `user_team_roles`
+- Nem todo `team_member` e jogador.
+- Nem todo `team_member` e gestao.
+- Se a pessoa for jogador:
+  - precisa existir `player` vinculado a sua `person`;
+  - o vinculo esportivo do time nasce em `team_players`.
+- Se a pessoa nao tiver `player`, ela pode continuar como integrante do time, mas nao como jogador.
 
 ## Regra de visibilidade: perfil do time
 
@@ -114,14 +138,14 @@ Antes da aprovação existir, a entrada no time nasce como solicitação explíc
 - O domínio deve bloquear:
   - solicitação `PENDING` duplicada para a mesma pessoa no mesmo time;
   - solicitação de quem já faz parte do time.
-- Solicitações antigas rejeitadas ou canceladas não bloqueiam nova tentativa no MVP.
+- Solicitações antigas rejeitadas ou canceladas não bloqueiam nova tentativa por padrão.
 - Após a criação, o domínio pode disparar `TeamJoinRequestCreated` para notificar a gestão do time.
 - Essa notificação é efeito derivado e não pode bloquear a conclusão da solicitação.
 
 ## Regra de notificação da gestão
 
 - O time precisa ser avisado de que existe uma nova solicitação pendente.
-- No MVP, o alvo mínimo dessa notificação são pessoas com `DIRECTOR` ou `PRESIDENT`.
+- No estado atual do produto, o alvo mínimo dessa notificação são pessoas com `DIRECTOR` ou `PRESIDENT`.
 - `COMMITTEE` não entra como destinatário operacional por padrão.
 - O objetivo da notificação é levar a pessoa gestora para a área onde poderá aprovar ou rejeitar a solicitação.
 - Se uma pessoa da gestão resolver a solicitação antes das demais, as outras passam a ver apenas o resultado final, sem poder agir novamente.
@@ -162,13 +186,17 @@ Quem aprova deve definir a função inicial da pessoa no time.
 
 - `Jogador`
   - não cria `user_team_roles`
+  - cria ou reaproveita `team_member`
   - cria ou reativa vínculo esportivo da pessoa no time
 - `Comissão`
+  - cria ou reaproveita `team_member`
   - cria `user_team_roles.role = COMMITTEE`
   - não cria vínculo esportivo por si só
 - `Director`
+  - cria ou reaproveita `team_member`
   - cria `user_team_roles.role = DIRECTOR`
 - `President`
+  - cria ou reaproveita `team_member`
   - cria `user_team_roles.role = PRESIDENT`
 
 ## Regras de hierarquia

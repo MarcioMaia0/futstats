@@ -1,25 +1,29 @@
 ---
 title: Architecture Documentation
 status: Approved
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-10
 related_documents:
-  - Architecture/Architecture_Principles.md
-  - Architecture/Recommended_Project_Structure.md
-  - Architecture/Event_Driven_Strategy.md
-  - Backend/Backend_Architecture.md
-  - Database/Database_Architecture.md
-  - AI/AI_Development_Guidelines.md
+  - ./Architecture_Principles.md
+  - ./Recommended_Project_Structure.md
+  - ./Event_Driven_Strategy.md
+  - ../Backend/Backend_Architecture.md
+  - ../Documentation_Index.md
+  - ../Release_1_0/Source_of_Truth_Map.md
+  - ../Database/Tables.md
+  - ../Database/Relationships.md
+  - ../Database/Entity_Relationships.md
+  - ../AI/AI_Development_Guidelines.md
 ---
 
 # Architecture Documentation
 
 ## Objetivo
 
-Centralizar as decisões e modelos arquiteturais do FUTSTATS.
+Centralizar as decisoes e modelos arquiteturais do FUTSTATS.
 
-Esta pasta deve servir como ponto de partida para pessoas desenvolvedoras, produto, QA, design, operações e IA entenderem como o sistema deve ser estruturado e evoluído.
+Esta pasta deve servir como ponto de partida para pessoas desenvolvedoras, produto, QA, design, operacoes e IA entenderem como o sistema deve ser estruturado e evoluir.
 
 ## Arquitetura oficial
 
@@ -27,15 +31,15 @@ O FUTSTATS adota oficialmente:
 
 - Modular Monolith;
 - Clean Architecture;
-- Domain-Driven Design tático;
+- Domain-Driven Design tatico;
 - Domain Events;
 - Event-driven internal architecture;
 - Repository Pattern;
 - CQRS leve quando fizer sentido;
 - Supabase como infraestrutura;
-- React Native como camada de experiência mobile.
+- React Native como camada de experiencia mobile.
 
-A referência principal é:
+A referencia principal e:
 
 ```text
 Architecture/Architecture_Principles.md
@@ -47,33 +51,42 @@ Para entender a arquitetura do projeto, leia nesta ordem:
 
 1. `README.md`
 2. `Documentation_Index.md`
-3. `Architecture/Architecture_Principles.md`
-4. `Architecture/Recommended_Project_Structure.md`
-5. `Backend/Backend_Architecture.md`
-6. `Database/Database_Architecture.md`
+3. `Release_1_0/Source_of_Truth_Map.md`
+4. `Architecture/Architecture_Principles.md`
+5. `Architecture/Recommended_Project_Structure.md`
+6. `Backend/Backend_Architecture.md`
 7. `Architecture/Event_Driven_Strategy.md`
-8. `Backend/Jobs_and_Queues.md`
-9. `Domain/README.md`
-10. `AI/AI_Development_Guidelines.md`
+8. `Database/Tables.md`
+9. `Database/Relationships.md`
+10. `Database/Entity_Relationships.md`
+11. `Backend/Jobs_and_Queues.md`
+12. `Domain/README.md`
+13. `AI/AI_Development_Guidelines.md`
 
-## Princípio central
+## Regra de leitura para banco
 
-Tudo no FUTSTATS pertence primeiro a um domínio de negócio.
+- Os arquivos em `Database/` funcionam como mapa estrutural de alto nivel.
+- O contrato real de colunas, enums, constraints e semantica de persistencia vive em `Implementation/Database/Table_Spec_*.md`.
+- `Database/Database_Architecture.md`, quando ainda aparecer em material antigo, deve ser tratado como apoio historico e nao como fonte principal do schema.
 
-Tecnologias como Supabase, React Native, Edge Functions, Storage, Realtime e bancos locais são ferramentas de implementação, não a fonte das regras do produto.
+## Principio central
+
+Tudo no FUTSTATS pertence primeiro a um dominio de negocio.
+
+Tecnologias como Supabase, React Native, Edge Functions, Storage, Realtime e bancos locais sao ferramentas de implementacao, nao a fonte das regras do produto.
 
 ## Regras centrais
 
-1. O uso casual nunca deve ser bloqueado por recursos avançados.
-2. Dados técnicos devem ser persistidos com nomenclatura em inglês.
-3. A experiência exibida ao usuário pode variar por tema, linguagem e contexto.
-4. Histórico e legado são consequências do uso recorrente, não barreiras de entrada.
-5. Toda regra deve preservar a integridade histórica de partidas, atletas e times.
-6. Domínio não deve depender de infraestrutura.
-7. Supabase não deve concentrar regra de negócio.
-8. React Native não deve concentrar regra de negócio central.
+1. O uso casual nunca deve ser bloqueado por recursos avancados.
+2. Dados tecnicos devem ser persistidos com nomenclatura em ingles.
+3. A experiencia exibida ao usuario pode variar por tema, linguagem e contexto.
+4. Historico e legado sao consequencias do uso recorrente, nao barreiras de entrada.
+5. Toda regra deve preservar a integridade historica de partidas, atletas e times.
+6. Dominio nao deve depender de infraestrutura.
+7. Supabase nao deve concentrar regra de negocio.
+8. React Native nao deve concentrar regra de negocio central.
 9. Efeitos colaterais relevantes devem ser modelados por eventos.
-10. Código compartilhado deve ser genérico e não esconder regras de domínio.
+10. Codigo compartilhado deve ser generico e nao esconder regras de dominio.
 
 ## Documentos principais
 
@@ -81,50 +94,54 @@ Tecnologias como Supabase, React Native, Edge Functions, Storage, Realtime e ban
 
 Documento mestre da arquitetura.
 
-Define as regras obrigatórias para organização, dependências, domínios, eventos, Supabase, React Native, shared e evolução do projeto.
+Define as regras obrigatorias para organizacao, dependencias, dominios, eventos, Supabase, React Native, shared e evolucao do projeto.
 
 ### `Recommended_Project_Structure.md`
 
-Define a estrutura recomendada de pastas e módulos.
+Define a estrutura recomendada de pastas e modulos.
 
-Deve ser usado como referência ao criar novos arquivos, módulos, casos de uso, repositórios e handlers.
+Deve ser usado como referencia ao criar novos arquivos, modulos, casos de uso, repositorios e handlers.
 
 ### `Event_Driven_Strategy.md`
 
-Define como eventos de domínio, event bus, handlers, queues e workers devem ser usados.
+Define como eventos de dominio, event bus, handlers, queues e workers devem ser usados.
 
 ### `Backend/Backend_Architecture.md`
 
-Define como o backend deve implementar os módulos, camadas e dependências.
+Define como o backend deve implementar os modulos, camadas e dependencias.
 
-### `Database/Database_Architecture.md`
+### `Database/Tables.md`, `Database/Relationships.md` e `Database/Entity_Relationships.md`
 
-Define o papel do banco de dados, RLS, constraints, snapshots, auditoria e limites de responsabilidade.
+Definem o mapa estrutural de alto nivel do banco e o relacionamento entre entidades.
+
+### `Implementation/Database/Table_Spec_*.md`
+
+Define o contrato detalhado de cada tabela e deve prevalecer quando houver conflito com material mais resumido.
 
 ### `AI/AI_Development_Guidelines.md`
 
-Define instruções específicas para desenvolvimento assistido por IA.
+Define instrucoes especificas para desenvolvimento assistido por IA.
 
 ## Impactos
 
-- Produto: define comportamento esperado e priorização técnica.
+- Produto: define comportamento esperado e priorizacao tecnica.
 - UX: orienta fluxos simples, progressivos e coerentes.
-- Backend: orienta serviços, casos de uso, eventos e invariantes.
-- Database: orienta entidades, relacionamentos, RLS, índices e auditoria.
-- API: orienta contratos estáveis e evolutivos.
-- IA: fornece contexto claro para implementação assistida.
+- Backend: orienta servicos, casos de uso, eventos e invariantes.
+- Database: orienta entidades, relacionamentos, RLS, indices e auditoria.
+- API: orienta contratos estaveis e evolutivos.
+- IA: fornece contexto claro para implementacao assistida.
 
-## Critérios de aceite arquitetural
+## Criterios de aceite arquitetural
 
 Uma nova funcionalidade deve responder:
 
-1. A qual domínio pertence?
+1. A qual dominio pertence?
 2. Qual caso de uso representa?
-3. Quais entidades ou value objects são afetados?
+3. Quais entidades ou value objects sao afetados?
 4. Precisa emitir eventos?
 5. Precisa reagir a eventos?
-6. Quais repositórios ou portas são necessários?
-7. O que é regra de negócio e o que é infraestrutura?
-8. O que precisa ser testável sem banco real?
-9. Existe impacto histórico?
-10. Existe documentação relacionada para atualizar?
+6. Quais repositorios ou portas sao necessarios?
+7. O que e regra de negocio e o que e infraestrutura?
+8. O que precisa ser testavel sem banco real?
+9. Existe impacto historico?
+10. Existe documentacao relacionada para atualizar?

@@ -1,9 +1,9 @@
 ---
 title: Product Roadmap
 status: Draft
-version: 0.5.1
+version: 0.5.2
 owner: Product Architecture
-last_update: 2026-07-07
+last_update: 2026-07-09
 related_documents: [Product_Vision.md, Product_Principles.md]
 ---
 
@@ -29,7 +29,7 @@ Preparar a arquitetura e a experiência básica.
 - Modos de linguagem.
 - Banco com nomenclatura internacional.
 
-## Fase 1: MVP Social e Casual
+## Fase 1: Social e Casual
 
 ### Objetivo
 
@@ -116,6 +116,7 @@ Aumentar engajamento e crescimento orgânico.
 - Seguidores.
 - Clipes.
 - Cards avançados.
+- Acompanhamento ao vivo simplificado por quadro.
 - Corneta pública.
 - Moderação.
 - Conquistas.
@@ -136,3 +137,4 @@ Expandir para ligas, torneios, parceiros e dados externos.
 - Árbitros verificados.
 - Times verificados.
 - Relatórios comerciais.
+- Reivindicação de histórico de time a partir de adversário local.

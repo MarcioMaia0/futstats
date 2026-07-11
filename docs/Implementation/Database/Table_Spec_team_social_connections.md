@@ -50,7 +50,7 @@ Permitir que o time:
 
 ## Regras
 
-- Deve existir no máximo uma conexão por (`team_id`, `platform`) no MVP.
+- Deve existir no máximo uma conexão por (`team_id`, `platform`) no estado atual do produto.
 - `handle` e `channel_url` podem existir mesmo antes da conexão OAuth completa.
 - Publicação automática só deve ocorrer quando:
   - `connection_status = CONNECTED`; e

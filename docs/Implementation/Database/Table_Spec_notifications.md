@@ -33,7 +33,7 @@ Especificar a tabela `notifications` para avisos in-app direcionados a usuários
 ## Regras
 
 - notificação é derivada de um fato do domínio, não substitui a transação principal;
-- o MVP pode começar com notificação in-app como canal principal;
+- o estado atual do produto pode começar com notificação in-app como canal principal;
 - push pode existir depois como projeção complementar, sem alterar a tabela base;
 - `payload` deve guardar contexto mínimo para a UI resolver o destino ou exibir resumo do evento.
 
@@ -54,7 +54,7 @@ Especificar a tabela `notifications` para avisos in-app direcionados a usuários
 Quando uma `team_join_request` for criada com sucesso:
 
 - o sistema deve gerar notificação para pessoas com gestão do time;
-- no MVP, isso significa integrantes com `DIRECTOR` ou `PRESIDENT`;
+- no estado atual do produto, isso significa integrantes com `DIRECTOR` ou `PRESIDENT`;
 - `COMMITTEE` não recebe essa notificação operacional por padrão;
 - a pessoa solicitante não precisa receber notificação espelhada deste mesmo evento;
 - a notificação deve apontar para a área de gestão de solicitações do time.

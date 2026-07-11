@@ -28,7 +28,7 @@ Definir a experiência social do FUTSTATS como principal motor de adoção inici
 
 ## Regras
 
-1. Card de resultado deve estar no MVP.
+1. Card de resultado deve estar no recorte inicial de lançamento.
 2. Usuário deve compartilhar sem preencher dados avançados.
 3. Comentários e resenha devem ter moderação.
 4. O time deve controlar exposição pública.

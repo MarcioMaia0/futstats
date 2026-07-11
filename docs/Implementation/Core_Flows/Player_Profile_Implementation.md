@@ -1,9 +1,9 @@
 ---
 title: Player Profile Implementation
 status: Draft
-version: 1.0.0
+version: 1.2.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-10
 ---
 
 # Player Profile Implementation
@@ -23,7 +23,10 @@ O perfil do atleta precisa funcionar para resenha, identidade e estatísticas. E
 - `persons`
   - avatar;
   - apelido;
-  - nome completo.
+  - nome completo;
+- `person_social_connections`
+  - links sociais publicos da pessoa;
+  - estrutura alinhada com `team_social_connections`, mas com foco atual em visibilidade e identidade publica.
 
 ### Perfil esportivo declarado
 
@@ -92,6 +95,7 @@ Deve retornar, no mínimo:
 
 - `player`
 - `person`
+- `person.social_connections`
 - `declared_profile`
 - `active_teams`
 - `statistics_overview`
@@ -99,16 +103,37 @@ Deve retornar, no mínimo:
 - `historical_positions_by_modality`
 - `permissions`
 
+Quando a estratégia de hidratação preferir reduzir chamadas adicionais, também pode retornar:
+
+- `gallery_preview_general`
+- `gallery_preview_by_modality`
+
+Regra:
+
+- `person.social_connections` deve chegar pronto para renderização:
+  - filtrado por `is_visible = true`;
+  - ordenado por `display_order asc`.
+
 ### GET /api/v1/players/:player_id/timeline
 
 Deve retornar a camada narrativa do perfil, separada da camada agregada de estatísticas.
 
-Itens iniciais do MVP:
+Itens iniciais do estado atual do produto:
 
 - entrada em time;
 - post de boas-vindas publicado;
 - participação em partida;
 - reivindicação do perfil, quando aplicável.
+
+### GET /api/v1/players/:player_id/gallery
+
+Deve retornar a camada social de mídia referenciada do atleta, separada do contrato principal do perfil.
+
+Ela precisa suportar:
+
+- escopo geral;
+- escopo por modalidade;
+- escopo por time.
 
 ## Contrato de edição recomendado
 
@@ -124,6 +149,8 @@ Escopo do fluxo de edição do atleta:
 Regra:
 
 - nome, apelido e avatar pertencem a `persons` e devem ser tratados na borda apropriada do fluxo de edição.
+- redes sociais também pertencem a `persons`, ainda que a tela de edição atual esteja ancorada no perfil do atleta.
+- a leitura pública do perfil deve consumir apenas redes com `is_visible = true`.
 
 ## API
 
@@ -134,6 +161,8 @@ PATCH /api/v1/players/{playerId}
 POST /api/v1/players/{playerId}/claim
 GET /api/v1/players/{playerId}/statistics
 GET /api/v1/players/{playerId}/timeline
+GET /api/v1/players/{playerId}/gallery
+PATCH /api/v1/players/{playerId}/social-connections
 ```
 
 ## Critérios de qualidade
@@ -149,7 +178,7 @@ GET /api/v1/players/{playerId}/timeline
 Ao usar este documento como contexto para implementação, a IA deve:
 
 1. preservar o princípio de uso casual simples;
-2. não criar campos obrigatórios que bloqueiem o MVP;
+2. não criar campos obrigatórios que bloqueiem o primeiro valor operacional;
 3. respeitar separação entre dado canônico e texto de interface;
 4. manter compatibilidade com evolução futura;
 5. sugerir migrations, testes e endpoints quando alterar domínio.

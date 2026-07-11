@@ -14,7 +14,7 @@ Registrar riscos de produto e mitigação.
 
 ## Risco 1: Complexidade inicial
 
-Se o MVP exigir muito preenchimento, o público casual abandona.
+Se o primeiro valor operacional exigir muito preenchimento, o público casual abandona.
 
 Mitigação: modo rápido de partida.
 

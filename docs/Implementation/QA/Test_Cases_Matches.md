@@ -1,9 +1,9 @@
 ---
 title: Test Cases Matches
 status: Draft
-version: 0.9.0
+version: 1.0.0
 owner: Product Architecture
-last_update: 2026-07-06
+last_update: 2026-07-09
 ---
 
 # Test Cases Matches
@@ -14,31 +14,38 @@ Listar testes de partida.
 
 ## Testes
 
-- Criar partida mínima.
-- Criar partida avançada.
+- Criar partida minima.
+- Criar partida avancada.
 - Atualizar placar.
 - Adicionar gol.
 - Remover gol.
 - Finalizar partida.
 - Cancelar partida.
 - Vincular quadros.
-- Editar após finalização com permissão.
-- Recalcular estatísticas.
+- Editar apos finalizacao com permissao.
+- Recalcular estatisticas.
+- Consolidar tempo canonico de evento com pequeno drift.
+- Barrar ou revisar evento depois do encerramento do periodo.
+- Resolver ordem canonica de eventos muito proximos.
+- Marcar baixa confianca temporal apos janela cega longa.
+- Permitir correcao manual por revisao de video.
+- Impedir ajuste automatico que atravesse `PERIOD_END`.
+- Aceitar dois eventos no mesmo segundo com `event_order` coerente.
+- Marcar para revisao sequencia improvavel logo apos `GOAL`.
 
+## Criterios de qualidade
 
-## Critérios de qualidade
-
-- O fluxo deve funcionar para usuário casual sem exigir cadastro excessivo.
-- Recursos avançados devem ser progressivos e opcionais.
-- O comportamento deve preservar consistência entre frontend, backend, API e banco.
-- Todas as entidades técnicas, payloads, enums e nomes internos devem usar inglês.
-- Textos exibidos ao usuário devem passar por camada de linguagem/configuração.
+- O fluxo deve funcionar para usuario casual sem exigir cadastro excessivo.
+- Recursos avancados devem ser progressivos e opcionais.
+- O comportamento deve preservar consistencia entre frontend, backend, API e banco.
+- Todas as entidades tecnicas, payloads, enums e nomes internos devem usar ingles.
+- Textos exibidos ao usuario devem passar por camada de linguagem/configuracao.
 
 ## Regras para IA
 
-Ao usar este documento como contexto para implementação, a IA deve:
-1. preservar o princípio de uso casual simples;
-2. não criar campos obrigatórios que bloqueiem o MVP;
-3. respeitar separação entre dado canônico e texto de interface;
-4. manter compatibilidade com evolução futura;
-5. sugerir migrations, testes e endpoints quando alterar domínio.
+Ao usar este documento como contexto para implementacao, a IA deve:
+1. preservar o principio de uso casual simples;
+2. nao criar campos obrigatorios que bloqueiem o primeiro valor operacional;
+3. respeitar separacao entre dado canonico e texto de interface;
+4. manter compatibilidade com evolucao futura;
+5. sugerir migrations, testes e endpoints quando alterar dominio.
