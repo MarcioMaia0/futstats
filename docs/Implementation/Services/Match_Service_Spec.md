@@ -1,9 +1,9 @@
 ---
 title: Match Service Spec
 status: Review
-version: 1.13.0
+version: 1.14.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-13
 related_documents: []
 ---
 
@@ -420,6 +420,82 @@ O serviço deve usar `removed_at`, `removed_by_user_id` e `removal_reason` quand
 - ao persistir:
   - atualiza `match_events`;
   - preserva coerência temporal e semântica da partida.
+
+## Leitura de momentum da partida
+
+### `getMatchMomentum`
+
+#### Objetivo
+
+Montar a leitura da `Timeline de pressão do jogo (MatchMomentumTimeline)` sem criar uma nova fonte factual.
+
+#### Fonte factual
+
+O serviço deve derivar a timeline a partir de:
+
+- `match_events`;
+- `match_goals`;
+- `match_substitutions`, quando o evento for relevante para contexto;
+- `match_players`;
+- `match_opponent_players`, quando houver adversários identificados.
+
+#### Parâmetros
+
+- `match_id`
+- `window`
+  - `5m`
+  - `10m`
+  - `15m`
+  - `full`
+- `event_type`
+  - `ALL`
+  - `SHOTS`
+  - `GOALS`
+  - `FOULS`
+  - `SAVES`
+  - `DRIBBLES`
+  - `PASSES`
+- `match_player_id` opcional
+
+#### Regras
+
+- a rota deve devolver leitura pronta para renderização;
+- o frontend não deve precisar baixar todos os eventos crus para montar a timeline;
+- o serviço deve preservar `source_type` e `source_id` para permitir detalhe do lance;
+- eventos pendentes locais podem aparecer no cliente antes da confirmação, mas a resposta do serviço representa apenas fatos confirmados;
+- `clock_heartbeat` não alimenta diretamente a timeline;
+- heartbeat serve para qualidade do `clock_second` persistido nos eventos;
+- quando houver evento com baixa confiança temporal, a leitura deve expor `time_confidence`.
+
+#### Pesos iniciais sugeridos
+
+Os pesos podem evoluir, mas o contrato inicial deve permitir:
+
+- `GOAL`: peso alto;
+- `SHOT`: peso médio;
+- `SAVE`: peso médio;
+- `FOUL`: peso baixo ou médio conforme contexto;
+- `DRIBBLE`: peso baixo ou médio;
+- `PASS`: peso baixo, quando a coleta estiver habilitada.
+
+#### Filtro por jogador
+
+Quando `match_player_id` for informado, o serviço deve considerar participação direta ou relevante em:
+
+- eventos primários;
+- eventos secundários;
+- falha de marcação;
+- gols;
+- assistências;
+- substituições de entrada e saída.
+
+#### Atualização em tempo real
+
+- criação, edição ou revisão de `match_events` deve invalidar ou atualizar a leitura de momentum;
+- criação ou edição de `match_goals` deve invalidar ou atualizar a leitura de momentum;
+- criação de `match_substitutions` pode invalidar ou atualizar a leitura quando a timeline estiver filtrada por jogador ou mostrando contexto de elenco;
+- realtime notifica mudanças;
+- a UI decide entre aplicar incremento local ou refazer `GET /api/v1/matches/:match_id/momentum`.
 
 ## `clock_heartbeat`
 

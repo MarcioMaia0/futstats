@@ -1,9 +1,9 @@
 ---
 title: Matches API
 status: Draft
-version: 1.7.0
+version: 1.8.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-13
 related_documents:
   - ./Scheduled_Matches_API.md
   - ../Domain/Matches.md
@@ -51,6 +51,7 @@ PATCH /api/v1/matches/:match_id/goals/:goal_id
 POST /api/v1/matches/:match_id/events
 PATCH /api/v1/matches/:match_id/events/:event_id
 POST /api/v1/matches/:match_id/substitutions
+GET /api/v1/matches/:match_id/momentum
 POST /api/v1/matches/:match_id/opponent-players
 PATCH /api/v1/matches/:match_id/opponent-players/:match_opponent_player_id
 POST /api/v1/matches/:match_id/operator-assignments
@@ -94,6 +95,10 @@ POST /api/v1/matches/:match_id/cancel
 - `POST /api/v1/matches/:match_id/substitutions`
   - registra troca de atletas do próprio time ou do adversário.
   - no caso do adversário, exige atores identificados de entrada e saída.
+- `GET /api/v1/matches/:match_id/momentum`
+  - retorna a leitura pronta da `Timeline de pressão do jogo (MatchMomentumTimeline)`.
+  - deve derivar de `match_events`, `match_goals` e `match_substitutions`.
+  - não cria fatos novos e não substitui as rotas de escrita.
 - `POST /api/v1/matches/:match_id/opponent-players`
   - cria ator adversario operacional para aquela partida.
   - esse cadastro é opcional e não é pré-requisito para registrar gol adversário.

@@ -1,9 +1,9 @@
 ---
 title: Match Operation Technical Contract
 status: Draft
-version: 1.11.0
+version: 1.12.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-13
 related_documents:
   - ../Frontend/Screens/Lineup_And_Live_Operation.md
   - ../Frontend/Screens/Match_Scoreboard.md
@@ -143,7 +143,15 @@ Fechar o recorte tecnico da superficie operacional de partida, incluindo:
 - `PartialSaveActionBar`
   - acoes `Salvar`, `Cancelar`, `Desfazer` em qualquer etapa do microfluxo;
 - `OperatorScopePanel`
-  - configuracao de responsabilidades dos operadores da partida.
+  - configuracao de responsabilidades dos operadores da partida;
+- `MatchMomentumTimeline`
+  - `Timeline de pressão do jogo`;
+  - leitura visual de pressão e participação por eventos;
+  - deve usar `@shopify/react-native-skia` na área gráfica;
+- `MatchMomentumPlayerPickerSheet`
+  - seletor de jogador para filtro da timeline;
+- `MatchMomentumEventPopover`
+  - detalhe curto do lance ao tocar em marcador da timeline.
 
 ## Hooks e metodos reaproveitados
 
@@ -170,6 +178,10 @@ Fechar o recorte tecnico da superficie operacional de partida, incluindo:
   - carrega e valida escopos dos operadores;
 - `useMatchClockControl`
   - controla o cronometro no operador autorizado;
+- `useMatchMomentum`
+  - hidrata e atualiza a `Timeline de pressão do jogo`;
+- `useMatchMomentumPlayerFilter`
+  - controla o filtro por jogador da timeline;
 - `useGuestPlayerQuickCreate`
   - executa o fluxo rapido de `person + player` para avulso;
 - `MatchOperationService`
@@ -194,6 +206,7 @@ Fechar o recorte tecnico da superficie operacional de partida, incluindo:
 - `POST /api/v1/matches/:match_id/events`
 - `PATCH /api/v1/matches/:match_id/events/:event_id`
 - `POST /api/v1/matches/:match_id/substitutions`
+- `GET /api/v1/matches/:match_id/momentum`
 - `POST /api/v1/matches/:match_id/opponent-players`
 - `PATCH /api/v1/matches/:match_id/opponent-players/:match_opponent_player_id`
 - `POST /api/v1/matches/:match_id/operator-assignments`
@@ -450,6 +463,32 @@ Entrega esperada:
 - operador de cronometro;
 - operadores por familia de evento;
 - revisao ampla controlada.
+
+### Fase técnica 7.5: Timeline de pressão do jogo
+
+Objetivo:
+
+- entregar leitura visual de momentum durante a partida sem criar nova fonte factual.
+
+Escopo:
+
+- `MatchMomentumTimeline`
+- `MatchMomentumPlayerPickerSheet`
+- `MatchMomentumEventPopover`
+- `useMatchMomentum`
+- `GET /api/v1/matches/:match_id/momentum`
+- realtime de eventos, gols e substituições
+
+Entrega esperada:
+
+- timeline visível por padrão na versão vertical de `Momento do jogo`;
+- timeline aberta por overlay na versão horizontal;
+- filtros por tipo de evento;
+- filtro por jogador;
+- detalhe curto do lance ao tocar em marcador;
+- suporte a eventos pendentes locais com estado visual discreto;
+- atualização por realtime;
+- uso do heartbeat apenas como base de confiança temporal dos eventos.
 
 ### Fase tecnica 8: Revisao por video
 

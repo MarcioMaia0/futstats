@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="768" y1="0" x2="768" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2ECE4"/>
+      <stop offset="1" stop-color="#E7DED4"/>
+    </linearGradient>
+    <linearGradient id="frameOuter" x1="768" y1="139" x2="768" y2="872" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5F5F5F"/>
+      <stop offset="1" stop-color="#2D2D2D"/>
+    </linearGradient>
+    <linearGradient id="frameInner" x1="768" y1="154" x2="768" y2="852" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EF7335"/>
+      <stop offset="1" stop-color="#D85C2B"/>
+    </linearGradient>
+    <linearGradient id="court" x1="768" y1="178" x2="768" y2="816" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2D6FBC"/>
+      <stop offset="1" stop-color="#16559C"/>
+    </linearGradient>
+    <radialGradient id="shineA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(540 250) rotate(90) scale(290 115)">
+      <stop stop-color="#A9D2FF" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#A9D2FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="shineB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(768 520) rotate(90) scale(320 120)">
+      <stop stop-color="#A9D2FF" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#A9D2FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="shineC" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(996 250) rotate(90) scale(290 115)">
+      <stop stop-color="#A9D2FF" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#A9D2FF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="0" y="90" width="1536" height="860" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="22" stdDeviation="22" flood-color="#000000" flood-opacity="0.16"/>
+    </filter>
+    <filter id="goalShadow" x="70" y="320" width="1396" height="310" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.18"/>
+    </filter>
+    <clipPath id="courtClip">
+      <polygon points="223,178 1278,178 1398,816 126,816"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1536" height="1024" fill="url(#bg)"/>
+
+  <g filter="url(#shadow)">
+    <polygon points="18,872 1518,872 1342,139 194,139" fill="url(#frameOuter)"/>
+    <polygon points="28,862 1508,862 1337,149 199,149" fill="#3A3A3A"/>
+    <polygon points="48,852 1488,852 1326,154 210,154" fill="url(#frameInner)"/>
+    <polygon points="223,178 1278,178 1398,816 126,816" fill="url(#court)"/>
+
+    <g clip-path="url(#courtClip)">
+      <rect x="355" y="120" width="370" height="760" fill="url(#shineA)"/>
+      <rect x="585" y="120" width="365" height="760" fill="url(#shineB)"/>
+      <rect x="815" y="120" width="370" height="760" fill="url(#shineC)"/>
+
+      <g stroke="#2A5F9F" stroke-width="1" opacity="0.22">
+        <line x1="225" y1="196" x2="1281" y2="196"/>
+        <line x1="227" y1="214" x2="1284" y2="214"/>
+        <line x1="230" y1="232" x2="1287" y2="232"/>
+        <line x1="233" y1="250" x2="1290" y2="250"/>
+        <line x1="236" y1="268" x2="1293" y2="268"/>
+        <line x1="239" y1="286" x2="1296" y2="286"/>
+        <line x1="242" y1="304" x2="1299" y2="304"/>
+        <line x1="245" y1="322" x2="1302" y2="322"/>
+        <line x1="248" y1="340" x2="1305" y2="340"/>
+        <line x1="251" y1="358" x2="1308" y2="358"/>
+        <line x1="254" y1="376" x2="1311" y2="376"/>
+        <line x1="257" y1="394" x2="1314" y2="394"/>
+        <line x1="260" y1="412" x2="1317" y2="412"/>
+        <line x1="263" y1="430" x2="1320" y2="430"/>
+        <line x1="266" y1="448" x2="1323" y2="448"/>
+        <line x1="269" y1="466" x2="1326" y2="466"/>
+        <line x1="272" y1="484" x2="1329" y2="484"/>
+        <line x1="275" y1="502" x2="1332" y2="502"/>
+        <line x1="278" y1="520" x2="1335" y2="520"/>
+        <line x1="281" y1="538" x2="1338" y2="538"/>
+        <line x1="284" y1="556" x2="1341" y2="556"/>
+        <line x1="287" y1="574" x2="1344" y2="574"/>
+        <line x1="290" y1="592" x2="1347" y2="592"/>
+        <line x1="293" y1="610" x2="1350" y2="610"/>
+        <line x1="296" y1="628" x2="1353" y2="628"/>
+        <line x1="299" y1="646" x2="1356" y2="646"/>
+        <line x1="302" y1="664" x2="1359" y2="664"/>
+        <line x1="305" y1="682" x2="1362" y2="682"/>
+        <line x1="308" y1="700" x2="1365" y2="700"/>
+        <line x1="311" y1="718" x2="1368" y2="718"/>
+        <line x1="314" y1="736" x2="1371" y2="736"/>
+        <line x1="317" y1="754" x2="1374" y2="754"/>
+        <line x1="320" y1="772" x2="1377" y2="772"/>
+        <line x1="323" y1="790" x2="1380" y2="790"/>
+      </g>
+    </g>
+
+    <g stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="223,178 1278,178 1398,816 126,816"/>
+      <line x1="751" y1="178" x2="762" y2="816"/>
+      <ellipse cx="760" cy="492" rx="118" ry="102"/>
+
+      <path d="M223 255C330 255 396 343 396 471C396 603 320 690 126 708"/>
+      <path d="M1278 255C1171 255 1105 343 1105 471C1105 603 1181 690 1398 708"/>
+
+      <path d="M252 197C258 185 271 178 286 178"/>
+      <path d="M1249 197C1243 185 1230 178 1215 178"/>
+      <path d="M98 792C108 807 123 816 145 816"/>
+      <path d="M1426 792C1416 807 1401 816 1379 816"/>
+
+      <line x1="388" y1="470" x2="405" y2="470"/>
+      <line x1="1141" y1="470" x2="1124" y2="470"/>
+
+      <line x1="532" y1="170" x2="533" y2="187"/>
+      <line x1="1002" y1="170" x2="1001" y2="187"/>
+      <line x1="440" y1="807" x2="439" y2="829"/>
+      <line x1="1094" y1="807" x2="1095" y2="829"/>
+    </g>
+
+    <circle cx="767" cy="494" r="7" fill="#FFFFFF"/>
+    <circle cx="331" cy="469" r="8" fill="#FFFFFF"/>
+    <circle cx="1203" cy="469" r="8" fill="#FFFFFF"/>
+
+    <g filter="url(#goalShadow)">
+      <g>
+        <polygon points="86,351 122,343 122,481 86,488" fill="#8B8B8B" opacity="0.5"/>
+        <g stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M121 350L121 487L151 487L151 350"/>
+          <path d="M121 350L89 380L89 517L121 487"/>
+          <path d="M151 350L183 380L183 517L151 487"/>
+        </g>
+        <g stroke="#C25135" stroke-width="1.4" opacity="0.95">
+          <line x1="89" y1="380" x2="183" y2="380"/>
+          <line x1="89" y1="396" x2="183" y2="394"/>
+          <line x1="89" y1="412" x2="183" y2="408"/>
+          <line x1="89" y1="428" x2="183" y2="422"/>
+          <line x1="89" y1="444" x2="183" y2="436"/>
+          <line x1="89" y1="460" x2="183" y2="450"/>
+          <line x1="89" y1="476" x2="183" y2="464"/>
+          <line x1="89" y1="492" x2="183" y2="478"/>
+          <line x1="98" y1="371" x2="98" y2="508"/>
+          <line x1="111" y1="359" x2="111" y2="496"/>
+          <line x1="124" y1="350" x2="124" y2="487"/>
+          <line x1="137" y1="350" x2="137" y2="487"/>
+          <line x1="150" y1="359" x2="150" y2="496"/>
+          <line x1="163" y1="371" x2="163" y2="508"/>
+          <line x1="176" y1="383" x2="176" y2="520"/>
+        </g>
+        <path d="M121 487C121 522 110 548 94 556" stroke="#FFFFFF" stroke-width="3" opacity="0.8"/>
+      </g>
+
+      <g>
+        <polygon points="1450,351 1414,343 1414,481 1450,488" fill="#8B8B8B" opacity="0.5"/>
+        <g stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1415 350L1415 487L1385 487L1385 350"/>
+          <path d="M1415 350L1447 380L1447 517L1415 487"/>
+          <path d="M1385 350L1353 380L1353 517L1385 487"/>
+        </g>
+        <g stroke="#C25135" stroke-width="1.4" opacity="0.95">
+          <line x1="1353" y1="380" x2="1447" y2="380"/>
+          <line x1="1353" y1="394" x2="1447" y2="396"/>
+          <line x1="1353" y1="408" x2="1447" y2="412"/>
+          <line x1="1353" y1="422" x2="1447" y2="428"/>
+          <line x1="1353" y1="436" x2="1447" y2="444"/>
+          <line x1="1353" y1="450" x2="1447" y2="460"/>
+          <line x1="1353" y1="464" x2="1447" y2="476"/>
+          <line x1="1353" y1="478" x2="1447" y2="492"/>
+          <line x1="1360" y1="383" x2="1360" y2="520"/>
+          <line x1="1373" y1="371" x2="1373" y2="508"/>
+          <line x1="1386" y1="359" x2="1386" y2="496"/>
+          <line x1="1399" y1="350" x2="1399" y2="487"/>
+          <line x1="1412" y1="350" x2="1412" y2="487"/>
+          <line x1="1425" y1="359" x2="1425" y2="496"/>
+          <line x1="1438" y1="371" x2="1438" y2="508"/>
+        </g>
+        <path d="M1415 487C1415 522 1426 548 1442 556" stroke="#FFFFFF" stroke-width="3" opacity="0.8"/>
+      </g>
+    </g>
+  </g>
+</svg>

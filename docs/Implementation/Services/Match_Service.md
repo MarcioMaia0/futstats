@@ -1,9 +1,9 @@
 ---
 title: Match Service
 status: Draft
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-13
 ---
 
 # Match Service
@@ -26,7 +26,8 @@ Planejamento, liberacao da agenda e presenca pertencem a `Scheduled_Match_Servic
 - controlar status;
 - finalizar partida;
 - cancelar partida;
-- registrar substituicoes;
+- registrar substituições;
+- montar leitura de momentum da partida;
 - registrar operadores da partida;
 - vincular quadros;
 - emitir eventos de dominio.
@@ -46,6 +47,7 @@ Este servico nao deve concentrar:
 - `createPartialMatchEvent`
 - `enrichMatchEvent`
 - `registerSubstitution`
+- `getMatchMomentum`
 - `registerMatchOpponentPlayer`
 - `assignMatchOperatorScope`
 - `updateScore`
@@ -75,7 +77,8 @@ Este servico nao deve concentrar:
 - Permitir edicoes controladas apos finalizacao.
 - Permitir que o mesmo evento seja salvo em estagio minimo e enriquecido depois.
 - Validar escopo operacional no backend para acoes ao vivo.
-- Distinguir ator do proprio time e ator adversario quando o scout usar memoria privada do adversario.
+- Distinguir ator do próprio time e ator adversário quando o scout usar memória privada do adversário.
+- Derivar a `Timeline de pressão do jogo` de eventos, gols e substituições canônicas, sem criar fonte factual paralela.
 
 ## Criterios de qualidade
 

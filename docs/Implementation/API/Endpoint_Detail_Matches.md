@@ -1,9 +1,9 @@
 ---
 title: Endpoint Detail Matches
 status: Draft
-version: 1.8.0
+version: 1.9.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-13
 related_documents:
   - ../../API/Matches_API.md
   - ../../API/Scheduled_Matches_API.md
@@ -37,6 +37,7 @@ PATCH /api/v1/matches/{matchId}/goals/{goalId}
 POST /api/v1/matches/{matchId}/events
 PATCH /api/v1/matches/{matchId}/events/{eventId}
 POST /api/v1/matches/{matchId}/substitutions
+GET /api/v1/matches/{matchId}/momentum
 POST /api/v1/matches/{matchId}/opponent-players
 PATCH /api/v1/matches/{matchId}/opponent-players/{matchOpponentPlayerId}
 POST /api/v1/matches/{matchId}/operator-assignments
@@ -64,6 +65,8 @@ POST /api/v1/matches/{matchId}/cancel
   - deve aceitar evento parcial.
 - `PATCH /api/v1/matches/{matchId}/events/{eventId}`
   - deve permitir enriquecer evento ja salvo parcialmente.
+- `GET /api/v1/matches/{matchId}/momentum`
+  - monta a leitura da `Timeline de pressão do jogo (MatchMomentumTimeline)`.
 - `POST /api/v1/matches/{matchId}/opponent-players`
   - cria ator adversario operacional para aquela partida.
   - esse cadastro é opcional e não pode ser exigido para registrar gol adversário.
@@ -648,6 +651,138 @@ Registrar troca de atletas durante a partida, tanto do próprio time quanto do a
 - `SUBSTITUTION_OPPONENT_PLAYER_NOT_IN_MATCH`
 - `SUBSTITUTION_CROSS_SIDE_NOT_ALLOWED`
 - `SUBSTITUTION_CLOCK_SECOND_INVALID`
+
+### `GET /api/v1/matches/{matchId}/momentum`
+
+#### Objetivo
+
+Retornar uma leitura pronta para renderizar a `Timeline de pressão do jogo (MatchMomentumTimeline)`.
+
+Essa rota é uma leitura derivada. Ela não registra evento, não corrige evento e não substitui as tabelas canônicas da partida.
+
+#### Query params
+
+```http
+GET /api/v1/matches/{matchId}/momentum?window=10m&event_type=ALL&match_player_id=uuid
+```
+
+Campos:
+
+- `window`
+  - valores: `5m`, `10m`, `15m`, `full`
+  - default: `10m`
+- `event_type`
+  - valores: `ALL`, `SHOTS`, `GOALS`, `FOULS`, `SAVES`, `DRIBBLES`, `PASSES`
+  - default: `ALL`
+- `match_player_id`
+  - opcional;
+  - quando informado, filtra eventos em que o jogador participou.
+
+#### Response conceitual
+
+```json
+{
+  "match_id": "uuid",
+  "window": "10m",
+  "filters": {
+    "event_type": "ALL",
+    "match_player_id": null
+  },
+  "clock": {
+    "current_second": 1334,
+    "period_phase": "FIRST_HALF",
+    "operation_phase": "FIRST_HALF_LIVE"
+  },
+  "teams": {
+    "home": {
+      "label": "Continental",
+      "color": "GOLD"
+    },
+    "opponent": {
+      "label": "1000 Trutas",
+      "color": "NEUTRAL"
+    }
+  },
+  "players": [
+    {
+      "match_player_id": "uuid",
+      "shirt_number": 11,
+      "display_name": "Piolho",
+      "avatar_url": "https://...",
+      "is_starter": true,
+      "is_on_field": true
+    }
+  ],
+  "timeline": [
+    {
+      "id": "uuid",
+      "source_type": "MATCH_EVENT",
+      "source_id": "uuid",
+      "clock_second": 1320,
+      "side": "HOME",
+      "event_type": "SHOT",
+      "group": "SHOTS",
+      "weight": 2,
+      "icon": "SHOT",
+      "primary_actor": {
+        "match_player_id": "uuid",
+        "shirt_number": 11,
+        "display_name": "Piolho",
+        "avatar_url": "https://..."
+      },
+      "secondary_actor": null,
+      "label": "22:00 - Chute - #11 Piolho",
+      "is_pending": false,
+      "time_confidence": "HIGH"
+    }
+  ],
+  "summary": {
+    "home_pressure_score": 18,
+    "opponent_pressure_score": 9,
+    "dominant_side": "HOME"
+  }
+}
+```
+
+#### Fontes de dados
+
+- `eventos da partida (match_events)`;
+- `gols da partida (match_goals)`;
+- `substituições da partida (match_substitutions)`, quando fizer sentido para leitura de pressão ou contexto;
+- `relacionados da partida (match_players)` para o filtro por jogador;
+- `jogadores adversários da partida (match_opponent_players)` quando houver atores adversários identificados.
+
+#### Regras de filtro por jogador
+
+Quando `match_player_id` for informado, a rota deve incluir eventos em que o jogador apareça em:
+
+- `match_events.primary_match_player_id`;
+- `match_events.secondary_match_player_id`;
+- `match_events.marking_failure_match_player_id`;
+- `match_goals.match_player_id`;
+- assistência ou participante secundário de gol, quando modelado;
+- `match_substitutions.player_in_match_player_id`;
+- `match_substitutions.player_out_match_player_id`.
+
+#### Regras de agrupamento
+
+- eventos muito próximos podem ser agrupados pela UI;
+- o backend deve devolver itens com `clock_second` e `source_id` suficientes para agrupamento seguro;
+- a rota não deve esconder eventos canônicos relevantes.
+
+#### Regras de atualização
+
+- realtime deve avisar a UI quando `match_events`, `match_goals` ou `match_substitutions` mudarem;
+- a UI pode aplicar atualização incremental;
+- quando houver dúvida, a UI deve refazer esta leitura;
+- `clock_heartbeat` alinha o tempo do evento, mas não é fonte factual da timeline.
+
+#### Erros esperados
+
+- `MATCH_NOT_FOUND`
+- `MOMENTUM_WINDOW_INVALID`
+- `MOMENTUM_EVENT_TYPE_INVALID`
+- `MOMENTUM_MATCH_PLAYER_NOT_IN_MATCH`
 
 ### `POST /api/v1/matches/{matchId}/events`
 

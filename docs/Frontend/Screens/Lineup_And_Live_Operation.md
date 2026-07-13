@@ -1,9 +1,9 @@
 ---
 title: Screen: Lineup And Live Operation
 status: Draft
-version: 1.10.0
+version: 1.11.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-13
 related_documents:
   - ../../Domain/Matches.md
   - ../../Implementation/Core_Flows/Advanced_Match_Implementation.md
@@ -263,6 +263,96 @@ Regras:
 - aceitar reposicionamento visual;
 - abrir microfluxos contextuais para registrar eventos;
 - aceitar operacao colaborativa com multiplos usuarios.
+
+### Timeline de pressão do jogo
+
+A versão vertical da tela de `Momento do jogo` deve usar a área inferior como leitura contextual da partida.
+
+Componente:
+
+- nome em português: `Timeline de pressão do jogo`
+- nome técnico: `MatchMomentumTimeline`
+- fonte de dados: `GET /api/v1/matches/:match_id/momentum`
+
+Objetivo:
+
+- mostrar se o próprio time está pressionando;
+- mostrar se o adversário está pressionando;
+- permitir leitura rápida dos últimos `5`, `10` ou `15` minutos;
+- apoiar decisão do técnico durante o jogo;
+- gerar material de resenha e comparação entre jogadores depois da partida.
+
+Regras visuais:
+
+- a timeline aparece abaixo da quadra na versão vertical;
+- deve manter a identidade dark premium do FUTSTATS;
+- não deve parecer dashboard corporativo;
+- o lado favorável ao próprio time aparece acima da linha central;
+- o lado favorável ao adversário aparece abaixo da linha central;
+- dourado representa o próprio time;
+- cinza ou vermelho discreto representa o adversário;
+- a leitura deve ser visual e rápida, sem excesso de números.
+
+Filtros obrigatórios:
+
+- `Todos (ALL)`
+- `Chutes (SHOTS)`
+- `Gols (GOALS)`
+- `Faltas (FOULS)`
+- `Defesas (SAVES)`
+- `Dribles (DRIBBLES)`
+- `Jogador (PLAYER)`
+
+Janelas obrigatórias:
+
+- `5m`
+- `10m`
+- `15m`
+- `Tempo todo (FULL)`, quando houver espaço ou em versão expandida.
+
+Filtro por jogador:
+
+- o chip `Jogador (PLAYER)` deve abrir um bottom sheet pequeno;
+- o bottom sheet deve listar titulares e reservas;
+- cada jogador deve aparecer com:
+  - foto ou avatar;
+  - número da camisa;
+  - apelido ou nome curto, quando couber;
+- ao selecionar um jogador:
+  - o chip deve mudar para algo como `#11 Piolho`;
+  - a timeline deve mostrar apenas eventos em que esse jogador participou;
+  - deve existir ação simples para limpar o filtro.
+
+Detalhe do evento:
+
+- tocar em um ícone ou marcador da timeline deve abrir um popover curto;
+- o popover deve mostrar no mínimo:
+  - tempo do lance;
+  - tipo do evento;
+  - time/lado;
+  - número e nome curto do jogador principal, quando existir;
+  - participante secundário, quando existir;
+- eventos agrupados em intervalo pequeno podem abrir lista compacta.
+
+Relação com reservas:
+
+- a aba `Reservas` continua presente na base da tela;
+- ao abrir `Reservas`, a gaveta de banco sobe por cima da timeline;
+- a timeline não deve impedir substituição ou adição de jogador atrasado.
+
+Versão horizontal:
+
+- a timeline não deve ficar fixa por padrão;
+- deve existir um botão discreto, por exemplo `Pressão`;
+- ao tocar, a timeline abre como overlay sobre a quadra;
+- fechar o overlay devolve a tela para a operação principal.
+
+Atualização:
+
+- eventos confirmados chegam por realtime;
+- eventos locais pendentes podem aparecer com estado visual discreto;
+- o heartbeat do cronômetro alinha o tempo usado nos eventos, mas não é a fonte principal da timeline;
+- a timeline deve ser recalculada quando eventos forem criados, corrigidos ou revisados.
 
 ### Operar jogo ao vivo em modo casual
 
