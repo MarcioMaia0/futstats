@@ -308,6 +308,7 @@ Note: backup folders `docs/backup-*` are intentionally excluded from this manife
 - `Implementation/Database/Table_Spec_team_blocks.md`
 - `Implementation/Database/Table_Spec_team_join_requests.md`
 - `Implementation/Database/Table_Spec_team_members.md`
+- `Implementation/Database/Table_Spec_team_modalities.md`
 - `Implementation/Database/Table_Spec_team_player_frame_defaults.md`
 - `Implementation/Database/Table_Spec_team_players.md`
 - `Implementation/Database/Table_Spec_team_social_connections.md`

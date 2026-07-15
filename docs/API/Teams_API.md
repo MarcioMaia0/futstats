@@ -1,9 +1,9 @@
 ---
 title: Teams API
 status: Draft
-version: 1.3.0
+version: 1.4.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-14
 related_documents:
   - ../Architecture/Media_Storage_Strategy.md
   - ./Scheduled_Matches_API.md
@@ -11,7 +11,11 @@ related_documents:
   - ../Frontend/Screens/Team_Settings.md
   - ../Implementation/Database/Table_Spec_media_assets.md
   - ../Implementation/Database/Table_Spec_team_join_requests.md
+  - ../Implementation/Database/Table_Spec_team_modalities.md
+  - ../Implementation/Database/Table_Spec_team_members.md
+  - ../Implementation/Database/Table_Spec_team_players.md
   - ../Implementation/Database/Table_Spec_team_social_connections.md
+  - ../Implementation/Database/Table_Spec_team_settings.md
   - ../Implementation/Database/Table_Spec_teams.md
   - ../Implementation/Database/Table_Spec_venues.md
   - ../Implementation/Database/Table_Spec_user_team_roles.md
@@ -36,6 +40,12 @@ GET /api/v1/teams/search
 GET /api/v1/teams/:team_id
 PATCH /api/v1/teams/:team_id
 GET /api/v1/teams/:team_id/members
+POST /api/v1/teams/:team_id/members
+PATCH /api/v1/teams/:team_id/members/:team_member_id
+POST /api/v1/teams/:team_id/members/:team_member_id/roles
+POST /api/v1/teams/:team_id/members/:team_member_id/roles/:role/revoke
+POST /api/v1/teams/:team_id/members/:team_member_id/player
+PATCH /api/v1/teams/:team_id/team-players/:team_player_id
 PATCH /api/v1/teams/:team_id/settings
 GET /api/v1/teams/:team_id/social-connections
 PATCH /api/v1/teams/:team_id/social-connections/:platform
@@ -63,6 +73,9 @@ Cria um time e concede papel inicial de gestão para a pessoa autenticada.
 {
   "name": "Ajax da Leste",
   "crest_upload_token": "temp-upload-token",
+  "founded_year": 2021,
+  "founded_month": 5,
+  "founded_day": 24,
   "modalities": ["FUTSAL", "SOCIETY"],
   "home_match_capability": "HAS_HOME_VENUE",
   "region_state": "SP",
@@ -116,8 +129,16 @@ Cria um time e concede papel inicial de gestão para a pessoa autenticada.
 - Se `crest_upload_token` vier inválido, expirado, consumido ou incompatível com o propósito, a criação deve falhar com erro explícito.
 - `primary_venue` é opcional.
 - `social_accounts` é opcional.
+- `founded_year`, `founded_month` e `founded_day` são opcionais.
+- o contrato deve aceitar precisão parcial da fundação:
+  - apenas `founded_year`
+  - `founded_month` + `founded_year`
+  - `founded_day` + `founded_month` + `founded_year`
+- `founded_month` não deve ser aceito sem `founded_year`.
+- `founded_day` não deve ser aceito sem `founded_month` e `founded_year`.
 - `modalities` é opcional e representa modalidades preferenciais do time.
 - `modalities` pode aceitar nenhuma, uma ou mais opções.
+- `modalities` deve ser persistido em `team_modalities`.
 - marcar modalidades aqui não limita a criação futura de partidas em outras modalidades.
 - `home_match_capability` é opcional no payload, mas o domínio deve trabalhar conceitualmente com:
   - `HAS_HOME_VENUE`
@@ -155,6 +176,7 @@ Cria um time e concede papel inicial de gestão para a pessoa autenticada.
     "id": "uuid",
     "name": "Ajax da Leste",
     "slug": "ajax-da-leste",
+    "crest_media_id": "uuid-media",
     "crest_url": "https://cdn.example.com/teams/ajax.png",
     "modalities": ["FUTSAL", "SOCIETY"],
     "home_match_capability": "HAS_HOME_VENUE",
@@ -279,6 +301,313 @@ GET /api/v1/teams/search?q=ajax&limit=10
 
 - `TEAM_SEARCH_QUERY_TOO_SHORT`
 - `INVALID_PAGINATION`
+
+### `GET /api/v1/teams/:team_id`
+
+Retorna o detalhe operacional de um time.
+
+#### Regras
+
+- Endpoint pode ser usado por pessoa autenticada.
+- A resposta deve separar o dado canônico persistido do dado derivado para leitura.
+- `crest_media_id` é a referência persistida do escudo.
+- `crest_url` é URL derivada para renderização.
+- `modalities` é derivado de `team_modalities`.
+- A resposta deve incluir contexto da pessoa autenticada em relação ao time para guiar a UI.
+
+#### Response 200
+
+```json
+{
+  "team": {
+    "id": "uuid-team",
+    "name": "Ajax da Leste",
+    "slug": "ajax-da-leste",
+    "crest_media_id": "uuid-media",
+    "crest_url": "https://cdn.example.com/teams/ajax.png",
+    "founded_year": 2021,
+    "founded_month": 5,
+    "founded_day": 24,
+    "modalities": ["FUTSAL", "SOCIETY"],
+    "home_match_capability": "HAS_HOME_VENUE",
+    "region_state": "SP",
+    "region_city": "Sao Paulo",
+    "region_zone": "Leste",
+    "primary_venue_id": "uuid-venue",
+    "colors": {
+      "first_color": "#D91E18",
+      "second_color": "#111111",
+      "third_color": "#F5F5F5"
+    }
+  },
+  "viewer_context": {
+    "is_member": true,
+    "can_manage_team": true,
+    "roles": ["DIRECTOR"],
+    "team_member_id": "uuid-team-member"
+  }
+}
+```
+
+### `PATCH /api/v1/teams/:team_id`
+
+Atualiza dados principais do time.
+
+#### Request
+
+```json
+{
+  "name": "Ajax da Leste",
+  "crest_upload_token": "temp-upload-token",
+  "modalities": ["FUTSAL", "SOCIETY", "FIELD"],
+  "home_match_capability": "HAS_HOME_VENUE",
+  "region_state": "SP",
+  "region_city": "Sao Paulo",
+  "region_zone": "Leste",
+  "primary_venue_id": "uuid-venue",
+  "colors": {
+    "first_color": "#D91E18",
+    "second_color": "#111111",
+    "third_color": "#F5F5F5"
+  }
+}
+```
+
+#### Regras
+
+- Endpoint exige sessão autenticada.
+- Exige permissão de gestão do time.
+- O patch é parcial.
+- `name`, quando alterado, pode exigir recálculo controlado de `slug`.
+- `crest_upload_token`, quando enviado, deve seguir as mesmas validações de criação.
+- Quando a promoção do escudo for concluída, `teams.crest_media_id` deve apontar para o novo `media_assets.id`.
+- `crest_url` não deve ser aceito como campo de escrita.
+- Quando `modalities` for enviado, o backend deve sincronizar a coleção final em `team_modalities`.
+- Não enviar `modalities` significa não alterar as modalidades já salvas.
+- Enviar `modalities: []` significa remover todas as modalidades preferenciais do time.
+- Alterar `home_match_capability` não altera automaticamente partidas já agendadas.
+
+### `GET /api/v1/teams/:team_id/members`
+
+Lista integrantes do time.
+
+#### Query params
+
+- `status` opcional
+- `include_roles` opcional, default `true`
+- `include_player` opcional, default `true`
+
+#### Response 200
+
+```json
+{
+  "members": [
+    {
+      "team_member_id": "uuid-team-member",
+      "person_id": "uuid-person",
+      "display_name": "Lucas",
+      "avatar_url": "https://cdn.example.com/avatars/lucas.png",
+      "membership_status": "ACTIVE",
+      "roles": ["DIRECTOR"],
+      "player": {
+        "team_player_id": "uuid-team-player",
+        "player_id": "uuid-player",
+        "status": "ACTIVE"
+      }
+    }
+  ]
+}
+```
+
+#### Regras
+
+- Endpoint exige sessão autenticada.
+- A leitura completa de integrantes exige pertencimento ao time ou permissão de gestão.
+- `team_members` responde se a pessoa pertence ao time.
+- `user_team_roles` responde se a pessoa tem função de gestão, presidência ou comissão.
+- `team_players` responde se a pessoa faz parte do elenco esportivo oficial.
+- Uma pessoa só é considerada jogador do time quando existe vínculo ativo em `team_players`.
+
+### `POST /api/v1/teams/:team_id/members`
+
+Cria ou vincula um integrante operacional ao time.
+
+#### Request
+
+```json
+{
+  "person": {
+    "person_id": null,
+    "full_name": "Lucas Silva",
+    "nickname": "Lucas",
+    "avatar_media_id": null
+  },
+  "assignment_mode": "PLAYER",
+  "player": {
+    "preferred_number": 10
+  }
+}
+```
+
+#### Valores válidos de `assignment_mode`
+
+- `MEMBER`
+- `PLAYER`
+- `COMMITTEE`
+- `DIRECTOR`
+- `PRESIDENT`
+- `PLAYER_DIRECTOR`
+- `PLAYER_PRESIDENT`
+
+#### Regras
+
+- Endpoint exige sessão autenticada.
+- Exige permissão de gestão do time.
+- Se `person.person_id` for enviado, a API tenta vincular uma pessoa já existente.
+- Se `person.person_id` não for enviado, a API cria uma `person` operacional com os dados mínimos informados.
+- O mínimo para criar pessoa operacional é `nickname` ou `full_name`.
+- `MEMBER` cria apenas `team_members`.
+- `PLAYER` cria ou reutiliza `players` e cria `team_players`.
+- Modos que incluem gestão (`COMMITTEE`, `DIRECTOR`, `PRESIDENT`, `PLAYER_DIRECTOR`, `PLAYER_PRESIDENT`) exigem que a pessoa já tenha usuário (`users`) vinculado.
+- `user_team_roles` não deve ser criado para pessoa sem usuário autenticável.
+- As regras de coexistência de papéis devem seguir `Table_Spec_user_team_roles.md`.
+- `COMMITTEE` não deve coexistir com `DIRECTOR`, `PRESIDENT` ou vínculo de jogador.
+- `DIRECTOR` e `PRESIDENT` não devem coexistir entre si.
+- `DIRECTOR` ou `PRESIDENT` podem coexistir com jogador.
+
+#### Erros conceituais
+
+- `TEAM_PERMISSION_DENIED`
+- `TEAM_MEMBER_ALREADY_ACTIVE`
+- `TEAM_MEMBER_USER_REQUIRED_FOR_ROLE`
+- `TEAM_ROLE_CONFLICT`
+- `TEAM_PLAYER_ALREADY_ACTIVE`
+
+### `PATCH /api/v1/teams/:team_id/members/:team_member_id`
+
+Atualiza estado operacional de um integrante.
+
+#### Request
+
+```json
+{
+  "membership_status": "INACTIVE",
+  "notes": "Saiu do time temporariamente"
+}
+```
+
+#### Regras
+
+- Endpoint exige sessão autenticada.
+- Exige permissão de gestão do time.
+- `membership_status` deve aceitar os valores definidos em `team_members`.
+- Remover ou inativar integrante não deve apagar histórico esportivo.
+- Se a pessoa tiver `team_players` ativo, a API deve exigir ação explícita para encerrar também o vínculo esportivo.
+
+### `POST /api/v1/teams/:team_id/members/:team_member_id/roles`
+
+Adiciona papel de gestão, comissão ou presidência para um integrante.
+
+#### Request
+
+```json
+{
+  "role": "DIRECTOR"
+}
+```
+
+#### Regras
+
+- Endpoint exige sessão autenticada.
+- Exige permissão de gestão do time.
+- O integrante precisa estar ativo em `team_members`.
+- A pessoa vinculada ao integrante precisa ter usuário (`users`) associado.
+- O papel deve respeitar as regras de coexistência de `user_team_roles`.
+- A API deve bloquear conflitos antes de persistir.
+
+### `POST /api/v1/teams/:team_id/members/:team_member_id/roles/:role/revoke`
+
+Remove um papel de gestão, comissão ou presidência.
+
+#### Regras
+
+- Endpoint exige sessão autenticada.
+- Exige permissão de gestão do time.
+- Revogar papel não remove `team_members`.
+- Revogar papel não remove `team_players`.
+- A API deve impedir que o time fique sem nenhum gestor quando a regra operacional exigir ao menos um responsável.
+
+### `POST /api/v1/teams/:team_id/members/:team_member_id/player`
+
+Transforma um integrante ativo em jogador do elenco oficial.
+
+#### Request
+
+```json
+{
+  "player_id": null,
+  "preferred_number": 10
+}
+```
+
+#### Regras
+
+- Endpoint exige sessão autenticada.
+- Exige permissão de gestão do time.
+- O integrante precisa estar ativo em `team_members`.
+- A API deve garantir que exista `players` para a mesma `person`.
+- `players.person_id` deve ser igual a `team_members.person_id`.
+- A API cria ou reativa `team_players`.
+- Essa rota não deve ser usada para jogador avulso de partida.
+
+### `PATCH /api/v1/teams/:team_id/team-players/:team_player_id`
+
+Atualiza vínculo esportivo oficial de um jogador com o time.
+
+#### Request
+
+```json
+{
+  "status": "LEFT",
+  "left_at": "2026-07-14T12:00:00Z"
+}
+```
+
+#### Regras
+
+- Endpoint exige sessão autenticada.
+- Exige permissão de gestão do time.
+- Encerrar `team_players` não remove a pessoa de `team_members` automaticamente.
+- Histórico de partidas e estatísticas já registradas deve permanecer preservado.
+
+### `PATCH /api/v1/teams/:team_id/settings`
+
+Atualiza configurações do time que não fazem parte da identidade principal.
+
+#### Request
+
+```json
+{
+  "default_theme_id": "uuid-theme",
+  "default_language_mode": "PLAIN",
+  "default_publish_team_events": true,
+  "comments_enabled_by_default": true,
+  "reactions_enabled_by_default": true,
+  "theme_color_mapping": {
+    "background_color_source": "third_color",
+    "primary_color_source": "first_color",
+    "secondary_color_source": "second_color"
+  }
+}
+```
+
+#### Regras
+
+- Endpoint exige sessão autenticada.
+- Exige permissão de gestão do time.
+- Configurações visuais do app devem ficar em `team_settings`, não em `teams`.
+- A ordem oficial das cores do time continua em `teams`.
+- `team_settings` pode definir como essas cores são usadas na interface.
 
 ## Conexões sociais do time
 

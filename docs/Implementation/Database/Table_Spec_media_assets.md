@@ -48,3 +48,4 @@ Especificar tabela `media_assets` — mídias (fotos, vídeos, thumbnails, cards
 - a promoção deve registrar quando e por qual domínio a mídia foi consumida.
 - fluxos como `Create Team Wizard` podem manter um `upload_token` temporário no rascunho local até a conclusão do caso de uso principal.
 - trocar a imagem no frontend não exige apagar imediatamente a linha temporária anterior, mas o fluxo deve considerar apenas o token mais recente como válido para envio.
+- quando uma mÃ­dia promovida for usada como escudo de um time (`purpose = 'TEAM_CREST'`) e esse time for removido, o ativo deve ser limpo junto com o time para evitar lixo lÃ³gico no domÃ­nio de identidade.

@@ -1,9 +1,9 @@
 ---
 title: Source of Truth Map
 status: Approved
-version: 1.3.0
+version: 1.4.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-14
 related_documents:
   - ../Documentation_Index.md
   - ../Product/Product_Overview.md
@@ -18,6 +18,8 @@ related_documents:
   - ../Frontend/Screens/Start_Path_Selection.md
   - ../Frontend/Reusable_Building_Blocks.md
   - ../Implementation/Database/Table_Spec_users.md
+  - ../API/Teams_API.md
+  - ../Implementation/Database/Table_Spec_teams.md
   - ../Implementation/Database/Table_Spec_team_members.md
   - ../Implementation/Database/Table_Spec_scheduled_matches.md
   - ../Implementation/Database/Table_Spec_matches.md
@@ -58,9 +60,13 @@ Definir onde cada assunto deve ser documentado e como diferenciar fonte canônic
 | Presença autenticada da pessoa | `Implementation/Database/Table_Spec_users.md` |
 | Pessoa canônica | `Implementation/Database/Table_Spec_persons.md` |
 | Perfil esportivo do atleta | `Implementation/Database/Table_Spec_players.md` |
+| Criação e gestão de times | `API/Teams_API.md` + `Implementation/Database/Table_Spec_teams.md` |
+| Modalidades preferenciais do time | `Implementation/Database/Table_Spec_team_modalities.md` |
 | Pertencimento ao time | `Implementation/Database/Table_Spec_team_members.md` |
 | Vínculo esportivo oficial com o time | `Implementation/Database/Table_Spec_team_players.md` |
 | Papéis de gestão do time | `Implementation/Database/Table_Spec_user_team_roles.md` |
+| Configurações do time | `Implementation/Database/Table_Spec_team_settings.md` |
+| Redes sociais do time | `Implementation/Database/Table_Spec_team_social_connections.md` |
 | Agenda de jogos | `API/Scheduled_Matches_API.md` + `Implementation/Database/Table_Spec_scheduled_matches.md` |
 | Resposta de presença | `Implementation/Database/Table_Spec_match_attendance_responses.md` |
 | Partida operacional | `API/Matches_API.md` + `Implementation/Database/Table_Spec_matches.md` |

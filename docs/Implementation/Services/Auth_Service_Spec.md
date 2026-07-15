@@ -60,7 +60,7 @@ No auth, isso significa:
 - autenticar por e-mail e senha;
 - iniciar e concluir login social;
 - iniciar e concluir OTP por telefone;
-- criar ou vincular `auth.users` e `public.users`;
+- criar ou vincular `auth.users`, `persons` e `public.users`;
 - calcular estado de onboarding retornado por `GET /api/v1/me`;
 - concluir `Complete Profile`;
 - expor disponibilidade de `username`;
@@ -80,6 +80,7 @@ No auth, isso significa:
 ## Portas esperadas
 
 - `AuthProviderPort`
+- `PersonRepository`
 - `UserRepository`
 - `UserPreferencesRepository`
 - `UsernameAvailabilityPort`

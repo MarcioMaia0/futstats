@@ -1,13 +1,16 @@
 ---
 title: Screen: Create Team Wizard
 status: Draft
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-14
 related_documents:
   - ../../Domain/Teams.md
   - ../../API/Identity_API.md
+  - ../../Implementation/Database/Table_Spec_media_assets.md
   - ../../Implementation/Database/Table_Spec_teams.md
+  - ../../Implementation/Database/Table_Spec_team_members.md
+  - ../../Implementation/Database/Table_Spec_team_modalities.md
   - ../../Implementation/Database/Table_Spec_team_settings.md
   - ../../Implementation/Database/Table_Spec_team_social_connections.md
   - ../../Implementation/Database/Table_Spec_themes.md
@@ -95,7 +98,8 @@ Permitir que a pessoa defina a identidade visual básica do time.
 - etapa opcional;
 - a pessoa pode avançar sem definir escudo;
 - se usar imagem, a UI deve permitir posicionar, cortar e ajustar antes da conclusão;
-- a imagem ainda não deve ser persistida como `crest_url` antes da conclusão final do wizard.
+- a imagem ainda não deve gerar `crest_media_id` definitivo antes da conclusão final do wizard.
+- `crest_url` é apenas URL de leitura derivada após o escudo ser promovido para `media_assets`.
 
 ### Contrato de upload do escudo
 
@@ -136,6 +140,9 @@ Permitir que a pessoa complemente dados operacionais e de identidade do time.
 - `modalities`
 - `home_match_capability`
 - `has_primary_venue`
+- `founded_year`
+- `founded_month`
+- `founded_day`
 - `region_state`
 - `region_city`
 - `region_zone`
@@ -149,6 +156,13 @@ Permitir que a pessoa complemente dados operacionais e de identidade do time.
 ### Regras
 
 - cores do time aparecem primeiro nesta etapa;
+- data de fundação deve aparecer acima do bloco de cores;
+- o preenchimento da fundação deve aceitar precisão parcial:
+  - apenas ano
+  - mês e ano
+  - dia, mês e ano
+- dia sem mês não deve ser aceito;
+- mês sem ano não deve ser aceito;
 - modalidade é opcional e contextual, não limitadora;
 - o time pode marcar uma ou mais modalidades preferenciais;
 - marcar modalidade no wizard não impede o time de criar ou agendar partidas em outra modalidade no futuro;
@@ -251,6 +265,7 @@ Permitir marcar as modalidades preferenciais do time sem transformar isso em lim
 - no futuro, ele pode acelerar fluxos como criação e agendamento de partidas;
 - o time continua livre para jogar outra modalidade, ainda que ela não tenha sido marcada aqui.
 - este bloco deve alimentar `modalities` como coleção, e não um campo singular.
+- a persistência canônica dessa coleção é `team_modalities`.
 
 ## Bloco: Tem quadra principal?
 
@@ -417,6 +432,7 @@ Ao concluir:
 - cria vínculo de gestão em `user_team_roles` com `DIRECTOR`;
 - persiste escudo, se existir;
 - persiste modalidade, localidade, cores e demais dados preenchidos;
+- persiste modalidades preferenciais em `team_modalities`;
 - persiste `first_color`, `second_color` e `third_color` em `teams`, quando preenchidas;
 - persiste quadra principal, se ela tiver sido criada no mini-fluxo;
 - cria `team_settings` com defaults;
@@ -480,6 +496,9 @@ Tudo deve permanecer em estado temporário do fluxo:
 Persistência esperada:
 
 - `teams`
+- `media_assets`, quando houver escudo promovido
+- `team_members`
+- `team_modalities`
 - `user_team_roles`
 - eventualmente `venues`, se a quadra tiver sido cadastrada
 - dados de tema ou identidade visual do time, conforme modelagem final

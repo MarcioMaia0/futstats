@@ -2,9 +2,9 @@
 title: Launch Snapshot Data Model
 status: Review
 document_type: Historical
-version: 2.1.0
+version: 2.2.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-14
 related_documents:
   []
 ---
@@ -18,6 +18,7 @@ related_documents:
 - `users`
 - `user_preferences`
 - `teams`
+- `team_modalities`
 - `venues`
 - `user_team_roles`
 - `team_join_requests`
@@ -72,6 +73,7 @@ players -> team_players -> teams
 players -> match_players -> matches
 match_players -> match_players_positions -> modality_positions
 teams -> team_staff_defaults -> persons
+teams -> team_modalities
 matches -> match_staff -> persons
 teams -> venues
 teams -> team_social_connections
@@ -122,6 +124,8 @@ posts -> post_distribution_attempts
   - `users`
 - Criar time:
   - `teams`
+  - `team_members`
+  - `team_modalities`
   - `user_team_roles`
   - `venues` quando houver `primary_venue`
   - `media_assets` quando houver escudo
@@ -170,15 +174,21 @@ posts -> post_distribution_attempts
 
 - id
 - name
-- crest_url
-- primary_color
-- secondary_color
-- accent_color
-- default_modality
+- crest_media_id
+- first_color
+- second_color
+- third_color
 - region_state
 - region_city
 - region_zone
 - primary_venue_id
+- created_by_user_id
+
+### team_modalities
+
+- id
+- team_id
+- modality
 - created_by_user_id
 
 ### team_players

@@ -55,8 +55,8 @@ Identity Domain
 A Sinergia:
 
 Supabase Auth (auth.users): O Supabase gerencia nativamente a tabela de login e autenticação na tabela protegida auth.users.
-Você pode configurar um Trigger no banco do Supabase que, no momento do cadastro (cadastro na tabela auth.users), cria de forma síncrona uma linha na sua tabela pública users.
-A tabela players fica totalmente exposta na sua camada pública de dados. O processo de "reivindicação de perfil" (onde um user_id é anexado de forma nullable a um player_id) é resolvido com uma transação simples no banco de dados, mantendo a integridade histórica dos gols marcados, mesmo que o usuário exclua sua conta.
+No FUTSTATS, a criação ou sincronização de identidade deve garantir a cadeia correta: auth.users -> public.users -> persons. A tabela public.users representa a presença autenticada no app, enquanto persons representa a pessoa real/canônica.
+A tabela players fica na camada pública de dados, mas não deve receber user_id diretamente. Jogador é vinculado por players.person_id -> persons.id. O processo de reivindicação de histórico deve consolidar a pessoa e o jogador canônico, reatribuindo registros esportivos quando necessário, sem depender de vínculo direto entre users e players.
 Resumo da Análise
 A escolha de React Native + Supabase é extremamente sinérgica para o FUTSTATS. Ela permite que você desenvolva o frontend e o backend de maneira unificada (usando TypeScript), reduza o custo inicial de servidores com a infraestrutura serveless do Supabase (Edge Functions, Realtime, RLS e Auth), e mantenha uma excelente performance mobile mesmo em ambientes de conectividade instável.
 

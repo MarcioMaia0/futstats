@@ -1,9 +1,9 @@
 ---
 title: ERD Overview
 status: Draft
-version: 1.1.0
+version: 1.2.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-14
 related_documents: []
 ---
 
@@ -13,20 +13,18 @@ related_documents: []
 
 ```text
 auth.users -- public.users -- user_team_roles -- teams
-        |             |
-        |             -- roles
-        |
-      persons -- players -- team_players
-                       |           |
-                       |           -- player_statistics_by_team_modality
-                       |
-                       -- player_profile_summary
-                       -- player_statistics_summary
-                       -- player_statistics_by_modality
-                       -- player_timeline_items
-                       -- player_gallery_items
-                       -- player_performance_series
-                       -- player_style_inference
+                    |
+                    -- persons -- players -- team_players
+                                     |           |
+                                     |           -- player_statistics_by_team_modality
+                                     |
+                                     -- player_profile_summary
+                                     -- player_statistics_summary
+                                     -- player_statistics_by_modality
+                                     -- player_timeline_items
+                                     -- player_gallery_items
+                                     -- player_performance_series
+                                     -- player_style_inference
 
 teams -- matches -- match_players -- player_match_statistics
   |         |            |
@@ -37,6 +35,8 @@ teams -- matches -- match_players -- player_match_statistics
   |         |-- match_referees -- referee_reviews
   |         |-- venues
   |         -- local_opponents
+  |
+  -- team_modalities
   |
   -- team_settings / themes
 ```

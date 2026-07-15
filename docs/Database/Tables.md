@@ -1,9 +1,9 @@
 ---
 title: Database Tables
 status: Draft
-version: 0.6.0
+version: 0.7.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-14
 related_documents: []
 ---
 
@@ -54,6 +54,10 @@ Representa um time.
 ### team_members
 
 Representa o pertencimento-base entre pessoa e time.
+
+### team_modalities
+
+Representa as modalidades preferenciais declaradas pelo time, sem limitar partidas futuras em outras modalidades.
 
 ### team_players
 
