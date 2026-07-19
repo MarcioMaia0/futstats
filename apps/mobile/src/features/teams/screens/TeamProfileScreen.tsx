@@ -1,22 +1,36 @@
-import { FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
+import { ThemedTextureBackground } from '../../../components/layout/ThemedTextureBackground';
 import { BackCircleButton } from '../../../components/navigation/BackCircleButton';
-import { components, defaultTheme, layout, typography } from '../../../theme';
+import { TeamExperienceBottomBar } from '../../../components/navigation/TeamExperienceBottomBar';
+import {
+  resolveExperienceTheme,
+  type TeamExperienceTheme,
+  type TeamExperienceThemeOverrides,
+  type UserThemePreferenceKey,
+} from '../../../theme/teamExperienceTheme';
 import type { TeamSummary } from '../services/teamService';
 
 type TeamProfileScreenProps = {
+  hasUnreadNotifications?: boolean;
+  themeOverrides?: TeamExperienceThemeOverrides | null;
   onBack?: () => void;
+  onOpenNotifications?: () => void;
+  onOpenRoster?: () => void;
+  onOpenSettings?: () => void;
+  onProfilePress?: () => void;
+  preferredThemeKey?: UserThemePreferenceKey | null;
   team: TeamSummary;
 };
 
 const QUICK_ACTIONS = [
-  { icon: 'futbol', label: 'Criar jogo' },
-  { icon: 'calendar-alt', label: 'Agenda' },
-  { icon: 'users', label: 'Elenco' },
-  { icon: 'bullhorn', label: 'Publicar' },
-  { icon: 'ticket-alt', label: 'Evento' },
+  { icon: 'football-outline', label: 'Criar jogo' },
+  { icon: 'calendar-outline', label: 'Agenda' },
+  { icon: 'people-outline', label: 'Elenco' },
+  { icon: 'megaphone-outline', label: 'Publicar' },
+  { icon: 'ticket-outline', label: 'Evento' },
 ] as const;
 
 const FEATURED_PLAYERS = [
@@ -26,28 +40,20 @@ const FEATURED_PLAYERS = [
 ] as const;
 
 const AGENDA_ITEMS = [
-  { date: '24', month: 'MAI', title: 'Primeiro jogo do time', subtitle: 'Defina rival, local e horario' },
+  { date: '24', month: 'MAI', title: 'Primeiro jogo do time', subtitle: 'Defina rival, local e horário' },
   { date: '31', month: 'MAI', title: 'Treino aberto', subtitle: 'Organize presenca da base' },
   { date: '07', month: 'JUN', title: 'Evento social', subtitle: 'A confirmar' },
 ] as const;
 
-const BOTTOM_ITEMS = [
-  { icon: 'home', label: 'Inicio', active: true },
-  { icon: 'search', label: 'Buscar', active: false },
-  { icon: 'bell', label: 'Notificacoes', active: false },
-  { icon: 'user', label: 'Perfil', active: false },
-] as const;
-
 const SUMMARY_FILTERS = [
-  { key: 'start', label: 'Inicio' },
+  { key: 'start', label: 'Início' },
   { key: 'year', label: 'Ano' },
   { key: 'sixMonths', label: '6 meses' },
   { key: 'threeMonths', label: '3 meses' },
-  { key: 'month', label: 'Mes' },
+  { key: 'month', label: 'Mês' },
 ] as const;
 
 type SummaryFilterKey = (typeof SUMMARY_FILTERS)[number]['key'];
-
 type MatchResult = 'V' | 'E' | 'D';
 
 type MockMatch = {
@@ -74,19 +80,47 @@ const MOCK_TEAM_MATCHES: MockMatch[] = [
   { date: '2026-01-18', goalsFor: 2, goalsAgainst: 0 },
 ] as const;
 
-export function TeamProfileScreen({ onBack, team }: TeamProfileScreenProps) {
+function hookProps(id: string) {
+  return {
+    nativeID: id,
+    testID: id,
+  };
+}
+
+export function TeamProfileScreen({
+  hasUnreadNotifications = false,
+  onBack,
+  onOpenNotifications,
+  onOpenRoster,
+  onOpenSettings,
+  onProfilePress,
+  preferredThemeKey = null,
+  team,
+  themeOverrides = null,
+}: TeamProfileScreenProps) {
   const { width } = useWindowDimensions();
   const isCompact = width < 520;
   const shouldBreakSummaryRows = width <= 768;
   const shouldStackContentCards = width <= 768;
   const pageHorizontalPadding = isCompact ? 14 : 18;
   const shellWidth = Math.min(width - pageHorizontalPadding * 2, 920);
-  const contentCardWidth = shouldStackContentCards ? '100%' : (shellWidth - 16) / 2;
+  const contentCardWidth: number | '100%' = shouldStackContentCards ? '100%' : (shellWidth - 16) / 2;
+  const crestSize = isCompact ? 136 : 224;
   const crestUri = team.crest_url;
   const cityStateLabel = [team.region_city, team.region_state].filter(Boolean).join(', ');
-  const zoneLabel = team.region_zone?.trim() || 'Zona em definicao';
+  const zoneLabel = team.region_zone?.trim() || 'Zona em definição';
   const foundedLabel = formatFoundedLabel(team);
   const [summaryFilter, setSummaryFilter] = useState<SummaryFilterKey>('start');
+  const experienceAppearance = useMemo(
+    () =>
+      resolveExperienceTheme({
+        context: 'team',
+        preferredThemeKey,
+        teamOverrides: themeOverrides,
+      }),
+    [preferredThemeKey, themeOverrides],
+  );
+  const experienceTheme = experienceAppearance.theme;
 
   const availableFilters = useMemo(() => getAvailableSummaryFilters(new Date()), []);
   const filteredMatches = useMemo(
@@ -95,441 +129,601 @@ export function TeamProfileScreen({ onBack, team }: TeamProfileScreenProps) {
   );
   const summary = useMemo(() => buildSummaryStats(filteredMatches), [filteredMatches]);
 
+  const titleClass = isCompact ? 'font-slab text-[30px] leading-[32px]' : 'font-slab text-[60px] leading-[60px]';
+  const locationClass = isCompact ? 'text-base leading-6' : 'text-[20px] leading-7';
+  const sectionTitleClass = isCompact ? 'font-slab text-[24px] leading-7 uppercase' : 'font-slab text-[30px] leading-[34px] uppercase';
+
   return (
-    <View style={styles.screen}>
-      <ScrollView contentContainerStyle={[styles.scrollContent, isCompact && styles.scrollContentCompact]} showsVerticalScrollIndicator={false}>
-        <View style={styles.shell}>
-          <View style={styles.topSection}>
-          <View style={[styles.topSectionInner, { maxWidth: shellWidth, paddingHorizontal: pageHorizontalPadding }]}>
-          <View style={styles.heroCluster}>
-          <View style={styles.topBar}>
-            <BackCircleButton onPress={onBack} />
-            <Pressable accessibilityRole="button" style={styles.shareButton}>
-              <FontAwesome5 color={defaultTheme.text.body} name="share-alt" size={isCompact ? 14 : 16} />
-              <Text style={[styles.shareButtonText, isCompact && styles.shareButtonTextCompact]}>Compartilhar</Text>
-            </Pressable>
-          </View>
-
-          <View style={[styles.quickActionsBar, isCompact && styles.quickActionsBarCompact]}>
-            {QUICK_ACTIONS.map((action) => (
-              <Pressable accessibilityRole="button" key={action.label} style={styles.quickActionItem}>
-                <FontAwesome5 color={defaultTheme.text.accent} name={action.icon} size={isCompact ? 18 : 20} />
-                <Text style={[styles.quickActionText, isCompact && styles.quickActionTextCompact]}>{action.label}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <View style={styles.quickActionsDivider} />
-
-          <View style={[styles.hero, isCompact && styles.heroCompact]}>
-            <View style={[styles.crestColumn, isCompact && styles.crestColumnCompact]}>
-              <View style={[styles.crestShell, isCompact && styles.crestShellCompact]}>
-                {crestUri ? (
-                  <Image resizeMode="contain" source={{ uri: crestUri }} style={styles.crestImage} />
-                ) : (
-                  <View style={styles.crestFallback}>
-                    <FontAwesome5 color={defaultTheme.text.accent} name="shield-alt" size={isCompact ? 72 : 88} />
+    <ThemedTextureBackground baseColor={experienceTheme.surfaceBase} mode={experienceAppearance.mode}>
+      <View className="flex-1 bg-transparent" {...hookProps('team-profile-container-main')}>
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="pb-[110px]"
+          showsVerticalScrollIndicator={false}
+          {...hookProps('team-profile-container-scroll')}
+        >
+          <View className="w-full self-center gap-4" {...hookProps('team-profile-container-shell')}>
+          <View className="w-full bg-black/50 pt-3" {...hookProps('team-profile-container-top-section')}>
+            <View className="w-full self-center" {...hookProps('team-profile-container-top-section-inner')}>
+              <View className="gap-2" {...hookProps('team-profile-container-hero-cluster')}>
+                <View className="w-full flex-row items-center justify-between px-5" {...hookProps('team-profile-container-header')}>
+                  <BackCircleButton onPress={onBack} {...hookProps('team-profile-button-back')} />
+                  <View className="flex-row items-center gap-2" {...hookProps('team-profile-container-header-actions')}>
+                    <Pressable
+                      accessibilityRole="button"
+                      className="min-h-[42px] w-[42px] flex justify-center items-center rounded-full bg-black/80"
+                      // style={{ backgroundColor: experienceTheme.surfaceCard, borderColor: experienceTheme.borderDefault, borderWidth: 1 }}
+                      {...hookProps('team-profile-button-share')}
+                    >
+                      <Ionicons color={experienceTheme.textPrimary} name="share-social-outline" size={isCompact ? 18 : 20} />
+                      {/*<Text
+                        className={isCompact ? 'ml-[10px] text-base leading-6' : 'ml-[10px] text-[20px] leading-7'}
+                        style={{ color: experienceTheme.textPrimary }}
+                      >
+                        Compartilhar
+                      </Text>*/}
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      className="h-[42px] w-[42px] items-center justify-center rounded-full bg-black/80"
+                      onPress={onOpenSettings}
+                      // style={{ backgroundColor: experienceTheme.surfaceCard, borderColor: experienceTheme.borderDefault, borderWidth: 1 }}
+                      {...hookProps('team-profile-button-settings')}
+                    >
+                      <Ionicons color={experienceTheme.textPrimary} name="settings-outline" size={isCompact ? 18 : 20} />
+                    </Pressable>
                   </View>
-                )}
-              </View>
-            </View>
-
-            <View style={styles.identityColumn}>
-              {/*
-              <View style={styles.verifiedBadge}>
-                <FontAwesome5 color={components.button.primary.textColor} name="check" size={10} />
-                <Text style={styles.verifiedBadgeText}>Verificado</Text>
-              </View>
-              */}
-
-              <Text numberOfLines={2} style={[styles.teamName, isCompact && styles.teamNameCompact]}>
-                {team.name}
-              </Text>
-
-              <View style={styles.locationRow}>
-                <FontAwesome5 color={defaultTheme.text.body} name="map-marker-alt" size={isCompact ? 14 : 16} />
-                <Text style={[styles.locationText, isCompact && styles.locationTextCompact]}>{cityStateLabel || 'Localidade em definicao'}</Text>
-                <Text style={styles.locationDivider}>•</Text>
-                <Text style={[styles.locationText, isCompact && styles.locationTextCompact]}>{zoneLabel}</Text>
-              </View>
-
-              {/*
-              <View style={styles.colorsRow}>
-                {colors.length ? (
-                  colors.slice(0, 2).map((color, index) => (
-                    <View key={`${color}-${index}`} style={styles.colorLegendItem}>
-                      <View
-                        style={[
-                          styles.colorLegendDot,
-                          index === 1 && styles.colorLegendDotOutline,
-                          {
-                            backgroundColor: index === 1 ? 'transparent' : color ?? defaultTheme.surface.input,
-                            borderColor: color ?? defaultTheme.border.emphasis,
-                          },
-                        ]}
-                      />
-                      <Text style={styles.colorLegendText}>{index === 0 ? 'Principal' : 'Secundaria'}</Text>
-                    </View>
-                  ))
-                ) : (
-                  <Text style={styles.heroSubtleText}>Cores em definicao</Text>
-                )}
-              </View>
-              */}
-
-              {foundedLabel ? (
-                <View style={styles.metaPillsRow}>
-                  <View style={styles.metaPill}>
-                    <FontAwesome5 color={defaultTheme.gray[400]} name="crown" size={12} />
-                    <Text style={styles.metaPillText}>{foundedLabel}</Text>
-                  </View>
-                  {/*
-                  <View style={styles.metaPill}>
-                    <FontAwesome5 color={defaultTheme.text.accent} name="users" size={12} />
-                    <Text numberOfLines={1} style={styles.metaPillText}>
-                      {modalitiesLabel}
-                    </Text>
-                  </View>
-                  */}
                 </View>
-              ) : null}
-            </View>
-          </View>
-          </View>
-          </View>
-          </View>
 
-          <View style={[styles.contentSection, { maxWidth: shellWidth, paddingHorizontal: pageHorizontalPadding }]}>
-          <View style={[styles.statsPanel, isCompact && styles.statsPanelCompact]}>
-            <View style={styles.summaryFiltersRow}>
-              {SUMMARY_FILTERS.map((filter) => {
-                const enabled = availableFilters[filter.key];
-                const active = summaryFilter === filter.key;
+                <View className="flex-row px-5 py-0" {...hookProps('team-profile-container-quick-actions')}>
+                  {/*{QUICK_ACTIONS.map((action) => (
+                    <Pressable
+                      accessibilityRole="button"
+                      className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
+                      key={action.label}
+                      {...hookProps(`team-profile-button-quick-action-${slugify(action.label)}`)}
+                    >
+                      <Ionicons color={experienceTheme.accentPrimary} name={action.icon} size={isCompact ? 18 : 20} />
+                      <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
+                        {action.label}
+                      </Text>
+                    </Pressable>
+                  ))}*/}
 
-                return (
                   <Pressable
                     accessibilityRole="button"
-                    disabled={!enabled}
-                    key={filter.key}
-                    onPress={() => {
-                      if (enabled) {
-                        setSummaryFilter(filter.key);
-                      }
-                    }}
-                    style={[styles.summaryFilterBadge, active && styles.summaryFilterBadgeActive, !enabled && styles.summaryFilterBadgeDisabled]}
+                    className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
+                    key="Criar jogo"
+                    {...hookProps(`team-profile-button-quick-action-criar-jogo`)}
                   >
-                    <Text
-                      style={[
-                        styles.summaryFilterBadgeText,
-                        active && styles.summaryFilterBadgeTextActive,
-                        !enabled && styles.summaryFilterBadgeTextDisabled,
-                      ]}
-                    >
-                      {filter.label}
+                    <Ionicons color={experienceTheme.accentPrimary} name="football-outline" size={isCompact ? 18 : 20} />
+                    <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
+                      {"Criar jogo"}
                     </Text>
                   </Pressable>
-                );
-              })}
-            </View>
 
-            {shouldBreakSummaryRows ? (
-              <>
-                <View style={[styles.summaryTopRow, styles.summaryTopRowCompact]}>
-                  <View style={[styles.summaryMetricItem, styles.summaryMetricItemCompact]}>
-                    <View style={styles.summaryMetricContent}>
-                      <Text numberOfLines={1} style={styles.statLabel}>
-                        Vitorias
-                      </Text>
-                      <Text style={[styles.summaryMetricValue, isCompact && styles.summaryMetricValueCompact]}>{summary.wins}</Text>
-                    </View>
-                  </View>
-                  <View style={[styles.summaryMetricItem, styles.summaryMetricItemCompact]}>
-                    <View style={styles.summaryMetricContent}>
-                      <Text numberOfLines={1} style={styles.statLabel}>
-                        Derrotas
-                      </Text>
-                      <Text style={[styles.summaryMetricValue, isCompact && styles.summaryMetricValueCompact]}>{summary.losses}</Text>
-                    </View>
-                  </View>
-                  <View style={[styles.summaryMetricItem, styles.summaryMetricItemCompact]}>
-                    <View style={styles.summaryMetricContent}>
-                      <Text numberOfLines={1} style={styles.statLabel}>
-                        Empates
-                      </Text>
-                      <Text style={[styles.summaryMetricValue, isCompact && styles.summaryMetricValueCompact]}>{summary.draws}</Text>
-                    </View>
-                  </View>
-                  <View style={[styles.summaryMetricItem, styles.summaryMetricItemCompact]}>
-                    <View style={styles.summaryMetricContent}>
-                      <Text numberOfLines={1} style={styles.statLabel}>
-                        Gols feitos
-                      </Text>
-                      <Text style={[styles.summaryMetricValue, isCompact && styles.summaryMetricValueCompact]}>{summary.goalsFor}</Text>
-                    </View>
-                  </View>
-                  <View style={[styles.summaryMetricItem, styles.summaryMetricItemCompact]}>
-                    <View style={styles.summaryMetricContent}>
-                      <Text numberOfLines={1} style={styles.statLabel}>
-                        Gols sofridos
-                      </Text>
-                      <Text style={[styles.summaryMetricValue, isCompact && styles.summaryMetricValueCompact]}>{summary.goalsAgainst}</Text>
-                    </View>
-                  </View>
+                  <Pressable
+                    accessibilityRole="button"
+                    className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
+                    key="Agenda"
+                    {...hookProps(`team-profile-button-quick-action-agenda`)}
+                  >
+                    <Ionicons color={experienceTheme.accentPrimary} name="calendar-outline" size={isCompact ? 18 : 20} />
+                    <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
+                      {"Agenda"}
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    accessibilityRole="button"
+                    className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
+                    key="Elenco"
+                    onPress={onOpenRoster}
+                    {...hookProps(`team-profile-button-quick-action-elenco`)}
+                  >
+                    <Ionicons color={experienceTheme.accentPrimary} name="people-outline" size={isCompact ? 18 : 20} />
+                    <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
+                      {"Elenco"}
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    accessibilityRole="button"
+                    className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
+                    key="Publicar"
+                    {...hookProps(`team-profile-button-quick-action-publicar`)}
+                  >
+                    <Ionicons color={experienceTheme.accentPrimary} name="megaphone-outline" size={isCompact ? 18 : 20} />
+                    <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
+                      {"Publicar"}
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    accessibilityRole="button"
+                    className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
+                    key="Evento"
+                    {...hookProps(`team-profile-button-quick-action-evento`)}
+                  >
+                    <Ionicons color={experienceTheme.accentPrimary} name="ticket-outline" size={isCompact ? 18 : 20} />
+                    <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
+                      {"Evento"}
+                    </Text>
+                  </Pressable>
+
                 </View>
 
-                <View style={[styles.summaryBottomRow, styles.summaryBottomRowCompact]}>
-                  <View style={[styles.summaryHistoryBlock, styles.summaryHistoryBlockCompact]}>
-                    <Text style={styles.statLabel}>Historico dos ultimos jogos</Text>
-                    <View style={styles.formBadgesRow}>
-                      {summary.lastResults.length ? (
-                        summary.lastResults.slice(0, 5).map((item, index) => (
-                          <View
-                            key={`${item.label}-${item.tone}-${index}`}
-                            style={[
-                              styles.formBadge,
-                              item.tone === 'positive' && styles.formBadgePositive,
-                              item.tone === 'neutral' && styles.formBadgeNeutral,
-                              item.tone === 'negative' && styles.formBadgeNegative,
-                            ]}
-                          >
-                            <Text style={styles.formBadgeText}>{item.label}</Text>
-                          </View>
-                        ))
+                <View
+                  className="h-px w-full"
+                  style={{ backgroundColor: experienceTheme.borderDefault }}
+                  {...hookProps('team-profile-divider-quick-actions')}
+                />
+
+                <View
+                  className={isCompact ? 'flex-row items-start gap-3 px-5 pb-4 pt-2' : 'flex-row items-start gap-4 px-5 pb-4 pt-2'}
+                  {...hookProps('team-profile-container-hero')}
+                >
+                  <View
+                    className="justify-start"
+                    style={{ marginRight: 12, width: crestSize }}
+                    {...hookProps('team-profile-container-crest-column')}
+                  >
+                    <View
+                      className="items-center justify-center overflow-hidden rounded-full"
+                      style={{ backgroundColor: experienceTheme.surfaceCard, height: crestSize, width: crestSize }}
+                      {...hookProps('team-profile-container-crest-shell')}
+                    >
+                      {crestUri ? (
+                        <Image
+                          resizeMode="contain"
+                          source={{ uri: crestUri }}
+                          style={{ height: '100%', width: '100%' }}
+                          {...hookProps('team-profile-image-crest')}
+                        />
                       ) : (
-                        <Text style={styles.statMeta}>Sem jogos no filtro</Text>
+                        <View className="flex-1 items-center justify-center" {...hookProps('team-profile-container-crest-fallback')}>
+                          <Ionicons color={experienceTheme.accentPrimary} name="shield-outline" size={isCompact ? 72 : 88} />
+                        </View>
                       )}
                     </View>
                   </View>
 
-                  <View style={[styles.summaryPerformanceBlock, styles.summaryPerformanceBlockCompact]}>
-                    <Text style={styles.statLabel}>Aproveitamento %</Text>
-                    <Text style={[styles.summaryMetricValue, isCompact && styles.summaryMetricValueCompact]}>{summary.performanceLabel}</Text>
-                  </View>
-                </View>
-              </>
-            ) : (
-              <View style={styles.summaryDesktopRow}>
-                <View style={[styles.summaryMetricItem, styles.summaryMetricItemDesktop]}>
-                  <View style={styles.summaryMetricContent}>
-                    <Text numberOfLines={1} style={styles.statLabel}>
-                      Vitorias
+                  <View className="flex-1 gap-3 pb-1" {...hookProps('team-profile-container-identity')}>
+                    <Text
+                      numberOfLines={2}
+                      className={titleClass}
+                      style={{ color: experienceTheme.accentPrimary }}
+                      {...hookProps('team-profile-text-team-name')}
+                    >
+                      {team.name}
                     </Text>
-                    <Text style={styles.summaryMetricValue}>{summary.wins}</Text>
-                  </View>
-                </View>
-                <View style={[styles.summaryMetricItem, styles.summaryMetricItemDesktop]}>
-                  <View style={styles.summaryMetricContent}>
-                    <Text numberOfLines={1} style={styles.statLabel}>
-                      Derrotas
-                    </Text>
-                    <Text style={styles.summaryMetricValue}>{summary.losses}</Text>
-                  </View>
-                </View>
-                <View style={[styles.summaryMetricItem, styles.summaryMetricItemDesktop]}>
-                  <View style={styles.summaryMetricContent}>
-                    <Text numberOfLines={1} style={styles.statLabel}>
-                      Empates
-                    </Text>
-                    <Text style={styles.summaryMetricValue}>{summary.draws}</Text>
-                  </View>
-                </View>
-                <View style={[styles.summaryMetricItem, styles.summaryMetricItemDesktop]}>
-                  <View style={styles.summaryMetricContent}>
-                    <Text numberOfLines={1} style={styles.statLabel}>
-                      Gols feitos
-                    </Text>
-                    <Text style={styles.summaryMetricValue}>{summary.goalsFor}</Text>
-                  </View>
-                </View>
-                <View style={[styles.summaryMetricItem, styles.summaryMetricItemDesktop]}>
-                  <View style={styles.summaryMetricContent}>
-                    <Text numberOfLines={1} style={styles.statLabel}>
-                      Gols sofridos
-                    </Text>
-                    <Text style={styles.summaryMetricValue}>{summary.goalsAgainst}</Text>
-                  </View>
-                </View>
-                <View style={styles.summaryHistoryBlockDesktop}>
-                  <Text style={styles.statLabel}>Historico dos ultimos jogos</Text>
-                  <View style={styles.formBadgesRow}>
-                    {summary.lastResults.length ? (
-                      summary.lastResults.slice(0, 5).map((item, index) => (
-                        <View
-                          key={`${item.label}-${item.tone}-${index}`}
-                          style={[
-                            styles.formBadge,
-                            item.tone === 'positive' && styles.formBadgePositive,
-                            item.tone === 'neutral' && styles.formBadgeNeutral,
-                            item.tone === 'negative' && styles.formBadgeNegative,
-                          ]}
-                        >
-                          <Text style={styles.formBadgeText}>{item.label}</Text>
+
+                    <View className="flex-row flex-wrap items-center gap-x-2" {...hookProps('team-profile-container-location')}>
+                      <Ionicons color={experienceTheme.textPrimary} name="location-outline" size={isCompact ? 14 : 16} />
+                      <Text className={locationClass} style={{ color: experienceTheme.textPrimary }}>
+                        {cityStateLabel || 'Localidade em definição'}
+                      </Text>
+                      <Text className={locationClass} style={{ color: experienceTheme.textMuted }}>
+                        •
+                      </Text>
+                      <Text className={locationClass} style={{ color: experienceTheme.textPrimary }}>
+                        {zoneLabel}
+                      </Text>
+                    </View>
+
+                    {foundedLabel ? (
+                      <View className="flex-row flex-wrap gap-[10px]" {...hookProps('team-profile-container-meta-pills')}>
+                        <View className="flex-row items-center gap-2" {...hookProps('team-profile-badge-founded')}>
+                          <Ionicons color={experienceTheme.textMuted} name="trophy-outline" size={12} />
+                          <Text className="text-[13px] font-normal leading-[18px]" style={{ color: experienceTheme.textMuted }}>
+                            {foundedLabel}
+                          </Text>
                         </View>
-                      ))
-                    ) : (
-                      <Text style={styles.statMeta}>Sem jogos no filtro</Text>
-                    )}
+                      </View>
+                    ) : null}
                   </View>
-                </View>
-                <View style={styles.summaryPerformanceBlockDesktop}>
-                  <Text style={styles.statLabel}>Aproveitamento %</Text>
-                  <Text style={styles.summaryMetricValue}>{summary.performanceLabel}</Text>
                 </View>
               </View>
-            )}
+            </View>
           </View>
 
-          <View style={styles.cardsGrid}>
-            <View style={[styles.largeCard, { width: contentCardWidth }, isCompact && styles.largeCardCompact]}>
-              <Text style={[styles.sectionHeading, isCompact && styles.sectionHeadingCompact]}>Proximo jogo</Text>
-              <View style={styles.matchHeader}>
-                <Text style={styles.matchEyebrow}>Primeiro desafio</Text>
-                <Text style={styles.matchRound}>A definir</Text>
-              </View>
-              <View style={styles.matchVisual}>
-                <View style={[styles.matchCrestBox, isCompact && styles.matchCrestBoxCompact]}>
-                  {crestUri ? (
-                    <Image resizeMode="contain" source={{ uri: crestUri }} style={styles.smallCrestImage} />
-                  ) : (
-                    <FontAwesome5 color={defaultTheme.text.accent} name="shield-alt" size={isCompact ? 34 : 42} />
-                  )}
-                </View>
-                <Text style={[styles.versusText, isCompact && styles.versusTextCompact]}>X</Text>
-                <View style={[styles.matchCrestBox, isCompact && styles.matchCrestBoxCompact]}>
-                  <FontAwesome5 color={defaultTheme.text.muted} name="shield-alt" size={isCompact ? 34 : 42} />
-                </View>
-              </View>
-              <View style={styles.matchInfoList}>
-                <Text style={styles.matchInfoText}>Defina adversario, data e local para abrir a agenda do time.</Text>
-              </View>
-              <Pressable accessibilityRole="button" style={styles.primaryInlineAction}>
-                <Text style={styles.primaryInlineActionText}>Ver detalhes</Text>
-                <FontAwesome5 color={components.button.primary.textColor} name="chevron-right" size={14} />
-              </Pressable>
-            </View>
+          <View
+            className="w-full self-center gap-4"
+            style={{ maxWidth: shellWidth, paddingHorizontal: pageHorizontalPadding }}
+            {...hookProps('team-profile-container-content')}
+          >
+            <View
+              className={isCompact ? 'gap-3 rounded-3xl px-3 py-[18px]' : 'gap-3 rounded-3xl px-4 py-[18px]'}
+              style={{ backgroundColor: experienceTheme.surfaceCard, borderColor: experienceTheme.borderDefault, borderWidth: 1 }}
+              {...hookProps('team-profile-card-summary')}
+            >
+              <View className="flex-row flex-wrap gap-2" {...hookProps('team-profile-container-summary-filters')}>
+                {SUMMARY_FILTERS.map((filter) => {
+                  const enabled = availableFilters[filter.key];
+                  const active = summaryFilter === filter.key;
 
-            <View style={[styles.largeCard, { width: contentCardWidth }, isCompact && styles.largeCardCompact]}>
-              <Text style={[styles.sectionHeading, isCompact && styles.sectionHeadingCompact]}>Ultima publicacao</Text>
-              <View style={styles.postHeader}>
-                <View style={styles.postMiniCrest}>
-                  {crestUri ? (
-                    <Image resizeMode="contain" source={{ uri: crestUri }} style={styles.postMiniCrestImage} />
-                  ) : (
-                    <FontAwesome5 color={defaultTheme.text.accent} name="shield-alt" size={16} />
-                  )}
-                </View>
-                <View style={styles.postHeaderText}>
-                  <Text style={styles.postAuthor}>{team.name}</Text>
-                  <Text style={styles.postTimestamp}>Agora mesmo</Text>
-                </View>
-                <FontAwesome5 color={defaultTheme.text.muted} name="ellipsis-v" size={14} />
-              </View>
-              <View style={styles.postPreviewImage}>
-                <View style={styles.postPreviewFallback} />
-              </View>
-              <Text style={styles.postBody}>Sua primeira publicacao do time aparece aqui. Use esse espaco para resultados, avisos e resenha.</Text>
-              <View style={styles.postFooter}>
-                <View style={styles.postMetric}>
-                  <FontAwesome5 color="#F05D5E" name="heart" size={16} />
-                  <Text style={styles.postMetricText}>0</Text>
-                </View>
-                <View style={styles.postMetric}>
-                  <FontAwesome5 color={defaultTheme.text.body} name="comment" size={16} />
-                  <Text style={styles.postMetricText}>0</Text>
-                </View>
-                <Text style={styles.cardLink}>Ver todos</Text>
-              </View>
-            </View>
-
-            <View style={[styles.largeCard, { width: contentCardWidth }, isCompact && styles.largeCardCompact]}>
-              <View style={styles.cardTopRow}>
-                <Text style={[styles.sectionHeading, isCompact && styles.sectionHeadingCompact]}>Elenco em destaque</Text>
-                <Text style={styles.cardLink}>Ver todos</Text>
-              </View>
-              <View style={styles.playersList}>
-                {FEATURED_PLAYERS.map((player, index) => (
-                  <View key={player.name} style={[styles.playerRow, index === FEATURED_PLAYERS.length - 1 && styles.playerRowLast]}>
-                    <View style={styles.playerAvatar}>
-                      <FontAwesome5 color={defaultTheme.text.accent} name="user" size={18} />
-                    </View>
-                    <View style={styles.playerMainInfo}>
-                      <Text style={styles.playerName}>
-                        <Text style={styles.playerNumber}>{player.number} </Text>
-                        {player.name}
+                  return (
+                    <Pressable
+                      accessibilityRole="button"
+                      className={['min-h-8 items-center justify-center rounded-full px-3 py-[6px]', !enabled ? 'opacity-30' : ''].join(' ')}
+                      disabled={!enabled}
+                      key={filter.key}
+                      onPress={() => {
+                        if (enabled) {
+                          setSummaryFilter(filter.key);
+                        }
+                      }}
+                      style={{
+                        backgroundColor: active ? experienceTheme.accentPrimary : 'transparent',
+                        borderColor: active ? experienceTheme.accentPrimary : experienceTheme.borderDefault,
+                        borderWidth: 1,
+                      }}
+                      {...hookProps(`team-profile-filter-${filter.key}`)}
+                    >
+                      <Text className="text-[12px] font-bold leading-4" style={{ color: active ? experienceTheme.accentOnPrimary : experienceTheme.textPrimary }}>
+                        {filter.label}
                       </Text>
-                      <Text style={styles.playerRole}>{player.role}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {shouldBreakSummaryRows ? (
+                <>
+                  <View className="w-full flex-row justify-between gap-[5px]" {...hookProps('team-profile-container-summary-top-row')}>
+                    <SummaryMetric compact label="Vitórias" theme={experienceTheme} value={summary.wins} {...hookProps('team-profile-metric-wins')} />
+                    <SummaryMetric compact label="Derrotas" theme={experienceTheme} value={summary.losses} {...hookProps('team-profile-metric-losses')} />
+                    <SummaryMetric compact label="Empates" theme={experienceTheme} value={summary.draws} {...hookProps('team-profile-metric-draws')} />
+                    <SummaryMetric compact label="Gols feitos" theme={experienceTheme} value={summary.goalsFor} {...hookProps('team-profile-metric-goals-for')} />
+                    <SummaryMetric compact label="Gols sofridos" theme={experienceTheme} value={summary.goalsAgainst} {...hookProps('team-profile-metric-goals-against')} />
+                  </View>
+
+                  <View className="w-full flex-row justify-between gap-4" {...hookProps('team-profile-container-summary-bottom-row')}>
+                    <View className="min-w-0 flex-1 gap-[10px]" {...hookProps('team-profile-container-summary-history')}>
+                      <Text className="w-full overflow-hidden text-[11px] uppercase leading-[14px]" style={{ color: experienceTheme.textMuted }}>
+                        Histórico dos últimos jogos
+                      </Text>
+                      <View className="flex-row gap-[6px]" {...hookProps('team-profile-container-summary-results')}>
+                        {summary.lastResults.length ? (
+                          summary.lastResults.slice(0, 5).map((item, index) => <ResultBadge item={item} key={`${item.label}-${item.tone}-${index}`} />)
+                        ) : (
+                          <Text className="text-[11px] leading-[14px]" style={{ color: experienceTheme.textPrimary }}>
+                            Sem jogos no filtro
+                          </Text>
+                        )}
+                      </View>
                     </View>
-                    <View style={styles.playerBadge}>
-                      <FontAwesome5 color={defaultTheme.text.accent} name={index === 0 ? 'crown' : index === 1 ? 'copyright' : 'hand-paper'} size={16} />
+
+                    <View className="min-w-0 w-[34%] gap-2" {...hookProps('team-profile-container-summary-performance')}>
+                      <Text className="w-full overflow-hidden text-[11px] uppercase leading-[14px]" style={{ color: experienceTheme.textMuted }}>
+                        Aproveitamento %
+                      </Text>
+                      <Text className={isCompact ? 'self-start font-slab text-[24px] leading-[26px]' : 'self-start font-slab text-[28px] leading-[30px]'} style={{ color: experienceTheme.accentPrimary }}>
+                        {summary.performanceLabel}
+                      </Text>
                     </View>
                   </View>
-                ))}
-              </View>
-              <View style={styles.playersFooter}>
-                <View style={styles.playersMiniAvatars}>
-                  {[0, 1, 2, 3, 4].map((item) => (
-                    <View key={item} style={styles.miniAvatar}>
-                      <FontAwesome5 color={defaultTheme.text.accent} name="user" size={10} />
+                </>
+              ) : (
+                <View className="w-full flex-row justify-between gap-3" {...hookProps('team-profile-container-summary-desktop-row')}>
+                  <SummaryMetric desktop label="Vitórias" theme={experienceTheme} value={summary.wins} {...hookProps('team-profile-metric-wins')} />
+                  <SummaryMetric desktop label="Derrotas" theme={experienceTheme} value={summary.losses} {...hookProps('team-profile-metric-losses')} />
+                  <SummaryMetric desktop label="Empates" theme={experienceTheme} value={summary.draws} {...hookProps('team-profile-metric-draws')} />
+                  <SummaryMetric desktop label="Gols feitos" theme={experienceTheme} value={summary.goalsFor} {...hookProps('team-profile-metric-goals-for')} />
+                  <SummaryMetric desktop label="Gols sofridos" theme={experienceTheme} value={summary.goalsAgainst} {...hookProps('team-profile-metric-goals-against')} />
+
+                  <View className="min-w-0 max-w-[180px] flex-1 gap-[10px]" {...hookProps('team-profile-container-summary-history')}>
+                    <Text className="w-full overflow-hidden text-[11px] uppercase leading-[14px]" style={{ color: experienceTheme.textMuted }}>
+                      Histórico dos últimos jogos
+                    </Text>
+                    <View className="flex-row gap-[6px]" {...hookProps('team-profile-container-summary-results')}>
+                      {summary.lastResults.length ? (
+                        summary.lastResults.slice(0, 5).map((item, index) => <ResultBadge item={item} key={`${item.label}-${item.tone}-${index}`} />)
+                      ) : (
+                        <Text className="text-[11px] leading-[14px]" style={{ color: experienceTheme.textPrimary }}>
+                          Sem jogos no filtro
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+
+                  <View className="min-w-[84px] max-w-[110px] gap-2" {...hookProps('team-profile-container-summary-performance')}>
+                    <Text className="w-full overflow-hidden text-[11px] uppercase leading-[14px]" style={{ color: experienceTheme.textMuted }}>
+                      Aproveitamento %
+                    </Text>
+                    <Text className="self-start font-slab text-[28px] leading-[30px]" style={{ color: experienceTheme.accentPrimary }}>
+                      {summary.performanceLabel}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </View>
+
+            <View className="flex-row flex-wrap gap-4" {...hookProps('team-profile-container-cards-grid')}>
+              <FeatureCard
+                actionLabel="Ver detalhes"
+                actionStyle="primary"
+                contentCardWidth={contentCardWidth}
+                experienceTheme={experienceTheme}
+                isCompact={isCompact}
+                title="Próximo jogo"
+                {...hookProps('team-profile-card-next-match')}
+              >
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-[11px] uppercase leading-[14px]" style={{ color: experienceTheme.textMuted }}>
+                    Primeiro desafio
+                  </Text>
+                  <Text className="text-[13px] font-bold leading-[18px]" style={{ color: experienceTheme.accentPrimary }}>
+                    A definir
+                  </Text>
+                </View>
+                <View className="flex-row items-center justify-between">
+                  <View
+                    className={isCompact ? 'h-[74px] w-[74px] items-center justify-center rounded-[20px]' : 'h-[102px] w-[102px] items-center justify-center rounded-[20px]'}
+                    style={{ backgroundColor: experienceTheme.surfaceBase }}
+                  >
+                    {crestUri ? (
+                      <Image resizeMode="contain" source={{ uri: crestUri }} style={{ height: '100%', width: '100%' }} />
+                    ) : (
+                      <Ionicons color={experienceTheme.accentPrimary} name="shield-outline" size={isCompact ? 34 : 42} />
+                    )}
+                  </View>
+                  <Text className={isCompact ? 'font-slab text-[28px] leading-[30px]' : 'font-slab text-[38px] leading-10'} style={{ color: experienceTheme.textPrimary }}>
+                    X
+                  </Text>
+                  <View
+                    className={isCompact ? 'h-[74px] w-[74px] items-center justify-center rounded-[20px]' : 'h-[102px] w-[102px] items-center justify-center rounded-[20px]'}
+                    style={{ backgroundColor: experienceTheme.surfaceBase }}
+                  >
+                    <Ionicons color={experienceTheme.textMuted} name="shield-outline" size={isCompact ? 34 : 42} />
+                  </View>
+                </View>
+                <View className="gap-2">
+                  <Text className="text-[13px] leading-[18px]" style={{ color: experienceTheme.textPrimary }}>
+                    Defina adversário, data e local para abrir a agenda do time.
+                  </Text>
+                </View>
+              </FeatureCard>
+
+              <FeatureCard contentCardWidth={contentCardWidth} experienceTheme={experienceTheme} isCompact={isCompact} title="Última publicação" {...hookProps('team-profile-card-latest-post')}>
+                <View className="flex-row items-center gap-[10px]">
+                  <View className="h-[30px] w-[30px] items-center justify-center overflow-hidden rounded-full" style={{ borderColor: experienceTheme.accentPrimary, borderWidth: 1 }}>
+                    {crestUri ? (
+                      <Image resizeMode="contain" source={{ uri: crestUri }} style={{ height: '100%', width: '100%' }} />
+                    ) : (
+                      <Ionicons color={experienceTheme.accentPrimary} name="shield-outline" size={16} />
+                    )}
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-base font-bold leading-6" style={{ color: experienceTheme.textPrimary }}>
+                      {team.name}
+                    </Text>
+                    <Text className="text-[11px] leading-[14px]" style={{ color: experienceTheme.textMuted }}>
+                      Agora mesmo
+                    </Text>
+                  </View>
+                  <Ionicons color={experienceTheme.textMuted} name="ellipsis-vertical" size={14} />
+                </View>
+                <View className="h-[118px] overflow-hidden rounded-[18px]" style={{ backgroundColor: experienceTheme.surfaceBase }} />
+                <Text className="text-[13px] leading-[18px]" style={{ color: experienceTheme.textPrimary }}>
+                  Sua primeira publicação do time aparece aqui. Use esse espaço para resultados, avisos e resenha.
+                </Text>
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center gap-[6px]">
+                    <Ionicons color={experienceTheme.accentPrimary} name="heart-outline" size={16} />
+                    <Text className="text-[13px] leading-[18px]" style={{ color: experienceTheme.textPrimary }}>
+                      0
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center gap-[6px]">
+                    <Ionicons color={experienceTheme.textPrimary} name="chatbubble-outline" size={16} />
+                    <Text className="text-[13px] leading-[18px]" style={{ color: experienceTheme.textPrimary }}>
+                      0
+                    </Text>
+                  </View>
+                  <Text className="text-[11px] leading-[14px]" style={{ color: experienceTheme.textMuted }}>
+                    Ver todos
+                  </Text>
+                </View>
+              </FeatureCard>
+
+              <FeatureCard contentCardWidth={contentCardWidth} experienceTheme={experienceTheme} isCompact={isCompact} title="Elenco em destaque" {...hookProps('team-profile-card-featured-players')}>
+                <View className="flex-row items-center justify-end">
+                  {/*<Text className="text-[11px] leading-[14px]" style={{ color: experienceTheme.textMuted }}>
+                    Ver todos
+                  </Text>*/}
+                </View>
+                <View className="gap-3">
+                  {FEATURED_PLAYERS.map((player, index) => (
+                    <View
+                      className={index === FEATURED_PLAYERS.length - 1 ? 'flex-row items-center gap-3 pb-0' : 'flex-row items-center gap-3 pb-3'}
+                      key={player.name}
+                      style={index === FEATURED_PLAYERS.length - 1 ? undefined : { borderBottomColor: experienceTheme.borderDefault, borderBottomWidth: 1 }}
+                    >
+                      <View className="h-[52px] w-[52px] items-center justify-center rounded-full" style={{ backgroundColor: experienceTheme.surfaceBase, borderColor: experienceTheme.accentPrimary, borderWidth: 1 }}>
+                        <Ionicons color={experienceTheme.accentPrimary} name="person-outline" size={18} />
+                      </View>
+                      <View className="flex-1 gap-[2px]">
+                        <Text className="text-[20px] font-bold leading-7" style={{ color: experienceTheme.textPrimary }}>
+                          <Text className="font-slab" style={{ color: experienceTheme.accentPrimary }}>
+                            {player.number}{' '}
+                          </Text>
+                          {player.name}
+                        </Text>
+                        <Text className="text-[13px] leading-[18px]" style={{ color: experienceTheme.textMuted }}>
+                          {player.role}
+                        </Text>
+                      </View>
+                      <View className="h-[42px] w-[42px] items-center justify-center rounded-[16px]" style={{ borderColor: experienceTheme.borderDefault, borderWidth: 1 }}>
+                        <Ionicons
+                          color={experienceTheme.accentPrimary}
+                          name={index === 0 ? 'trophy-outline' : index === 1 ? 'ribbon-outline' : 'hand-left-outline'}
+                          size={16}
+                        />
+                      </View>
                     </View>
                   ))}
                 </View>
-                <View style={styles.plusCountBadge}>
-                  <Text style={styles.plusCountText}>+5</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={[styles.largeCard, { width: contentCardWidth }, isCompact && styles.largeCardCompact]}>
-              <View style={styles.cardTopRow}>
-                <Text style={[styles.sectionHeading, isCompact && styles.sectionHeadingCompact]}>Agenda</Text>
-                <Text style={styles.cardLink}>Ver agenda</Text>
-              </View>
-              <View style={styles.agendaList}>
-                {AGENDA_ITEMS.map((item, index) => (
-                  <View key={`${item.month}-${item.date}`} style={[styles.agendaRow, index === AGENDA_ITEMS.length - 1 && styles.agendaRowLast]}>
-                    <View style={styles.agendaDateCard}>
-                      <Text style={styles.agendaMonth}>{item.month}</Text>
-                      <Text style={styles.agendaDay}>{item.date}</Text>
-                    </View>
-                    <View style={styles.agendaTextBlock}>
-                      <Text style={styles.agendaTitle}>{item.title}</Text>
-                      <Text style={styles.agendaSubtitle}>{item.subtitle}</Text>
-                    </View>
-                    <View style={[styles.agendaStatusDot, index === 0 && styles.agendaStatusDotActive]} />
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    {[0, 1, 2, 3, 4].map((item) => (
+                      <View className="-mr-2 h-7 w-7 items-center justify-center rounded-full" key={item} style={{ backgroundColor: experienceTheme.surfaceBase, borderColor: experienceTheme.accentPrimary, borderWidth: 1 }}>
+                        <Ionicons color={experienceTheme.accentPrimary} name="person-outline" size={10} />
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
+                  <View className="h-[30px] w-[30px] items-center justify-center rounded-full" style={{ backgroundColor: experienceTheme.surfaceBase }}>
+                    <Text className="text-[11px] leading-[14px]" style={{ color: experienceTheme.textPrimary }}>
+                      +5
+                    </Text>
+                  </View>
+                </View>
+              </FeatureCard>
+
+              <FeatureCard contentCardWidth={contentCardWidth} experienceTheme={experienceTheme} isCompact={isCompact} title="Agenda" {...hookProps('team-profile-card-agenda')}>
+                
+                <View className="gap-3">
+                  {AGENDA_ITEMS.map((item, index) => (
+                    <View
+                      className={index === AGENDA_ITEMS.length - 1 ? 'flex-row items-center gap-3 pb-0' : 'flex-row items-center gap-3 pb-3'}
+                      key={`${item.month}-${item.date}`}
+                      style={index === AGENDA_ITEMS.length - 1 ? undefined : { borderBottomColor: experienceTheme.borderDefault, borderBottomWidth: 1 }}
+                    >
+                      <View className="h-16 w-[54px] items-center justify-center rounded-2xl" style={{ backgroundColor: experienceTheme.surfaceBase }}>
+                        <Text className="text-[11px] leading-[14px]" style={{ color: experienceTheme.textMuted }}>
+                          {item.month}
+                        </Text>
+                        <Text className="font-slab text-[30px] leading-[34px]" style={{ color: experienceTheme.textPrimary }}>
+                          {item.date}
+                        </Text>
+                      </View>
+                      <View className="flex-1 gap-1">
+                        <Text className="text-base font-bold leading-6" style={{ color: experienceTheme.textPrimary }}>
+                          {item.title}
+                        </Text>
+                        <Text className="text-[13px] leading-[18px]" style={{ color: experienceTheme.textMuted }}>
+                          {item.subtitle}
+                        </Text>
+                      </View>
+                      <View className="h-[10px] w-[10px] rounded-full" style={{ backgroundColor: index === 0 ? experienceTheme.accentPrimary : experienceTheme.textMuted }} />
+                    </View>
+                  ))}
+                </View>
+                <View className="flex-row items-center justify-end">
+                  <Text className="text-[11px] leading-[14px]" style={{ color: experienceTheme.textMuted }}>
+                    Ver agenda
+                  </Text>
+                </View>
+              </FeatureCard>
             </View>
           </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
 
-      <View style={styles.bottomBar}>
-        {BOTTOM_ITEMS.slice(0, 2).map((item) => (
-          <Pressable accessibilityRole="button" key={item.label} style={styles.bottomBarItem}>
-            <FontAwesome5 color={item.active ? defaultTheme.text.accent : defaultTheme.text.muted} name={item.icon} size={22} />
-            <Text style={[styles.bottomBarText, item.active && styles.bottomBarTextActive]}>{item.label}</Text>
-          </Pressable>
-        ))}
-
-        <View style={styles.fabSpacer} />
-
-        {BOTTOM_ITEMS.slice(2).map((item) => (
-          <Pressable accessibilityRole="button" key={item.label} style={styles.bottomBarItem}>
-            <View>
-              <FontAwesome5 color={item.active ? defaultTheme.text.accent : defaultTheme.text.muted} name={item.icon} size={22} />
-              {item.label === 'Notificacoes' ? <View style={styles.notificationDot} /> : null}
-            </View>
-            <Text style={[styles.bottomBarText, item.active && styles.bottomBarTextActive]}>{item.label}</Text>
-          </Pressable>
-        ))}
+        <TeamExperienceBottomBar
+          activeKey={null}
+          hasUnreadNotifications={hasUnreadNotifications}
+          onNotificationsPress={onOpenNotifications}
+          onProfilePress={onProfilePress}
+          theme={experienceTheme}
+        />
       </View>
+    </ThemedTextureBackground>
+  );
+}
 
-      <Pressable accessibilityRole="button" style={styles.fab}>
-        <FontAwesome5 color={components.button.primary.textColor} name="plus" size={34} />
-        <Text style={styles.fabText}>Criar</Text>
-      </Pressable>
+function FeatureCard({
+  actionLabel,
+  actionStyle,
+  children,
+  contentCardWidth,
+  experienceTheme,
+  isCompact,
+  title,
+  ...props
+}: {
+  actionLabel?: string;
+  actionStyle?: 'primary';
+  children: React.ReactNode;
+  contentCardWidth: number | '100%';
+  experienceTheme: TeamExperienceTheme;
+  isCompact: boolean;
+  title: string;
+  nativeID?: string;
+  testID?: string;
+}) {
+  return (
+    <View
+      className={isCompact ? 'min-h-[252px] gap-[14px] rounded-3xl p-[14px]' : 'min-h-[286px] gap-[14px] rounded-3xl p-[18px]'}
+      style={{ backgroundColor: experienceTheme.surfaceCard, borderColor: experienceTheme.borderDefault, borderWidth: 1, width: contentCardWidth }}
+      {...props}
+    >
+      <Text className={isCompact ? 'font-slab text-[24px] leading-7 uppercase' : 'font-slab text-[30px] leading-[34px] uppercase'} style={{ color: experienceTheme.accentPrimary }}>
+        {title}
+      </Text>
+      {children}
+      {actionLabel && actionStyle === 'primary' ? (
+        <Pressable
+          accessibilityRole="button"
+          className="min-h-12 flex-row items-center justify-center gap-[10px] rounded-2xl px-[14px]"
+          style={{ backgroundColor: experienceTheme.accentPrimary }}
+        >
+          <Text className="text-[1.2rem] font-bold leading-6" style={{ color: experienceTheme.accentOnPrimary }}>
+            {actionLabel}
+          </Text>
+          <Ionicons color={experienceTheme.accentOnPrimary} name="chevron-forward" size={14} />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+type SummaryMetricProps = {
+  compact?: boolean;
+  desktop?: boolean;
+  label: string;
+  value: number;
+  theme: TeamExperienceTheme;
+  nativeID?: string;
+  testID?: string;
+};
+
+function SummaryMetric({ compact, desktop, label, value, theme, ...props }: SummaryMetricProps) {
+  const widthClass = compact ? 'w-[65px] min-w-[65px] max-w-[65px]' : desktop ? 'w-full max-w-[90px] flex-0' : 'min-w-[72px] flex-1';
+  return (
+    <View className={widthClass} {...props}>
+      <View className="w-full gap-2 overflow-hidden">
+        <Text numberOfLines={1} className="w-full overflow-hidden text-[11px] uppercase leading-[14px]" style={{ color: theme.textMuted }}>
+          {label}
+        </Text>
+        <Text className={compact ? 'self-start font-slab text-[24px] leading-[26px]' : 'self-start font-slab text-[28px] leading-[30px]'} style={{ color: theme.accentPrimary }}>
+          {value}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function ResultBadge({
+  item,
+}: {
+  item: {
+    label: MatchResult;
+    tone: 'positive' | 'neutral' | 'negative';
+  };
+}) {
+  const backgroundColor =
+    item.tone === 'positive'
+      ? '#4FA44F'
+      : item.tone === 'neutral'
+        ? '#555555'
+        : '#C3473F';
+
+  return (
+    <View className="h-[30px] w-[30px] items-center justify-center rounded-full" style={{ backgroundColor }}>
+      <Text className="text-[13px] font-bold leading-[18px] text-white">
+        {item.label}
+      </Text>
     </View>
   );
 }
@@ -573,7 +767,6 @@ function buildSummaryStats(matches: MockMatch[]) {
     lastResults: matches.slice(0, 10).map((match) => mapResultTone(match)),
     losses,
     performanceLabel: performance === null ? '--' : `${performance}%`,
-    performanceTone: performance === null ? 'Sem base' : performance >= 60 ? 'Boa fase' : performance >= 40 ? 'Oscilando' : 'Em ajuste',
     wins,
   };
 }
@@ -591,25 +784,20 @@ function mapResultTone(match: MockMatch): { label: MatchResult; tone: 'positive'
 }
 
 function getAvailableSummaryFilters(now: Date) {
-  const currentMonth = now.getMonth() + 1;
-
+  const month = now.getMonth() + 1;
   return {
     month: true,
+    sixMonths: month >= 6,
     start: true,
-    threeMonths: currentMonth > 3,
-    sixMonths: currentMonth > 6,
+    threeMonths: month >= 3,
     year: true,
-  } as const;
+  };
 }
 
 function getMatchesForFilter(matches: readonly MockMatch[], filter: SummaryFilterKey, now: Date) {
-  const sortedMatches = [...matches].sort((left, right) => right.date.localeCompare(left.date));
+  const sortedMatches = [...matches].sort((left, right) => getMatchDate(right).getTime() - getMatchDate(left).getTime());
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
-
-  if (filter === 'start') {
-    return sortedMatches;
-  }
 
   if (filter === 'year') {
     return sortedMatches.filter((match) => getMatchDate(match).getFullYear() === currentYear);
@@ -617,25 +805,26 @@ function getMatchesForFilter(matches: readonly MockMatch[], filter: SummaryFilte
 
   if (filter === 'month') {
     return sortedMatches.filter((match) => {
-      const matchDate = getMatchDate(match);
-      return matchDate.getFullYear() === currentYear && matchDate.getMonth() + 1 === currentMonth;
+      const date = getMatchDate(match);
+      return date.getFullYear() === currentYear && date.getMonth() + 1 === currentMonth;
     });
   }
 
-  if (filter === 'threeMonths' || filter === 'sixMonths') {
-    const span = filter === 'threeMonths' ? 3 : 6;
-
-    if (currentMonth <= span) {
-      return [];
-    }
-
-    const startMonth = currentMonth - span;
-    const endMonth = currentMonth - 1;
-
+  if (filter === 'threeMonths') {
+    const startMonth = currentMonth - 2;
     return sortedMatches.filter((match) => {
-      const matchDate = getMatchDate(match);
-      const matchMonth = matchDate.getMonth() + 1;
-      return matchDate.getFullYear() === currentYear && matchMonth >= startMonth && matchMonth <= endMonth;
+      const date = getMatchDate(match);
+      const month = date.getMonth() + 1;
+      return date.getFullYear() === currentYear && month >= startMonth && month <= currentMonth;
+    });
+  }
+
+  if (filter === 'sixMonths') {
+    const startMonth = currentMonth - 5;
+    return sortedMatches.filter((match) => {
+      const date = getMatchDate(match);
+      const month = date.getMonth() + 1;
+      return date.getFullYear() === currentYear && month >= startMonth && month <= currentMonth;
     });
   }
 
@@ -646,818 +835,11 @@ function getMatchDate(match: MockMatch) {
   return new Date(`${match.date}T12:00:00`);
 }
 
-const styles = StyleSheet.create({
-  agendaDateCard: {
-    alignItems: 'center',
-    backgroundColor: defaultTheme.surface.cardMuted,
-    borderRadius: layout.radius.md,
-    justifyContent: 'center',
-    minHeight: 64,
-    width: 54,
-  },
-  agendaDay: {
-    color: defaultTheme.text.body,
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: typography.textStyles.headingLg.fontSize,
-    fontWeight: typography.textStyles.headingLg.fontWeight,
-    lineHeight: typography.textStyles.headingLg.lineHeight,
-  },
-  agendaList: {
-    gap: 12,
-  },
-  agendaMonth: {
-    color: defaultTheme.text.muted,
-    fontSize: typography.textStyles.caption.fontSize,
-    lineHeight: typography.textStyles.caption.lineHeight,
-  },
-  agendaRow: {
-    alignItems: 'center',
-    borderBottomColor: defaultTheme.border.subtle,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    gap: 12,
-    paddingBottom: 12,
-  },
-  agendaRowLast: {
-    borderBottomWidth: 0,
-    paddingBottom: 0,
-  },
-  agendaStatusDot: {
-    backgroundColor: defaultTheme.text.muted,
-    borderRadius: 999,
-    height: 10,
-    width: 10,
-  },
-  agendaStatusDotActive: {
-    backgroundColor: defaultTheme.text.accent,
-  },
-  agendaSubtitle: {
-    color: defaultTheme.text.muted,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  agendaTextBlock: {
-    flex: 1,
-    gap: 4,
-  },
-  agendaTitle: {
-    color: defaultTheme.text.body,
-    fontSize: typography.textStyles.body.fontSize,
-    fontWeight: '700',
-    lineHeight: typography.textStyles.body.lineHeight,
-  },
-  bottomBar: {
-    backgroundColor: 'rgba(16, 16, 16, 0.98)',
-    borderTopColor: defaultTheme.border.subtle,
-    borderTopWidth: 1,
-    bottom: 0,
-    flexDirection: 'row',
-    height: 94,
-    left: 0,
-    paddingBottom: 14,
-    paddingHorizontal: 8,
-    paddingTop: 12,
-    position: 'absolute',
-    right: 0,
-  },
-  bottomBarItem: {
-    alignItems: 'center',
-    flex: 1,
-    gap: 8,
-    justifyContent: 'center',
-  },
-  bottomBarText: {
-    color: defaultTheme.text.muted,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  bottomBarTextActive: {
-    color: defaultTheme.text.accent,
-  },
-  cardLink: {
-    color: defaultTheme.text.subdued,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  cardTopRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  cardsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  colorLegendDot: {
-    borderRadius: 999,
-    borderWidth: 1.5,
-    height: 18,
-    width: 18,
-  },
-  colorLegendDotOutline: {
-    backgroundColor: 'transparent',
-  },
-  colorLegendItem: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-  },
-  colorLegendText: {
-    color: defaultTheme.text.subdued,
-    fontSize: typography.textStyles.body.fontSize,
-    lineHeight: typography.textStyles.body.lineHeight,
-  },
-  colorsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  crestColumn: {
-    justifyContent: 'flex-start',
-    marginRight: 16,
-    width: 224,
-  },
-  crestColumnCompact: {
-    width: 136,
-  },
-  crestFallback: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(14, 14, 14, 0.8)',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  crestImage: {
-    height: '100%',
-    width: '100%',
-  },
-  crestShell: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(8, 8, 8, 0.84)',
-    borderRadius: 999,
-    height: 224,
-    justifyContent: 'center',
-    overflow: 'hidden',
-    width: 224,
-  },
-  crestShellCompact: {
-    height: 136,
-    width: 136,
-  },
-  fab: {
-    alignItems: 'center',
-    backgroundColor: defaultTheme.surface.primaryAction,
-    borderRadius: 999,
-    bottom: 28,
-    height: 120,
-    justifyContent: 'center',
-    left: '50%',
-    marginLeft: -60,
-    position: 'absolute',
-    width: 120,
-  },
-  fabSpacer: {
-    width: 120,
-  },
-  fabText: {
-    color: components.button.primary.textColor,
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: typography.textStyles.headingMd.fontSize,
-    fontWeight: typography.textStyles.headingMd.fontWeight,
-    lineHeight: typography.textStyles.headingMd.lineHeight,
-    marginTop: 6,
-    textTransform: 'uppercase',
-  },
-  formBadge: {
-    alignItems: 'center',
-    borderRadius: 999,
-    height: 30,
-    justifyContent: 'center',
-    width: 30,
-  },
-  formBadgeNegative: {
-    backgroundColor: '#C3473F',
-  },
-  formBadgeNeutral: {
-    backgroundColor: '#555555',
-  },
-  formBadgePositive: {
-    backgroundColor: '#4FA44F',
-  },
-  formBadgesRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  formBadgeText: {
-    color: defaultTheme.text.body,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    fontWeight: '700',
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  formMeta: {
-    color: '#67C56A',
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: typography.textStyles.headingSm.fontSize,
-    fontWeight: typography.textStyles.headingSm.fontWeight,
-    lineHeight: typography.textStyles.headingSm.lineHeight,
-  },
-  hero: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 16,
-    minHeight: 250,
-    paddingBottom: 16,
-    paddingTop: 8,
-  },
-  heroCluster: {
-    gap: 8,
-  },
-  topSection: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    width: '100%',
-  },
-  topSectionInner: {
-    alignSelf: 'center',
-    width: '100%',
-  },
-  quickActionsDivider: {
-    backgroundColor: defaultTheme.border.subtle,
-    height: 1,
-    width: '100%',
-  },
-  heroCompact: {
-    gap: 12,
-    minHeight: 208,
-  },
-  heroSubtleText: {
-    color: defaultTheme.text.muted,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  identityColumn: {
-    flex: 1,
-    gap: 12,
-    justifyContent: 'flex-start',
-    paddingBottom: 4,
-  },
-  largeCard: {
-    backgroundColor: 'rgba(24, 24, 24, 0.96)',
-    borderColor: defaultTheme.border.default,
-    borderRadius: layout.radius['2xl'],
-    borderWidth: 1,
-    gap: 14,
-    minHeight: 286,
-    padding: 18,
-  },
-  largeCardCompact: {
-    minHeight: 252,
-    padding: 14,
-  },
-  locationDivider: {
-    color: defaultTheme.text.muted,
-    fontSize: typography.textStyles.body.fontSize,
-    lineHeight: typography.textStyles.body.lineHeight,
-  },
-  locationRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  locationText: {
-    color: defaultTheme.text.subdued,
-    fontSize: typography.textStyles.headingMd.fontSize,
-    lineHeight: typography.textStyles.headingMd.lineHeight,
-  },
-  locationTextCompact: {
-    fontSize: typography.textStyles.body.fontSize,
-    lineHeight: typography.textStyles.body.lineHeight,
-  },
-  matchCrestBox: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
-    borderColor: defaultTheme.border.subtle,
-    borderRadius: layout.radius.xl,
-    borderWidth: 1,
-    height: 102,
-    justifyContent: 'center',
-    width: 102,
-  },
-  matchCrestBoxCompact: {
-    height: 74,
-    width: 74,
-  },
-  matchEyebrow: {
-    color: defaultTheme.text.subdued,
-    fontSize: typography.textStyles.caption.fontSize,
-    lineHeight: typography.textStyles.caption.lineHeight,
-    textTransform: 'uppercase',
-  },
-  matchHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  matchInfoList: {
-    gap: 8,
-  },
-  matchInfoText: {
-    color: defaultTheme.text.subdued,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  matchRound: {
-    color: defaultTheme.text.accent,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    fontWeight: '700',
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  matchVisual: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  metaPill: {
-    alignItems: 'center',
-    borderRadius: 999,
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-  },
-  metaPillsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  metaPillText: {
-    color: defaultTheme.gray[400],
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    fontWeight: '400',
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  miniAvatar: {
-    alignItems: 'center',
-    backgroundColor: defaultTheme.surface.cardMuted,
-    borderColor: defaultTheme.border.emphasis,
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 28,
-    justifyContent: 'center',
-    marginRight: -8,
-    width: 28,
-  },
-  notificationDot: {
-    backgroundColor: defaultTheme.text.accent,
-    borderRadius: 999,
-    height: 8,
-    position: 'absolute',
-    right: -2,
-    top: -2,
-    width: 8,
-  },
-  playerAvatar: {
-    alignItems: 'center',
-    backgroundColor: defaultTheme.surface.cardMuted,
-    borderColor: defaultTheme.border.emphasis,
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 52,
-    justifyContent: 'center',
-    width: 52,
-  },
-  playerBadge: {
-    alignItems: 'center',
-    borderColor: defaultTheme.border.default,
-    borderRadius: layout.radius.lg,
-    borderWidth: 1,
-    height: 42,
-    justifyContent: 'center',
-    width: 42,
-  },
-  playerMainInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  playerName: {
-    color: defaultTheme.text.body,
-    fontSize: typography.textStyles.headingMd.fontSize,
-    fontWeight: '700',
-    lineHeight: typography.textStyles.headingMd.lineHeight,
-  },
-  playerNumber: {
-    color: defaultTheme.text.accent,
-    fontFamily: typography.families.brandDisplayAlt,
-  },
-  playerRole: {
-    color: defaultTheme.text.muted,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  playerRow: {
-    alignItems: 'center',
-    borderBottomColor: defaultTheme.border.subtle,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    gap: 12,
-    paddingBottom: 12,
-  },
-  playerRowLast: {
-    borderBottomWidth: 0,
-    paddingBottom: 0,
-  },
-  playersFooter: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  playersList: {
-    gap: 12,
-  },
-  playersMiniAvatars: {
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  plusCountBadge: {
-    alignItems: 'center',
-    backgroundColor: defaultTheme.surface.cardMuted,
-    borderRadius: 999,
-    height: 30,
-    justifyContent: 'center',
-    width: 30,
-  },
-  plusCountText: {
-    color: defaultTheme.text.body,
-    fontSize: typography.textStyles.caption.fontSize,
-    lineHeight: typography.textStyles.caption.lineHeight,
-  },
-  postAuthor: {
-    color: defaultTheme.text.body,
-    fontSize: typography.textStyles.body.fontSize,
-    fontWeight: '700',
-    lineHeight: typography.textStyles.body.lineHeight,
-  },
-  postBody: {
-    color: defaultTheme.text.body,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  postFooter: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  postHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
-  postHeaderText: {
-    flex: 1,
-  },
-  postMetric: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 6,
-  },
-  postMetricText: {
-    color: defaultTheme.text.body,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  postMiniCrest: {
-    alignItems: 'center',
-    borderColor: defaultTheme.border.emphasis,
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 30,
-    justifyContent: 'center',
-    overflow: 'hidden',
-    width: 30,
-  },
-  postMiniCrestImage: {
-    height: '100%',
-    width: '100%',
-  },
-  postPreviewImage: {
-    borderRadius: layout.radius.lg,
-    height: 118,
-    overflow: 'hidden',
-  },
-  postPreviewFallback: {
-    backgroundColor: 'rgba(42, 42, 42, 0.9)',
-    flex: 1,
-  },
-  postTimestamp: {
-    color: defaultTheme.text.muted,
-    fontSize: typography.textStyles.caption.fontSize,
-    lineHeight: typography.textStyles.caption.lineHeight,
-  },
-  primaryInlineAction: {
-    alignItems: 'center',
-    backgroundColor: defaultTheme.surface.primaryAction,
-    borderRadius: layout.radius.md,
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'center',
-    minHeight: 48,
-    paddingHorizontal: 14,
-  },
-  primaryInlineActionText: {
-    color: components.button.primary.textColor,
-    fontSize: components.button.primary.textStyle.fontSize,
-    fontWeight: components.button.primary.textStyle.fontWeight,
-    lineHeight: components.button.primary.textStyle.lineHeight,
-  },
-  quickActionItem: {
-    alignItems: 'center',
-    flex: 1,
-    gap: 5,
-    justifyContent: 'center',
-    minHeight: 50,
-    position: 'relative',
-  },
-  quickActionsBar: {
-    flexDirection: 'row',
-    marginBottom: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    zIndex: 2,
-  },
-  quickActionsBarCompact: {
-    marginBottom: 0,
-  },
-  quickActionText: {
-    color: defaultTheme.gray[400],
-    fontSize: typography.baseFontSize * 0.75,
-    lineHeight: typography.baseFontSize * 0.875,
-    textAlign: 'center',
-  },
-  quickActionTextCompact: {
-    fontSize: typography.baseFontSize * 0.75,
-    lineHeight: typography.baseFontSize * 0.875,
-  },
-  contentSection: {
-    alignSelf: 'center',
-    gap: 16,
-    width: '100%',
-  },
-  screen: {
-    backgroundColor: 'transparent',
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 190,
-    paddingTop: layout.shell.pagePaddingTop,
-  },
-  scrollContentCompact: {
-    paddingTop: 18,
-  },
-  sectionHeading: {
-    color: defaultTheme.text.accent,
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: typography.textStyles.headingLg.fontSize,
-    fontWeight: typography.textStyles.headingLg.fontWeight,
-    lineHeight: typography.textStyles.headingLg.lineHeight,
-    textTransform: 'uppercase',
-  },
-  sectionHeadingCompact: {
-    fontSize: typography.textStyles.headingMd.fontSize,
-    lineHeight: typography.textStyles.headingMd.lineHeight,
-  },
-  shareButton: {
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(22, 22, 22, 0.7)',
-    borderColor: 'rgba(255, 255, 255, 0.34)',
-    borderRadius: 999,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 10,
-    minHeight: 46,
-    paddingHorizontal: 18,
-  },
-  shareButtonText: {
-    color: defaultTheme.text.body,
-    fontSize: typography.textStyles.headingMd.fontSize,
-    lineHeight: typography.textStyles.headingMd.lineHeight,
-  },
-  shareButtonTextCompact: {
-    fontSize: typography.textStyles.body.fontSize,
-    lineHeight: typography.textStyles.body.lineHeight,
-  },
-  shell: {
-    alignSelf: 'center',
-    gap: 16,
-    maxWidth: 920,
-    width: '100%',
-  },
-  smallCrestImage: {
-    height: '100%',
-    width: '100%',
-  },
-  statColumn: {
-    flex: 1,
-    gap: 8,
-    minWidth: 56,
-  },
-  statLabel: {
-    color: defaultTheme.text.muted,
-    fontSize: typography.textStyles.caption.fontSize,
-    lineHeight: typography.textStyles.caption.lineHeight,
-    overflow: 'hidden',
-    textTransform: 'uppercase',
-    width: '100%',
-  },
-  statMeta: {
-    color: defaultTheme.text.subdued,
-    fontSize: typography.textStyles.caption.fontSize,
-    lineHeight: typography.textStyles.caption.lineHeight,
-  },
-  statsDivider: {
-    backgroundColor: defaultTheme.border.subtle,
-    height: 102,
-    width: 1,
-  },
-  statsPanel: {
-    backgroundColor: 'rgba(24, 24, 24, 0.96)',
-    borderColor: defaultTheme.border.default,
-    borderRadius: layout.radius['2xl'],
-    borderWidth: 1,
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-  },
-  statsPanelCompact: {
-    paddingHorizontal: 12,
-  },
-  summaryBottomRow: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 16,
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  summaryBottomRowCompact: {
-    alignItems: 'stretch',
-  },
-  summaryDesktopRow: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  summaryFilterBadge: {
-    alignItems: 'center',
-    borderColor: defaultTheme.border.default,
-    borderRadius: 999,
-    borderWidth: 1,
-    minHeight: 32,
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  summaryFilterBadgeActive: {
-    backgroundColor: defaultTheme.surface.primaryAction,
-    borderColor: defaultTheme.surface.primaryAction,
-  },
-  summaryFilterBadgeDisabled: {
-    opacity: 0.32,
-  },
-  summaryFilterBadgeText: {
-    color: defaultTheme.text.subdued,
-    fontSize: typography.textStyles.caption.fontSize,
-    fontWeight: '700',
-    lineHeight: typography.textStyles.caption.lineHeight,
-  },
-  summaryFilterBadgeTextActive: {
-    color: components.button.primary.textColor,
-  },
-  summaryFilterBadgeTextDisabled: {
-    color: defaultTheme.text.muted,
-  },
-  summaryFiltersRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  summaryHistoryBlock: {
-    flex: 1.6,
-    gap: 10,
-    minWidth: 0,
-  },
-  summaryHistoryBlockCompact: {
-    minWidth: 0,
-  },
-  summaryHistoryBlockDesktop: {
-    flex: 1.5,
-    gap: 10,
-    maxWidth: 180,
-    minWidth: 0,
-  },
-  summaryMetricItem: {
-    flex: 1,
-    minWidth: 72,
-  },
-  summaryMetricItemDesktop: {
-    flex: 0,
-    maxWidth: 90,
-    width: '100%',
-  },
-  summaryMetricContent: {
-    alignItems: 'stretch',
-    gap: 8,
-    overflow: 'hidden',
-    width: '100%',
-  },
-  summaryMetricItemCompact: {
-    maxWidth: 65,
-    minWidth: 65,
-    width: 65,
-  },
-  summaryMetricValue: {
-    alignSelf: 'flex-start',
-    color: defaultTheme.text.accent,
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: 28,
-    fontWeight: typography.textStyles.headingLg.fontWeight,
-    lineHeight: 30,
-  },
-  summaryMetricValueCompact: {
-    fontSize: 24,
-    lineHeight: 26,
-  },
-  summaryPerformanceBlock: {
-    alignItems: 'stretch',
-    gap: 8,
-    minWidth: 108,
-    width: 112,
-  },
-  summaryPerformanceBlockCompact: {
-    minWidth: 0,
-    width: '34%',
-  },
-  summaryPerformanceBlockDesktop: {
-    alignItems: 'stretch',
-    gap: 8,
-    maxWidth: 110,
-    minWidth: 84,
-  },
-  summaryTopRow: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  summaryTopRowCompact: {
-    gap: 5,
-  },
-  teamName: {
-    color: defaultTheme.color.primary,
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: 60,
-    fontWeight: typography.textStyles.headingLg.fontWeight,
-    lineHeight: 60,
-  },
-  teamNameCompact: {
-    fontSize: 30,
-    lineHeight: 32,
-  },
-  topBar: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    minHeight: 56,
-  },
-  verifiedBadge: {
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: defaultTheme.surface.primaryAction,
-    borderRadius: 10,
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  verifiedBadgeText: {
-    color: components.button.primary.textColor,
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    fontWeight: '700',
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-    textTransform: 'uppercase',
-  },
-  versusText: {
-    color: defaultTheme.text.body,
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: 38,
-    fontWeight: '700',
-    lineHeight: 40,
-  },
-  versusTextCompact: {
-    fontSize: 28,
-    lineHeight: 30,
-  },
-});
+function slugify(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}

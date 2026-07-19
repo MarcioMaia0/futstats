@@ -1,4 +1,4 @@
-import { FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -512,12 +512,12 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
   }
 
   return (
-    <View style={styles.screen}>
+    <View className="flex-1">
       <Image
+        className="absolute z-0"
         resizeMode="contain"
         source={logoBackground}
         style={[
-          styles.backgroundLogo,
           {
             height: backgroundLogoHeight,
             left: -(width * 0.4),
@@ -527,36 +527,36 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
         ]}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.shellFrame, { width: shellWidth }]}>
-          <View style={styles.topBar}>
+      <ScrollView className="flex-1" contentContainerClassName="grow items-center px-4 pb-8 pt-3">
+        <View className="z-[1] gap-[18px]" style={{ width: shellWidth }}>
+          <View className="min-h-[42px] flex-row items-center justify-between">
             <BackCircleButton onPress={handleGoBack} />
-            <Text style={styles.screenTitle}>Criar time</Text>
-            <View style={styles.topBarSpacer} />
+            <Text className="font-slab text-[24px] leading-7 text-brand-gold">Criar time</Text>
+            <View className="h-[42px] w-[42px]" />
           </View>
 
           <StepNavigationContainer currentStep={step} totalSteps={TOTAL_STEPS}>
-            <View style={styles.contentStack}>
+            <View className="gap-4">
               {step === 0 && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Qual o nome do seu time?</Text>
+                <View className="gap-[14px]">
+                  <Text className="text-center font-slab text-[24px] leading-7 text-brand-gold">Qual o nome do seu time?</Text>
                   <TextInput
                     autoCapitalize="words"
+                    className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                     onChangeText={(value) => updateDraft('name', value)}
                     placeholder="Ex.: Vila Nova FC"
                     placeholderTextColor={defaultTheme.text.muted}
-                    style={styles.input}
                     value={draft.name}
                   />
-                  <Text style={styles.helperCaption}>
+                  <Text className="text-base leading-6 text-text-muted">
                     Digite o nome completo do time. Depois você escolhe como ele será exibido.
                   </Text>
                 </View>
               )}
 
               {step === 1 && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Escolha o escudo do time</Text>
+                <View className="gap-[14px]">
+                  <Text className="text-center font-slab text-[24px] leading-7 text-brand-gold">Escolha o escudo do time</Text>
                   <ImagePreviewCard
                     imageUri={crestPreviewUrl}
                     isUploading={isCrestUploading}
@@ -567,13 +567,13 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
               )}
 
               {step === 2 && (
-                <View style={styles.section}>
-                  <View style={styles.block}>
-                    <Text style={styles.blockTitle}>Data de fundação</Text>
-                    <Text style={styles.helperCaption}>
+                <View className="gap-[14px]">
+                  <View className="gap-3">
+                    <Text className="font-slab text-[24px] leading-7 text-brand-gold">Data de fundação</Text>
+                    <Text className="text-base leading-6 text-text-muted">
                       Preencha apenas o que você souber. O ano pode ser informado sozinho.
                     </Text>
-                    <View style={styles.foundationFieldsRow}>
+                    <View className="flex-row gap-[10px]">
                       <TextInput
                         keyboardType="number-pad"
                         maxLength={2}
@@ -581,7 +581,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         onBlur={() => updateDraft('foundedDay', formatPartialDateSegment(draft.foundedDay))}
                         placeholder="Dia"
                         placeholderTextColor={defaultTheme.text.muted}
-                        style={[styles.input, styles.foundationFieldDay]}
+                        className="min-h-[50px] w-[60px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.foundedDay}
                       />
                       <TextInput
@@ -591,7 +591,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         onBlur={() => updateDraft('foundedMonth', formatPartialDateSegment(draft.foundedMonth))}
                         placeholder="Mês"
                         placeholderTextColor={defaultTheme.text.muted}
-                        style={[styles.input, styles.foundationFieldMonth]}
+                        className="min-h-[50px] w-[100px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.foundedMonth}
                       />
                       <TextInput
@@ -600,17 +600,17 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         onChangeText={(value) => updateDraft('foundedYear', sanitizeNumericInput(value, 4))}
                         placeholder="Ano"
                         placeholderTextColor={defaultTheme.text.muted}
-                        style={[styles.input, styles.foundationFieldYear]}
+                        className="min-h-[50px] w-[100px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.foundedYear}
                       />
                     </View>
 
-                    <View style={styles.foundationToColorsSpacing} />
-                    <Text style={styles.blockTitle}>Cores do time</Text>
-                    <Text style={styles.helperCaption}>
+                    <View className="h-2" />
+                    <Text className="font-slab text-[24px] leading-7 text-brand-gold">Cores do time</Text>
+                    <Text className="text-base leading-6 text-text-muted">
                       Escolha as cores principais do time para começar a formar a identidade visual.
                     </Text>
-                    <View style={styles.colorPreviewRow}>
+                    <View className="flex-row gap-3">
                       {renderColorPreview({
                         label: 'Primeira cor',
                         onPress: () => handleOpenColorPicker('firstColor'),
@@ -632,7 +632,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                       onChangeText={(value) => updateDraft('firstColor', normalizeHexColor(value) ?? value)}
                       placeholder="Primeira cor"
                       placeholderTextColor={defaultTheme.text.muted}
-                      style={styles.input}
+                      className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                       value={draft.firstColor}
                     />
                     <TextInput
@@ -640,7 +640,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                       onChangeText={(value) => updateDraft('secondColor', normalizeHexColor(value) ?? value)}
                       placeholder="Segunda cor"
                       placeholderTextColor={defaultTheme.text.muted}
-                      style={styles.input}
+                      className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                       value={draft.secondColor}
                     />
                     <TextInput
@@ -648,7 +648,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                       onChangeText={(value) => updateDraft('thirdColor', normalizeHexColor(value) ?? value)}
                       placeholder="Terceira cor"
                       placeholderTextColor={defaultTheme.text.muted}
-                      style={styles.input}
+                      className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                       value={draft.thirdColor}
                     />
                   </View>
@@ -656,21 +656,21 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
               )}
 
               {step === 3 && (
-                <View style={styles.section}>
-                  <View style={styles.block}>
-                    <Text style={styles.blockTitle}>Modalidades</Text>
-                    <View style={styles.chipRow}>
+                <View className="gap-[14px]">
+                  <View className="gap-3">
+                    <Text className="font-slab text-[24px] leading-7 text-brand-gold">Modalidades</Text>
+                    <View className="flex-row flex-wrap gap-[10px]">
                       {MODALITY_OPTIONS.map((modality) => {
                         const isSelected = draft.modalities.includes(modality);
 
                         return (
                           <Pressable
                             accessibilityRole="button"
+                            className={`rounded-full border px-[14px] py-[10px] ${isSelected ? 'border-brand-gold bg-brand-gold' : 'border-stroke-default bg-surface-muted'}`}
                             key={modality}
                             onPress={() => handleToggleModality(modality)}
-                            style={[styles.chip, isSelected && styles.chipSelected]}
                           >
-                            <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
+                            <Text className={`text-base font-bold leading-6 ${isSelected ? 'text-[#17120A]' : 'text-white'}`}>
                               {getModalityLabel(modality)}
                             </Text>
                           </Pressable>
@@ -679,19 +679,19 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                     </View>
                   </View>
 
-                  <View style={styles.block}>
-                    <View style={styles.toggleHeaderRow}>
-                      <Text style={styles.blockTitle}>Tem quadra principal?</Text>
+                  <View className="gap-3">
+                    <View className="flex-row items-center justify-between gap-4">
+                      <Text className="font-slab text-[24px] leading-7 text-brand-gold">Tem quadra principal?</Text>
                       <Pressable
                         accessibilityRole="switch"
+                        className={`h-[34px] w-[62px] justify-center rounded-full border px-1 ${draft.hasPrimaryVenue ? 'border-brand-gold bg-[#4D3D12]' : 'border-stroke-default bg-surface-muted'}`}
                         onPress={handlePrimaryVenueToggle}
-                        style={[styles.toggleButton, draft.hasPrimaryVenue && styles.toggleButtonActive]}
                       >
-                        <View style={[styles.toggleThumb, draft.hasPrimaryVenue && styles.toggleThumbActive]} />
+                        <View className={`h-6 w-6 rounded-full ${draft.hasPrimaryVenue ? 'translate-x-[28px] bg-brand-gold' : 'bg-text-muted'}`} />
                       </Pressable>
                     </View>
 
-                    <Text style={styles.helperTextSmall}>
+                    <Text className="text-base leading-6 text-text-subdued">
                       Isso ajuda a definir a capacidade de mando e pode pr?-preencher a localidade.
                     </Text>
 
@@ -700,14 +700,14 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                     </Text>
 
                     {draft.hasPrimaryVenue && (
-                      <View style={styles.venuePanel}>
-                        <Text style={styles.venueSummary}>{primaryVenueSummary}</Text>
+                      <View className="gap-3 rounded-[18px] border border-stroke-subtle bg-surface-muted p-[14px]">
+                        <Text className="text-base font-bold leading-6 text-white">{primaryVenueSummary}</Text>
                         <Pressable
                           accessibilityRole="button"
                           onPress={() => setIsPrimaryVenueModalOpen(true)}
-                          style={styles.secondaryButton}
+                          className="min-h-[48px] items-center justify-center rounded-[16px] border border-brand-gold bg-surface-muted px-4"
                         >
-                          <Text style={styles.secondaryButtonText}>
+                          <Text className="text-base font-bold leading-6 text-brand-gold">
                             {draft.primaryVenue.name.trim() ? 'Editar quadra principal' : 'Adicionar quadra principal'}
                           </Text>
                         </Pressable>
@@ -716,14 +716,14 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                   </View>
 
                   {!hasPrimaryVenueLocation(draft) && (
-                    <View style={styles.block}>
-                      <Text style={styles.blockTitle}>Localidade do time</Text>
+                    <View className="gap-3">
+                      <Text className="font-slab text-[24px] leading-7 text-brand-gold">Localidade do time</Text>
                       <TextInput
                         autoCapitalize="words"
                         onChangeText={(value) => updateDraft('regionState', value)}
                         placeholder="Estado"
                         placeholderTextColor={defaultTheme.text.muted}
-                        style={styles.input}
+                        className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.regionState}
                       />
                       <TextInput
@@ -731,7 +731,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         onChangeText={(value) => updateDraft('regionCity', value)}
                         placeholder="Cidade"
                         placeholderTextColor={defaultTheme.text.muted}
-                        style={styles.input}
+                        className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.regionCity}
                       />
                       <TextInput
@@ -739,7 +739,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         onChangeText={(value) => updateDraft('regionZone', value)}
                         placeholder="Zona ou regi?o (opcional)"
                         placeholderTextColor={defaultTheme.text.muted}
-                        style={styles.input}
+                        className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.regionZone}
                       />
                     </View>
@@ -748,32 +748,30 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
               )}
 
               {step === 4 && (
-                <View style={styles.section}>
-                  <View style={styles.block}>
-                    <Text style={styles.blockTitle}>Redes sociais</Text>
-                    <Text style={styles.helperTextSmall}>
+                <View className="gap-[14px]">
+                  <View className="gap-3">
+                    <Text className="font-slab text-[24px] leading-7 text-brand-gold">Redes sociais</Text>
+                    <Text className="text-base leading-6 text-text-subdued">
                       Conecte o perfil principal agora ou deixe para depois. Você pode informar @handle, nome do canal ou URL pública.
                     </Text>
-                    <View style={styles.socialTabRow}>
+                    <View className="flex-row gap-[10px]">
                       {SOCIAL_TABS.map((tab) => {
                         const isActive = tab.platform === draft.selectedSocialPlatform;
 
                         return (
                           <Pressable
                             accessibilityRole="button"
+                            className={`min-h-[68px] flex-1 items-center justify-center rounded-[14px] border px-2 py-[10px] ${isActive ? 'border-brand-gold bg-surface-muted' : 'border-stroke-default bg-surface-muted'}`}
                             key={tab.platform}
                             onPress={() => updateDraft('selectedSocialPlatform', tab.platform)}
-                            style={[styles.socialTab, isActive && styles.socialTabActive]}
                           >
-                            <View style={styles.socialTabContent}>
-                              <FontAwesome5
+                            <View className="items-center justify-center gap-1.5">
+                              <Ionicons
                                 color={isActive ? defaultTheme.text.accent : defaultTheme.text.subdued}
                                 name={getSocialPlatformIcon(tab.platform)}
                                 size={32}
-                                solid={tab.platform === 'TIKTOK'}
-                                style={styles.socialTabIcon}
                               />
-                              <Text style={[styles.socialTabText, isActive && styles.socialTabTextActive]}>{tab.label}</Text>
+                              <Text className={`text-base font-bold leading-6 ${isActive ? 'text-brand-gold' : 'text-text-subdued'}`}>{tab.label}</Text>
                             </View>
                           </Pressable>
                         );
@@ -785,19 +783,19 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                       onChangeText={handleChangeSocialValue}
                       placeholder={`@handle ou URL do ${getSocialPlatformLabel(draft.selectedSocialPlatform)}`}
                       placeholderTextColor={defaultTheme.text.muted}
-                      style={styles.input}
+                      className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                       value={socialValue}
                     />
                   </View>
                 </View>
               )}
 
-              {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
-              <View style={styles.footerActions}>
+              {errorMessage && <Text className="text-center text-[13px] leading-[18px] text-[#FF7B7B]">{errorMessage}</Text>}
+              <View className="gap-3">
                 {step < TOTAL_STEPS - 1 ? (
                   <>
-                    <Pressable accessibilityRole="button" onPress={handleAdvanceStep} style={styles.primaryButton}>
-                      <Text style={styles.primaryButtonText}>Continuar</Text>
+                    <Pressable accessibilityRole="button" className="min-h-[54px] items-center justify-center rounded-[18px] bg-brand-gold px-[18px]" onPress={handleAdvanceStep}>
+                      <Text className="text-[19px] font-bold leading-6 text-[#1E1E1E]">Continuar</Text>
                     </Pressable>
 
                     {step > 0 && (
@@ -811,9 +809,9 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                     accessibilityRole="button"
                     disabled={isSubmitting}
                     onPress={handleSubmit}
-                    style={[styles.primaryButton, isSubmitting && styles.disabledButton]}
+                    className={`min-h-[54px] items-center justify-center rounded-[18px] bg-brand-gold px-[18px] ${isSubmitting ? 'opacity-65' : ''}`}
                   >
-                    <Text style={styles.primaryButtonText}>{isSubmitting ? 'Criando...' : 'Concluir'}</Text>
+                    <Text className="text-[19px] font-bold leading-6 text-[#1E1E1E]">{isSubmitting ? 'Criando...' : 'Concluir'}</Text>
                   </Pressable>
                 )}
               </View>
@@ -837,7 +835,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                   }}
                   placeholder="Nome da quadra"
                   placeholderTextColor={defaultTheme.text.muted}
-                  style={styles.input}
+                  className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                   value={draft.primaryVenue.name}
                 />
                 {(isVenueSearchLoading || isVenueDetailsLoading || venuePredictions.length > 0) && (
@@ -873,7 +871,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 onChangeText={(value) => updatePrimaryVenue('regionState', value)}
                 placeholder="Estado"
                 placeholderTextColor={defaultTheme.text.muted}
-                style={styles.input}
+                className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.regionState}
               />
               <TextInput
@@ -881,7 +879,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 onChangeText={(value) => updatePrimaryVenue('regionCity', value)}
                 placeholder="Cidade"
                 placeholderTextColor={defaultTheme.text.muted}
-                style={styles.input}
+                className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.regionCity}
               />
               <TextInput
@@ -889,7 +887,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 onChangeText={(value) => updatePrimaryVenue('regionZone', value)}
                 placeholder="Zona ou regi?o"
                 placeholderTextColor={defaultTheme.text.muted}
-                style={styles.input}
+                className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.regionZone}
               />
               <TextInput
@@ -897,14 +895,14 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 onChangeText={(value) => updatePrimaryVenue('addressLine', value)}
                 placeholder="Endere?o"
                 placeholderTextColor={defaultTheme.text.muted}
-                style={styles.input}
+                className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.addressLine}
               />
               <TextInput
                 onChangeText={(value) => updatePrimaryVenue('addressNumber', value)}
                 placeholder="N?mero"
                 placeholderTextColor={defaultTheme.text.muted}
-                style={styles.input}
+                className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.addressNumber}
               />
               <TextInput
@@ -912,14 +910,14 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 onChangeText={(value) => updatePrimaryVenue('addressDistrict', value)}
                 placeholder="Bairro"
                 placeholderTextColor={defaultTheme.text.muted}
-                style={styles.input}
+                className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.addressDistrict}
               />
               <TextInput
                 onChangeText={(value) => updatePrimaryVenue('postalCode', value)}
                 placeholder="CEP"
                 placeholderTextColor={defaultTheme.text.muted}
-                style={styles.input}
+                className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.postalCode}
               />
             </ScrollView>
@@ -1175,16 +1173,16 @@ function getSocialPlatformLabel(platform: SocialPlatform) {
   return 'YouTube';
 }
 
-function getSocialPlatformIcon(platform: SocialPlatform): 'instagram' | 'music' | 'youtube' {
+function getSocialPlatformIcon(platform: SocialPlatform): React.ComponentProps<typeof Ionicons>['name'] {
   if (platform === 'INSTAGRAM') {
-    return 'instagram';
+    return 'logo-instagram';
   }
 
   if (platform === 'TIKTOK') {
-    return 'music';
+    return 'musical-notes-outline';
   }
 
-  return 'youtube';
+  return 'logo-youtube';
 }
 
 function getModalityLabel(modality: SportModality) {
@@ -1335,16 +1333,14 @@ function renderColorPreview({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      className="h-12 w-12 items-center justify-center overflow-hidden rounded-[16px] border"
       onPress={onPress}
-      style={[
-        styles.colorPreview,
-        {
-          backgroundColor,
-          borderColor: normalized ? defaultTheme.border.emphasis : defaultTheme.border.default,
-        },
-      ]}
+      style={{
+        backgroundColor,
+        borderColor: normalized ? defaultTheme.border.emphasis : defaultTheme.border.default,
+      }}
     >
-      {!normalized ? <View pointerEvents="none" style={styles.colorPreviewDiagonal} /> : null}
+      {!normalized ? <View pointerEvents="none" className="h-[3px] w-[72px] -rotate-45 bg-[#D72638]" /> : null}
     </Pressable>
   );
 }

@@ -1,9 +1,9 @@
 ---
 title: Screen: Join Team Search
 status: Draft
-version: 0.2.0
+version: 0.2.1
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-18
 related_documents:
   - ../../Domain/Identity.md
   - ../../Domain/Teams.md
@@ -19,7 +19,7 @@ related_documents:
 
 ## Objetivo
 
-Permitir que a pessoa busque um time do qual já faz parte e envie uma solicitação de entrada, sem criar vínculo final automático.
+Permitir que a pessoa busque um time para fazer parte e envie uma solicitação de entrada, sem criar vínculo final automático.
 
 Componente sugerido: `JoinTeamSearchScreen`.
 
@@ -59,7 +59,7 @@ Componente sugerido: `JoinTeamSearchScreen`.
 
 Título sugerido:
 
-`Encontre um time que você já faz parte`
+`Encontre um time para você fazer parte`
 
 Texto de apoio:
 
@@ -107,7 +107,7 @@ Sem formulário adicional nesta tela.
 ### Selecionar time
 
 - tocar em um resultado abre um modal de confirmação;
-- selecionar o time não envia a solicitação automaticamente.
+- selecionar o time não envia a solicitação automaticamente;
 - a disponibilidade da ação deve respeitar `request_context.can_request_join`.
 
 ### Confirmar solicitação
@@ -253,7 +253,7 @@ Cada item retornado pela API deve trazer pelo menos:
 
 ### O que persiste
 
-- uma solicitação de entrada no time em `team_join_requests`, após confirmação.
+- uma solicitação de entrada no time em `team_join_requests`, após confirmação;
 - a criação da linha acontece por `POST /api/v1/teams/:team_id/join-requests`.
 
 ### O que não persiste nesta tela

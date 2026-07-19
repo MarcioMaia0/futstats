@@ -43,25 +43,46 @@ Controlar as posições válidas para cada modalidade, evitando texto livre e mi
 - `code` deve ser estável e técnico.
 - `label` pode ser usado pela UI ou por camada de linguagem.
 
-## Exemplos conceituais
+## Catálogo inicial recomendado
 
-- `FUTSAL`
-  - `GOLEIRO`
-  - `FIXO`
-  - `ALA_DIREITO`
-  - `ALA_ESQUERDO`
-  - `PIVO`
-  - `GOLEIRO_LINHA`
-- `FIELD`
-  - `GOLEIRO`
-  - `LATERAL_DIREITO`
-  - `LATERAL_ESQUERDO`
-  - `ZAGUEIRO`
-  - `VOLANTE`
-  - `MEIA`
-  - `ATACANTE`
+As posições devem ser cadastradas em ordem de trás para frente.
+
+### `FUTSAL`
+
+1. `GOALKEEPER` -> Goleiro
+2. `FIXED_DEFENDER` -> Fixo
+3. `RIGHT_WINGER` -> Ala direito
+4. `LEFT_WINGER` -> Ala esquerdo
+5. `PIVOT` -> Pivô
+
+### `FIELD`
+
+1. `GOALKEEPER` -> Goleiro
+2. `RIGHT_CENTER_BACK` -> Zagueiro direito
+3. `LEFT_CENTER_BACK` -> Zagueiro esquerdo
+4. `RIGHT_BACK` -> Lateral direito
+5. `LEFT_BACK` -> Lateral esquerdo
+6. `DEFENSIVE_MIDFIELDER` -> Volante
+7. `CENTRAL_MIDFIELDER` -> Meia central
+8. `ATTACKING_MIDFIELDER` -> Meia ofensivo
+9. `RIGHT_WINGER` -> Ponta direita
+10. `LEFT_WINGER` -> Ponta esquerda
+11. `SECOND_STRIKER` -> Segundo atacante
+12. `CENTER_FORWARD` -> Centroavante
+
+### `SOCIETY`
+
+1. `GOALKEEPER` -> Goleiro
+2. `CENTER_BACK` -> Zagueiro
+3. `RIGHT_BACK` -> Lateral direito
+4. `LEFT_BACK` -> Lateral esquerdo
+5. `DEFENSIVE_MIDFIELDER` -> Volante
+6. `CENTRAL_MIDFIELDER` -> Meio-campista
+7. `RIGHT_WINGER` -> Ala direita
+8. `LEFT_WINGER` -> Ala esquerda
+9. `STRIKER` -> Atacante
+10. `CENTER_FORWARD` -> Centroavante
 
 ## Unicidade
 
 - Deve existir no máximo uma linha por `modality + code`.
-

@@ -1,7 +1,7 @@
 import { supabase } from '../../../lib/supabase';
 
-type TemporaryUploadPurpose = 'TEAM_CREST';
-type TemporaryUploadDomain = 'TEAMS';
+export type TemporaryUploadPurpose = 'TEAM_CREST' | 'USER_AVATAR';
+export type TemporaryUploadDomain = 'TEAMS' | 'IDENTITY';
 
 type CreateTemporaryImageUploadParams = {
   byteSize: number;

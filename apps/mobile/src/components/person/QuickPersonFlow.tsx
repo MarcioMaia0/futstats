@@ -1,0 +1,714 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { useMemo, useState } from 'react';
+import { Alert, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
+
+import {
+  getModalityLabel,
+  getModalityPositionOptions,
+  type ModalityPositionCode,
+} from '../../config/modalityPositions';
+import type { SportModality } from '../../features/teams/services/teamService';
+import type { TeamRosterRole } from '../../features/teams/services/teamRosterService';
+import type { TeamExperienceTheme } from '../../theme/teamExperienceTheme';
+import { OptionSelectField, type OptionSelectItem } from '../inputs/OptionSelectField';
+import { ThemeToggle } from '../inputs/ThemeToggle';
+import { ImagePreviewCard } from '../media/ImagePreviewCard';
+import { StepNavigationContainer } from '../navigation/StepNavigationContainer';
+
+export type QuickPersonMode = 'match' | 'roster';
+
+export type QuickPersonDominantFoot = 'RIGHT' | 'LEFT' | 'BOTH' | null;
+
+export type QuickPersonDraft = {
+  addAsCommittee: boolean;
+  addAsDirector: boolean;
+  addAsPlayer: boolean;
+  addAsPresident: boolean;
+  avatarUrl: string | null;
+  dominantFoot: QuickPersonDominantFoot;
+  fullName: string;
+  isGuestForCurrentMatch: boolean;
+  modality: SportModality | null;
+  nickname: string;
+  positionCodes: ModalityPositionCode[];
+  shirtNumber: string;
+};
+
+export const INITIAL_QUICK_PERSON_DRAFT: QuickPersonDraft = {
+  addAsCommittee: false,
+  addAsDirector: false,
+  addAsPlayer: true,
+  addAsPresident: false,
+  avatarUrl: null,
+  dominantFoot: null,
+  fullName: '',
+  isGuestForCurrentMatch: false,
+  modality: 'FUTSAL',
+  nickname: '',
+  positionCodes: [],
+  shirtNumber: '',
+};
+
+type QuickPersonFlowProps = {
+  availableModalities?: SportModality[];
+  canAssignLeadershipRoles?: boolean;
+  initialDraft?: QuickPersonDraft;
+  mode: QuickPersonMode;
+  onCancel: () => void;
+  onSubmit: (draft: QuickPersonDraft) => void;
+  theme: TeamExperienceTheme;
+};
+
+const DOMINANT_FOOT_OPTIONS: Array<{ label: string; value: QuickPersonDominantFoot }> = [
+  { label: 'Destro', value: 'RIGHT' },
+  { label: 'Canhoto', value: 'LEFT' },
+  { label: 'Ambidestro', value: 'BOTH' },
+];
+
+export function buildRosterRolesFromQuickPersonDraft(draft: QuickPersonDraft): TeamRosterRole[] {
+  const nextRoles: TeamRosterRole[] = [];
+
+  if (draft.addAsPlayer) {
+    nextRoles.push('PLAYER');
+  }
+
+  if (draft.addAsCommittee) {
+    nextRoles.push('COMMITTEE');
+  }
+
+  if (draft.addAsDirector) {
+    nextRoles.push('DIRECTOR');
+  }
+
+  if (draft.addAsPresident) {
+    nextRoles.push('PRESIDENT');
+  }
+
+  return nextRoles;
+}
+
+export function QuickPersonFlow({
+  availableModalities = ['FUTSAL'] as SportModality[],
+  canAssignLeadershipRoles = false,
+  initialDraft = INITIAL_QUICK_PERSON_DRAFT,
+  mode,
+  onCancel,
+  onSubmit,
+  theme,
+}: QuickPersonFlowProps) {
+  const sanitizedModalities = useMemo(() => {
+    const uniqueValues = Array.from(new Set(availableModalities));
+    return uniqueValues.length ? uniqueValues : (['FUTSAL'] as SportModality[]);
+  }, [availableModalities]);
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [draft, setDraft] = useState<QuickPersonDraft>({
+    ...INITIAL_QUICK_PERSON_DRAFT,
+    ...initialDraft,
+    modality: initialDraft.modality ?? sanitizedModalities[0] ?? 'FUTSAL',
+  });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isImageSourceModalOpen, setIsImageSourceModalOpen] = useState(false);
+
+  const totalSteps = 3;
+  const titleByStep = useMemo(
+    () => ['Identidade da pessoa', 'Vínculo com o time', 'Contexto esportivo'][currentStep] ?? 'Cadastro rápido',
+    [currentStep],
+  );
+  const positionOptions = useMemo(
+    () => (draft.modality ? getModalityPositionOptions(draft.modality) : []),
+    [draft.modality],
+  );
+  const positionSelectOptions = useMemo<Array<OptionSelectItem<ModalityPositionCode>>>(
+    () =>
+      positionOptions.map((option) => ({
+        group: option.group,
+        label: option.label,
+        shortLabel: option.shortLabel,
+        value: option.code,
+      })),
+    [positionOptions],
+  );
+
+  function hookProps(id: string) {
+    return {
+      nativeID: id,
+      testID: id,
+    };
+  }
+
+  function updateDraft<K extends keyof QuickPersonDraft>(key: K, value: QuickPersonDraft[K]) {
+    setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  function validateStep(stepIndex: number) {
+    if (stepIndex === 0 && !draft.fullName.trim() && !draft.nickname.trim()) {
+      return 'Preencha ao menos nome ou apelido para continuar.';
+    }
+
+    if (stepIndex === 2 && mode === 'match' && draft.addAsPlayer && !draft.shirtNumber.trim()) {
+      return 'Informe o número da camisa para usar esse cadastro na beira da quadra.';
+    }
+
+    return null;
+  }
+
+  function handleNextStep() {
+    const stepError = validateStep(currentStep);
+
+    if (stepError) {
+      setErrorMessage(stepError);
+      return;
+    }
+
+    setErrorMessage(null);
+    setCurrentStep((value) => Math.min(value + 1, totalSteps - 1));
+  }
+
+  function handlePreviousStep() {
+    setErrorMessage(null);
+
+    if (currentStep === 0) {
+      onCancel();
+      return;
+    }
+
+    setCurrentStep((value) => Math.max(value - 1, 0));
+  }
+
+  function handleSubmit() {
+    const stepError = validateStep(currentStep);
+
+    if (stepError) {
+      setErrorMessage(stepError);
+      return;
+    }
+
+    setErrorMessage(null);
+    onSubmit(draft);
+  }
+
+  function handleTogglePlayer(value: boolean) {
+    setDraft((current) => {
+      if (!value) {
+        return {
+          ...current,
+          addAsPlayer: false,
+          dominantFoot: null,
+          isGuestForCurrentMatch: false,
+          positionCodes: [],
+          shirtNumber: '',
+        };
+      }
+
+      return {
+        ...current,
+        addAsPlayer: true,
+      };
+    });
+  }
+
+  function handleToggleCommittee(value: boolean) {
+    setDraft((current) => ({
+      ...current,
+      addAsCommittee: value,
+    }));
+  }
+
+  function handleToggleDirector(value: boolean) {
+    setDraft((current) => ({
+      ...current,
+      addAsDirector: value,
+      addAsPresident: value ? false : current.addAsPresident,
+    }));
+  }
+
+  function handleTogglePresident(value: boolean) {
+    setDraft((current) => ({
+      ...current,
+      addAsDirector: value ? false : current.addAsDirector,
+      addAsPresident: value,
+    }));
+  }
+
+  function handleToggleGuest(value: boolean) {
+    setDraft((current) => ({
+      ...current,
+      addAsCommittee: value ? false : current.addAsCommittee,
+      addAsDirector: value ? false : current.addAsDirector,
+      addAsPresident: value ? false : current.addAsPresident,
+      isGuestForCurrentMatch: value,
+    }));
+  }
+
+  function handleChangeModality(modality: SportModality) {
+    setDraft((current) => ({
+      ...current,
+      modality,
+      positionCodes: [],
+    }));
+  }
+
+  function handleEditAvatar() {
+    if (Platform.OS === 'web') {
+      setIsImageSourceModalOpen(true);
+      return;
+    }
+
+    Alert.alert('Foto da pessoa', 'Escolha como deseja adicionar a imagem.', [
+      { style: 'cancel', text: 'Cancelar' },
+      { onPress: () => void handlePickImageFromLibrary(), text: 'Fazer upload' },
+      { onPress: () => void handlePickImageFromCamera(), text: 'Usar câmera' },
+    ]);
+  }
+
+  async function handlePickImageFromLibrary() {
+    setIsImageSourceModalOpen(false);
+    setErrorMessage(null);
+
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      setErrorMessage('Permissão para galeria não foi concedida.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      base64: true,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+    });
+
+    if (result.canceled || !result.assets.length) {
+      return;
+    }
+
+    const asset = result.assets[0];
+
+    if (!asset.base64 || !asset.mimeType) {
+      setErrorMessage('Não foi possível preparar a imagem agora.');
+      return;
+    }
+
+    updateDraft('avatarUrl', `data:${asset.mimeType};base64,${asset.base64}`);
+  }
+
+  async function handlePickImageFromCamera() {
+    setIsImageSourceModalOpen(false);
+    setErrorMessage(null);
+
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      setErrorMessage('Permissão para câmera não foi concedida.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      base64: true,
+      cameraType: ImagePicker.CameraType.front,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+    });
+
+    if (result.canceled || !result.assets.length) {
+      return;
+    }
+
+    const asset = result.assets[0];
+
+    if (!asset.base64 || !asset.mimeType) {
+      setErrorMessage('Não foi possível preparar a imagem agora.');
+      return;
+    }
+
+    updateDraft('avatarUrl', `data:${asset.mimeType};base64,${asset.base64}`);
+  }
+
+  return (
+    <>
+      <View className="w-full gap-4" {...hookProps('quick-person-flow-container-main')}>
+        <StepNavigationContainer currentStep={currentStep} totalSteps={totalSteps} style={{ width: '100%' }}>
+          <View className="flex-row items-start justify-between" {...hookProps('quick-person-flow-container-header')}>
+            <View className="min-w-0 flex-1 pr-3">
+              <Text
+                className="font-slab text-[1.5rem] leading-7"
+                style={{ color: theme.accentPrimary }}
+                {...hookProps('quick-person-flow-text-title')}
+              >
+                Cadastro rápido
+              </Text>
+              <Text
+                className="pt-1 text-[0.95rem] leading-5"
+                style={{ color: theme.textMuted }}
+                {...hookProps('quick-person-flow-text-subtitle')}
+              >
+                {titleByStep}
+              </Text>
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              className="h-[42px] w-[42px] items-center justify-center rounded-full"
+              onPress={onCancel}
+              {...hookProps('quick-person-flow-button-close')}
+            >
+              <Ionicons color={theme.textMuted} name="close" size={18} />
+            </Pressable>
+          </View>
+
+          <View className="gap-4 py-4" {...hookProps(`quick-person-flow-step-${currentStep}`)}>
+            {currentStep === 0 ? (
+              <View className="gap-4" {...hookProps('quick-person-flow-container-step-identity')}>
+                <ImagePreviewCard entityType="person" imageUri={draft.avatarUrl} onEdit={handleEditAvatar} theme={theme} title="" />
+
+                <WizardField
+                  hookId="quick-person-flow-field-full-name"
+                  label="Nome completo"
+                  onChangeText={(value) => updateDraft('fullName', value)}
+                  placeholder="Ex.: Eduardo Lima"
+                  theme={theme}
+                  value={draft.fullName}
+                />
+
+                <WizardField
+                  hookId="quick-person-flow-field-nickname"
+                  label="Apelido"
+                  onChangeText={(value) => updateDraft('nickname', value)}
+                  placeholder="Ex.: Dudu"
+                  theme={theme}
+                  value={draft.nickname}
+                />
+              </View>
+            ) : null}
+
+            {currentStep === 1 ? (
+              <View className="gap-3" {...hookProps('quick-person-flow-container-step-membership')}>
+                <WizardToggleRow
+                  hookId="quick-person-flow-toggle-player"
+                  label="Jogador"
+                  onValueChange={handleTogglePlayer}
+                  theme={theme}
+                  value={draft.addAsPlayer}
+                />
+                <WizardToggleRow
+                  hookId="quick-person-flow-toggle-committee"
+                  label="Comissão"
+                  onValueChange={handleToggleCommittee}
+                  theme={theme}
+                  value={draft.addAsCommittee}
+                />
+
+                {canAssignLeadershipRoles ? (
+                  <>
+                    <WizardToggleRow
+                      hookId="quick-person-flow-toggle-director"
+                      label="Diretoria"
+                      onValueChange={handleToggleDirector}
+                      theme={theme}
+                      value={draft.addAsDirector}
+                    />
+                    <WizardToggleRow
+                      hookId="quick-person-flow-toggle-president"
+                      label="Presidência"
+                      onValueChange={handleTogglePresident}
+                      theme={theme}
+                      value={draft.addAsPresident}
+                    />
+                  </>
+                ) : null}
+              </View>
+            ) : null}
+
+            {currentStep === 2 ? (
+              <View className="gap-3" {...hookProps('quick-person-flow-container-step-sports')}>
+                {mode === 'match' ? (
+                  <WizardToggleRow
+                    description="Use quando esse cadastro já precisa entrar na partida atual."
+                    hookId="quick-person-flow-toggle-guest-match"
+                    label="Usar na partida atual"
+                    onValueChange={handleToggleGuest}
+                    theme={theme}
+                    value={draft.isGuestForCurrentMatch}
+                  />
+                ) : null}
+
+                {draft.addAsPlayer ? (
+                  <>
+                    <View className="flex-row gap-3" {...hookProps('quick-person-flow-container-sports-row')}>
+                      <View className="w-[96px]">
+                        <WizardField
+                          hookId="quick-person-flow-field-shirt-number"
+                          keyboardType="number-pad"
+                          label="Camisa"
+                          onChangeText={(value) => updateDraft('shirtNumber', value.replace(/[^0-9]/g, ''))}
+                          placeholder="10"
+                          theme={theme}
+                          value={draft.shirtNumber}
+                        />
+                      </View>
+                    </View>
+
+                    <View className="gap-2" {...hookProps('quick-person-flow-container-modality')}>
+                      <Text className="text-[0.95rem] font-bold leading-5" style={{ color: theme.accentPrimary }}>
+                        Modalidade
+                      </Text>
+
+                      <View className="flex-row flex-wrap gap-2">
+                        {sanitizedModalities.map((modality) => {
+                          const isActive = draft.modality === modality;
+
+                          return (
+                            <Pressable
+                              key={modality}
+                              accessibilityRole="button"
+                              className="min-h-[42px] rounded-full border px-4 py-2 flex justify-center"
+                              onPress={() => handleChangeModality(modality)}
+                              style={{
+                                backgroundColor: isActive ? `${theme.accentPrimary}22` : theme.surfaceBase,
+                                borderColor: isActive ? theme.accentPrimary : theme.borderDefault,
+                              }}
+                              {...hookProps(`quick-person-flow-button-modality-${modality.toLowerCase()}`)}
+                            >
+                              <Text className="text-[0.95rem] " style={{ color: isActive ? theme.accentPrimary : theme.textPrimary }}>
+                                {getModalityLabel(modality)}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+
+                    <OptionSelectField
+                      label="Posicao"
+                      modalTitle="Posicoes"
+                      onChange={(value) => updateDraft('positionCodes', value)}
+                      options={positionSelectOptions}
+                      placeholder="Selecionar posicoes"
+                      searchPlaceholder="Buscar posicao"
+                      selectionMode="multi"
+                      theme={theme}
+                      value={draft.positionCodes}
+                      {...hookProps('quick-person-flow-select-position')}
+                    />
+
+                    <View className="gap-2" {...hookProps('quick-person-flow-container-dominant-foot')}>
+                      <Text className="text-[0.95rem] font-bold" style={{ color: theme.accentPrimary }}>
+                        Perna favorita
+                      </Text>
+
+                      <View className="flex-row flex-wrap gap-2">
+                        {DOMINANT_FOOT_OPTIONS.map((option) => {
+                          const isActive = draft.dominantFoot === option.value;
+
+                          return (
+                            <Pressable
+                              key={option.label}
+                              accessibilityRole="button"
+                              className="min-h-[42px] rounded-full border px-4 py-2 flex justify-center"
+                              onPress={() => updateDraft('dominantFoot', isActive ? null : option.value)}
+                              style={{
+                                backgroundColor: isActive ? `${theme.accentPrimary}22` : theme.surfaceBase,
+                                borderColor: isActive ? theme.accentPrimary : theme.borderDefault,
+                              }}
+                              {...hookProps(`quick-person-flow-button-dominant-foot-${option.value?.toLowerCase() ?? 'none'}`)}
+                            >
+                              <Text className="text-[0.95rem] " style={{ color: isActive ? theme.accentPrimary : theme.textPrimary }}>
+                                {option.label}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  <Text className="text-[0.95rem] leading-6" style={{ color: theme.textMuted }}>
+                    Sem vínculo como jogador, não é necessário preencher camisa, modalidade, posição ou perna favorita.
+                  </Text>
+                )}
+              </View>
+            ) : null}
+          </View>
+
+          <View className="flex-row gap-3" {...hookProps('quick-person-flow-container-actions')}>
+            <Pressable
+              accessibilityRole="button"
+              className="min-h-[52px] flex-1 items-center justify-center rounded-[18px] border px-4"
+              onPress={handlePreviousStep}
+              style={{ borderColor: theme.borderDefault }}
+              {...hookProps('quick-person-flow-button-back')}
+            >
+              <Text className="text-[1rem] font-bold leading-6" style={{ color: theme.textPrimary }}>
+                {currentStep === 0 ? 'Cancelar' : 'Voltar'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              className="min-h-[52px] flex-1 items-center justify-center rounded-[18px] px-4"
+              onPress={currentStep === totalSteps - 1 ? handleSubmit : handleNextStep}
+              style={{ backgroundColor: theme.accentPrimary }}
+              {...hookProps('quick-person-flow-button-next')}
+            >
+              <Text className="text-[1rem] font-bold leading-6" style={{ color: theme.accentOnPrimary }}>
+                {currentStep === totalSteps - 1 ? 'Salvar integrante' : 'Continuar'}
+              </Text>
+            </Pressable>
+          </View>
+        </StepNavigationContainer>
+
+        {errorMessage ? (
+          <View
+            className="rounded-[18px] border px-4 py-3"
+            style={{ backgroundColor: theme.surfaceCard, borderColor: theme.borderDefault }}
+            {...hookProps('quick-person-flow-container-feedback')}
+          >
+            <Text className="text-[0.95rem] leading-5" style={{ color: theme.textMuted }}>
+              {errorMessage}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+
+      <Modal animationType="fade" transparent visible={isImageSourceModalOpen} onRequestClose={() => setIsImageSourceModalOpen(false)}>
+        <View className="flex-1 items-center justify-center bg-black/70 px-4">
+          <View
+            className="w-full max-w-[360px] gap-3 rounded-[28px] border p-5"
+            style={{ backgroundColor: theme.surfaceCard, borderColor: theme.borderDefault }}
+            {...hookProps('quick-person-flow-modal-image-source')}
+          >
+            <Text className="font-slab text-[1.35rem] leading-7" style={{ color: theme.accentPrimary }}>
+              Adicionar foto
+            </Text>
+
+            <Text className="text-[0.95rem] leading-5" style={{ color: theme.textMuted }}>
+              Escolha como deseja selecionar a imagem.
+            </Text>
+
+            <Pressable
+              accessibilityRole="button"
+              className="min-h-[48px] items-center justify-center rounded-[18px]"
+              onPress={() => {
+                void handlePickImageFromLibrary();
+              }}
+              style={{ backgroundColor: theme.accentPrimary }}
+            >
+              <Text className="text-[1rem] font-bold leading-6" style={{ color: theme.accentOnPrimary }}>
+                Fazer upload
+              </Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              className="min-h-[48px] items-center justify-center rounded-[18px]"
+              onPress={() => {
+                void handlePickImageFromCamera();
+              }}
+              style={{ backgroundColor: theme.accentPrimary }}
+            >
+              <Text className="text-[1rem] font-bold leading-6" style={{ color: theme.accentOnPrimary }}>
+                Usar câmera
+              </Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              className="min-h-[48px] items-center justify-center rounded-[18px] border"
+              onPress={() => setIsImageSourceModalOpen(false)}
+              style={{ borderColor: theme.borderDefault }}
+            >
+              <Text className="text-[1rem] font-bold leading-6" style={{ color: theme.textPrimary }}>
+                Cancelar
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
+}
+
+function WizardField({
+  hookId,
+  keyboardType,
+  label,
+  onChangeText,
+  placeholder,
+  theme,
+  value,
+}: {
+  hookId: string;
+  keyboardType?: 'default' | 'number-pad';
+  label: string;
+  onChangeText: (value: string) => void;
+  placeholder: string;
+  theme: TeamExperienceTheme;
+  value: string;
+}) {
+  return (
+    <View className="gap-2" nativeID={hookId} testID={hookId}>
+      <Text className="text-[0.95rem] font-bold leading-5" style={{ color: theme.accentPrimary }}>
+        {label}
+      </Text>
+      <TextInput
+        className="min-h-[54px] rounded-[18px] border px-4 text-[1rem]"
+        keyboardType={keyboardType}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={theme.textMuted}
+        style={{
+          backgroundColor: theme.surfaceBase,
+          borderColor: theme.borderDefault,
+          borderWidth: 1,
+          color: theme.textPrimary,
+        }}
+        value={value}
+        nativeID={`${hookId}-input`}
+        testID={`${hookId}-input`}
+      />
+    </View>
+  );
+}
+
+function WizardToggleRow({
+  description,
+  hookId,
+  label,
+  onValueChange,
+  theme,
+  value,
+}: {
+  description?: string;
+  hookId: string;
+  label: string;
+  onValueChange: (value: boolean) => void;
+  theme: TeamExperienceTheme;
+  value: boolean;
+}) {
+  return (
+    <View
+      className="flex-row items-center gap-3 rounded-[18px] border px-4 py-3"
+      style={{ backgroundColor: theme.surfaceBase, borderColor: value ? theme.accentPrimary : theme.borderDefault }}
+      nativeID={hookId}
+      testID={hookId}
+    >
+      <View className="min-w-0 flex-1 gap-1">
+        <Text className="text-[1rem] font-bold leading-6" style={{ color: theme.textPrimary }}>
+          {label}
+        </Text>
+        {description ? (
+          <Text className="text-[0.9rem] leading-5" style={{ color: theme.textMuted }}>
+            {description}
+          </Text>
+        ) : null}
+      </View>
+      <ThemeToggle activeColor={theme.accentPrimary} inactiveColor={theme.borderDefault} onValueChange={onValueChange} value={value} />
+    </View>
+  );
+}

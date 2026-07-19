@@ -14,15 +14,24 @@
     "expo-font": "^57.0.0",
     "expo-image-picker": "^57.0.2",
     "expo-status-bar": "~57.0.0",
+    "nativewind": "^5.0.0-preview.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.0",
+    "react-native-css": "^3.0.7",
+    "react-native-reanimated": "^4.5.1",
+    "react-native-safe-area-context": "^5.8.0",
     "react-native-svg": "^15.15.5",
     "react-native-url-polyfill": "^3.0.0",
     "react-native-web": "^0.21.2"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
     "@types/react": "~19.2.2",
+    "babel-preset-expo": "^57.0.3",
+    "postcss": "^8.5.6",
+    "prettier-plugin-tailwindcss": "^0.5.14",
+    "tailwindcss": "^4.1.11",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -32,5 +41,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "lightningcss": "1.30.1"
+  }
 }

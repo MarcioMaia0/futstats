@@ -1,7 +1,7 @@
 ﻿# FUTSTATS Documentation Manifest
 
 Generated on: 2026-07-10
-Total files: 450
+Total files: 452
 
 Note: backup folders `docs/backup-*` are intentionally excluded from this manifest.
 
@@ -201,6 +201,7 @@ Note: backup folders `docs/backup-*` are intentionally excluded from this manife
 - `Frontend/Screens/Forgot_Password.md`
 - `Frontend/Screens/Home_Dashboard.md`
 - `Frontend/Screens/Join_Team_Search.md`
+- `Frontend/Screens/Login.md`
 - `Frontend/Screens/Language_Settings.md`
 - `Frontend/Screens/Lineup_And_Live_Operation.md`
 - `Frontend/Screens/Match_Detail.md`
@@ -212,6 +213,7 @@ Note: backup folders `docs/backup-*` are intentionally excluded from this manife
 - `Frontend/Screens/Referee_Review.md`
 - `Frontend/Screens/Settings.md`
 - `Frontend/Screens/Share_Card.md`
+- `Frontend/Screens/Sign_Up.md`
 - `Frontend/Screens/Statistics_Dashboard.md`
 - `Frontend/Screens/Start_Path_Selection.md`
 - `Frontend/Screens/Team_Home.md`

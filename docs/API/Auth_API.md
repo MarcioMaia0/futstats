@@ -1,13 +1,14 @@
 ---
 title: Auth API
 status: Draft
-version: 1.2.0
+version: 1.2.1
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-17
 related_documents:
   - ../ADR/ADR_012_Identity_On_Supabase_Auth.md
   - ../Frontend/Screens/Welcome.md
-  - ../Frontend/Screens/Auth.md
+  - ../Frontend/Screens/Login.md
+  - ../Frontend/Screens/Sign_Up.md
   - ../Frontend/Screens/Forgot_Password.md
   - ../Frontend/Screens/Phone_Otp.md
   - ../Frontend/Screens/Complete_Profile.md
@@ -25,8 +26,8 @@ Definir o contrato de autenticacao e bootstrap de sessao do FUTSTATS, cobrindo e
 ## Principios
 
 - A camada de conta e `auth.users` do Supabase.
-- A camada canônica de pessoa e `persons`.
-- A presença da pessoa na plataforma fica em `public.users`.
+- A camada canonica de pessoa e `persons`.
+- A presenca da pessoa na plataforma fica em `public.users`.
 - `username` nunca vem do provedor externo.
 - Login social ou por telefone pode exigir `Complete Profile` antes da Home.
 - O produto deve permitir entrada rapida, sem forcar preenchimento de dados alem do minimo necessario.
@@ -133,6 +134,8 @@ Cria conta por e-mail, `person` e o `public.users` minimo.
 
 - `terms_accepted = true` e obrigatorio.
 - `username` deve ser unico, tecnico e validado antes da criacao.
+- a UI pode gerar a sugestao inicial de `username` a partir de `display_name`, mas o valor final enviado continua sendo explicito no payload.
+- `confirm_password` pertence apenas a camada de tela e nunca deve ser persistido nem enviado como campo de dominio.
 - `display_name` e obrigatorio.
 - `contact_phone` e opcional e nao verificado.
 - O cadastro por e-mail nunca cria `player`.
@@ -290,7 +293,7 @@ Conclui o fluxo social apos callback do provider.
 - Se o login social tiver e-mail verificado igual ao de uma conta existente, o account linking e automatico.
 - Se houver tentativa de vincular conta de e-mail ainda nao verificada a uma conta existente, exigir confirmacao de e-mail antes de vincular.
 - `Complete Profile` e exigido para conta nova quando `username` ainda nao existir.
-- Nome vindo do provedor social nao deve ser tratado como fonte canônica absoluta da pessoa.
+- Nome vindo do provedor social nao deve ser tratado como fonte canonica absoluta da pessoa.
 - Conta social nova deve concluir criacao de `person` antes de criar `public.users`.
 
 ## Phone OTP
@@ -434,6 +437,8 @@ Verifica disponibilidade do handle publico.
 
 - Validar formato antes da consulta.
 - Pode retornar `available = false` para handles reservados.
+- Este endpoint serve como validacao final da sugestao montada na UI.
+- A sugestao inicial pode ser derivada client-side a partir de `display_name` para reduzir atrito.
 
 ## Encerramento de sessao
 
@@ -479,6 +484,6 @@ Auth deve retornar sessao, bootstrap minimo de usuario e estado de onboarding su
 ## Regra estrutural complementar
 
 - `auth.users` representa autenticacao.
-- `persons` representa a pessoa canônica.
-- `public.users` representa a presença dessa pessoa na plataforma.
+- `persons` representa a pessoa canonica.
+- `public.users` representa a presenca dessa pessoa na plataforma.
 - Cadastro novo deve concluir essa cadeia antes de considerar a conta pronta para uso normal.

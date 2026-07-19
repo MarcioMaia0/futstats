@@ -7,7 +7,7 @@ last_update: 2026-07-07
 related_documents:
   - ../../Security/Auth_Security.md
   - ../../API/Auth_API.md
-  - Auth.md
+  - Login.md
 ---
 
 # Screen: Forgot Password
@@ -21,7 +21,7 @@ Recuperar o acesso do caminho de e-mail, enviando link ou codigo de redefinicao.
 - Campo de e-mail.
 - Botao "Enviar link de recuperacao".
 - Mensagem de confirmacao.
-- Link para voltar a Auth.
+- Link para voltar a Login.
 
 ## Campos
 

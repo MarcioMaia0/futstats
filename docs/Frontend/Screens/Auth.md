@@ -1,71 +1,48 @@
 ---
-title: Screen: Auth
-status: Draft
-version: 0.1.2
+title: Screen: Auth (Historical Bridge)
+status: Historical
+version: 0.2.0
 owner: Product Architecture
-last_update: 2026-07-07
+last_update: 2026-07-17
 related_documents:
-  - ../../Domain/Identity.md
-  - ../../ADR/ADR_004_Account_User_Player_Separation.md
-  - ../../Security/Auth_Security.md
-  - ../../API/Auth_API.md
-  - Welcome.md
+  - Login.md
+  - Sign_Up.md
   - Forgot_Password.md
   - Complete_Profile.md
+  - ../../API/Auth_API.md
 ---
 
 # Screen: Auth
 
-## Objetivo
+## Objetivo deste documento
 
-Criar conta ou entrar pelo caminho de e-mail e senha. Tela unica com alternancia entre "Entrar" e "Criar conta". Componente: `AuthScreen`.
+Este documento deixou de ser a fonte canônica da experiência de e-mail e senha.
 
-## Elementos
+A decisão atual do produto é separar a antiga `AuthScreen` em duas telas distintas:
 
-- Alternancia "Entrar" / "Criar conta".
-- Campos do modo ativo.
-- Botao primario ("Entrar" ou "Criar conta").
-- Link "Esqueci a senha" (modo entrar).
-- Aceite de Termos e Privacidade (modo criar conta).
-- Link para voltar a Welcome.
+- `LoginScreen`
+- `SignUpScreen`
 
-## Campos
+## Fontes canônicas atuais
 
-### Modo criar conta
+- login por e-mail e senha:
+  - `Login.md`
+- criação de conta por e-mail e senha:
+  - `Sign_Up.md`
+- recuperação de acesso:
+  - `Forgot_Password.md`
+- complemento de perfil após social ou telefone:
+  - `Complete_Profile.md`
 
-- `username` - obrigatorio, unico (handle publico `@usuario`); regras: minusculas, letras, numeros, `_` e `.`, 3 a 20 caracteres, sem espaco, handles reservados bloqueados; com verificacao de disponibilidade. Origem: `public.users.username`.
-- `display_name` - obrigatorio. Origem: `public.users.display_name`.
-- `email` - obrigatorio, formato de e-mail. Origem: `auth.users.email`.
-- `contact_phone` - opcional, formato E.164 (telefone de contato, nao verificado). Origem: `public.users.contact_phone`.
-- `password` - obrigatorio, minimo 8 caracteres; campo unico com botao "mostrar senha". Nunca persistido em claro.
-- `terms_accepted` - checkbox obrigatorio. Origem: `public.users.terms_accepted_at`.
+## Motivo da mudança
 
-### Modo entrar
+Embora uma tela única com alternância entre entrar e criar conta fosse viável tecnicamente, o produto fechou que os dois fluxos devem existir como superfícies separadas porque:
 
-- `email` - obrigatorio.
-- `password` - obrigatorio.
+- os campos são diferentes;
+- a densidade visual e cognitiva é diferente;
+- a navegação fica mais clara;
+- a implementação e a evolução visual ficam mais previsíveis.
 
-## Regras de UX
+## Regra de compatibilidade
 
-- Validacao inline; nao revelar se um e-mail existe em fluxos sensiveis.
-- `auth_provider` gravado como `EMAIL`.
-- Cadastro cria registro de autenticacao em `auth.users`, cria `persons`, cria perfil minimo em `public.users`; nunca cria `player`.
-- Verificacao de e-mail: o usuario entra imediatamente; um lembrete persistente pede a confirmacao, exigida so antes de acoes sensiveis.
-- Se o e-mail informado ja pertencer a uma conta social (Google ou Apple), o vinculo exige antes a confirmacao do e-mail; no sentido inverso, login social com e-mail verificado sobre conta de e-mail existente faz vinculo automatico.
-- Depois de `sign-up` ou `sign-in`, a decisao entre Home e `Complete Profile` deve seguir `GET /api/v1/me -> onboarding.requires_complete_profile`.
-- Textos via i18n; tokens de tema.
-
-## Estados
-
-- loading: durante submit.
-- error: credencial invalida, e-mail ja cadastrado, senha fraca ou rate limit.
-- offline: submit indisponivel, com aviso.
-- success: sessao criada; a aplicacao consulta `GET /api/v1/me` e redireciona para `Complete Profile` quando `onboarding.requires_complete_profile = true`, caso contrario segue para a Home.
-
-## Eventos
-
-- Criar conta submete `POST /api/v1/auth/sign-up`.
-- Entrar submete `POST /api/v1/auth/sign-in`.
-- Consulta de disponibilidade de `username` usa `GET /api/v1/auth/username-availability`.
-- Criar conta com sucesso cria `auth.users`, `persons`, `public.users` e `public.user_preferences` com defaults.
-- Verificacao de e-mail segue a politica do provedor de auth.
+Qualquer documento antigo que cite `Auth.md` deve ser interpretado como referência histórica ao conjunto do fluxo de autenticação por e-mail, nunca mais como definição canônica de uma tela única.

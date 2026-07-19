@@ -1,14 +1,15 @@
 ---
 title: Screen: Team Settings
 status: Draft
-version: 1.3.0
+version: 1.4.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-16
 related_documents:
   - ../../Implementation/Database/Table_Spec_team_settings.md
   - ../../Implementation/Database/Table_Spec_team_social_connections.md
   - ../../API/Teams_API.md
   - Team_Profile.md
+  - ../../Implementation/Services/Instagram_Team_Connection_Status.md
 ---
 
 # Screen: Team Settings
@@ -149,6 +150,23 @@ Estados esperados por plataforma:
   - `POST /api/v1/teams/:team_id/social-connections/:platform/disconnect`
 - validar ou revalidar:
   - `POST /api/v1/teams/:team_id/social-connections/:platform/validate`
+
+### Status atual de implementacao
+
+Estado em 2026-07-16:
+
+- a tela ja carrega e grava os dados publicos em `team_social_connections`;
+- Instagram e a primeira plataforma com wiring real iniciado para OAuth;
+- o callback web ja pode retornar para `/?screen=team-settings&social_provider=instagram`;
+- a conclusao real do fluxo ainda depende de:
+  - app configurado na Meta;
+  - redirect URI oficial cadastrada;
+  - segredos configurados no projeto Supabase;
+  - conta Instagram profissional para teste ponta a ponta.
+
+Documento de acompanhamento tecnico:
+
+- `docs/Implementation/Services/Instagram_Team_Connection_Status.md`
 
 ## Seção: Preferências de publicação
 

@@ -4,13 +4,19 @@ import type { PropsWithChildren } from 'react';
 import backgroundPatternDark from '../../assets/backgrounds/background-pattern-dark.png';
 import backgroundPatternLight from '../../assets/backgrounds/background-pattern-light.png';
 import { colors } from '../../theme/colors';
+import type { ExperienceThemeMode } from '../../theme/teamExperienceTheme';
 
 const PATTERN_TILE_SIZE = 420;
 
-export function AppBackground({ children }: PropsWithChildren) {
+type AppBackgroundProps = PropsWithChildren<{
+  baseColor?: string;
+  mode?: ExperienceThemeMode;
+}>;
+
+export function AppBackground({ baseColor, children, mode }: AppBackgroundProps) {
   const colorScheme = useColorScheme();
   const { height, width } = useWindowDimensions();
-  const isLight = colorScheme === 'light';
+  const isLight = mode ? mode === 'light' : colorScheme === 'light';
   const pattern = isLight ? backgroundPatternLight : backgroundPatternDark;
   const columns = Math.ceil(width / PATTERN_TILE_SIZE) + 1;
   const rows = Math.ceil(height / PATTERN_TILE_SIZE) + 1;
@@ -20,7 +26,17 @@ export function AppBackground({ children }: PropsWithChildren) {
   }));
 
   return (
-    <View style={[styles.container, isLight && styles.lightContainer]}>
+    <View
+      style={[
+        styles.container,
+        isLight && styles.lightContainer,
+        baseColor
+          ? {
+              backgroundColor: baseColor,
+            }
+          : null,
+      ]}
+    >
       <View pointerEvents="none" style={styles.patternLayer}>
         {tiles.map((tile) => (
           <Image

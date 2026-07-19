@@ -12,7 +12,8 @@ related_documents:
   - ../API/Auth_API.md
   - ../API/Scheduled_Matches_API.md
   - ../API/Matches_API.md
-  - ../Frontend/Screens/Auth.md
+  - ../Frontend/Screens/Login.md
+  - ../Frontend/Screens/Sign_Up.md
   - ../Frontend/Screens/Welcome.md
   - ../Frontend/Screens/Complete_Profile.md
   - ../Frontend/Screens/Start_Path_Selection.md

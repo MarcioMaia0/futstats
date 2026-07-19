@@ -33,6 +33,13 @@ Armazenar escolhas do time que afetam tema, linguagem e comportamento social pad
 - `ui_primary_color_source` (enum `team_color_source`, nullable)
 - `ui_secondary_color_source` (enum `team_color_source`, nullable)
 - `ui_background_color_source` (enum `team_color_source`, nullable)
+- `ui_surface_base_color` (text hex, nullable)
+- `ui_surface_card_color` (text hex, nullable)
+- `ui_text_primary_color` (text hex, nullable)
+- `ui_text_muted_color` (text hex, nullable)
+- `ui_accent_primary_color` (text hex, nullable)
+- `ui_accent_on_primary_color` (text hex, nullable)
+- `ui_border_default_color` (text hex, nullable)
 - `created_at`
 - `updated_at`
 
@@ -55,3 +62,6 @@ Armazenar escolhas do time que afetam tema, linguagem e comportamento social pad
 - esses campos existem apenas para mapear como o app vai aplicar visualmente `first_color`, `second_color` e `third_color`.
 - isso permite que a gestao preserve a ordem oficial das cores do time e, ao mesmo tempo, escolha a melhor combinacao visual para a interface.
 - a tela de configuracao do time deve oferecer preview visual antes da persistencia final desse mapeamento.
+- quando preenchidos, `ui_surface_base_color`, `ui_surface_card_color`, `ui_text_primary_color`, `ui_text_muted_color`, `ui_accent_primary_color`, `ui_accent_on_primary_color` e `ui_border_default_color` atuam como overrides explicitos do tema visual do time.
+- esses overrides devem ser persistidos em hex estavel para o frontend, por exemplo `#F2AD24`.
+- quando os overrides estiverem nulos, o app deve cair no tema padrao do sistema ou no fallback visual vigente.

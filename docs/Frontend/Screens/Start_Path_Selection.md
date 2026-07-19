@@ -1,9 +1,9 @@
 ---
 title: Screen: Start Path Selection
 status: Draft
-version: 0.3.0
+version: 0.3.1
 owner: Product Architecture
-last_update: 2026-07-08
+last_update: 2026-07-18
 related_documents:
   - ../../API/Auth_API.md
   - ../../API/Identity_API.md
@@ -87,7 +87,7 @@ Texto de apoio:
 
 Texto de apoio:
 
-`Encontre um time que você já faz parte e peça para entrar.`
+`Encontre um time para você fazer parte e peça para entrar.`
 
 #### Explorar primeiro
 

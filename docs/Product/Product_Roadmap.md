@@ -8,7 +8,8 @@ related_documents:
   - Product_Vision.md
   - Product_Principles.md
   - ../Implementation/UX/Flows/Onboarding_Flow.md
-  - ../Frontend/Screens/Auth.md
+  - ../Frontend/Screens/Login.md
+  - ../Frontend/Screens/Sign_Up.md
   - ../Frontend/Screens/Start_Path_Selection.md
   - ../Frontend/Screens/Create_Team_Wizard.md
   - ../Frontend/Screens/Join_Team_Search.md

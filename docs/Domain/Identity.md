@@ -183,7 +183,8 @@ O produto pode criar `person` + `player` sem `user` para casos como:
 - `GetCurrentSessionCalled`
 - `UsernameAvailabilityChecked`
 - `WelcomeViewed`
-- `AuthScreenOpened`
+- `LoginScreenOpened`
+- `SignUpScreenOpened`
 
 Esses casos são consulta, telemetria ou UI, não fatos centrais do domínio.
 

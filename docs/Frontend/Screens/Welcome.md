@@ -9,7 +9,8 @@ related_documents:
   - ../../ADR/ADR_004_Account_User_Player_Separation.md
   - ../../API/Auth_API.md
   - ../Naming_Conventions.md
-  - Auth.md
+  - Login.md
+  - Sign_Up.md
   - Phone_Otp.md
 ---
 
@@ -49,6 +50,7 @@ Nenhum campo de entrada. Tela de navegacao e decisao.
 - Nenhuma cor fixa: usar tokens de tema.
 - O fluxo social deve mapear para `POST /api/v1/auth/social/start` e `POST /api/v1/auth/social/complete`.
 - O fluxo de telefone deve mapear para `POST /api/v1/auth/phone/request-code` e `POST /api/v1/auth/phone/verify-code` quando a feature flag estiver ativa.
+- `Continuar com e-mail` abre `LoginScreen`; a criação de conta por e-mail acontece em `SignUpScreen`, acessada a partir de `LoginScreen`.
 - No primeiro acesso social ou por telefone, o aceite exibido aqui deve ser propagado ao endpoint de conclusao do auth como `terms_accepted = true`, para persistir `public.users.terms_accepted_at`.
 - Depois da criacao da sessao, a decisao entre Home e `Complete Profile` deve seguir `GET /api/v1/me -> onboarding.requires_complete_profile`.
 
@@ -61,6 +63,6 @@ Nenhum campo de entrada. Tela de navegacao e decisao.
 
 ## Eventos
 
-- Selecao de provedor de login inicia o fluxo correspondente (`Auth`, `Phone_Otp`, OAuth nativo).
+- Selecao de provedor de login inicia o fluxo correspondente (`Login`, `Phone_Otp` ou OAuth nativo).
 - "Explorar sem entrar" entra em modo somente leitura.
 - Acao restrita em modo explorar dispara `AuthPromptSheet`.
