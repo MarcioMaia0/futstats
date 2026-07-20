@@ -1,9 +1,9 @@
 ---
 title: Screen: Team Settings
 status: Draft
-version: 1.4.0
+version: 1.5.0
 owner: Product Architecture
-last_update: 2026-07-16
+last_update: 2026-07-20
 related_documents:
   - ../../Implementation/Database/Table_Spec_team_settings.md
   - ../../Implementation/Database/Table_Spec_team_social_connections.md
@@ -29,10 +29,33 @@ Permitir que pessoas com gestão do time configurem comportamento, identidade co
 
 - identidade complementar do time;
 - aparência do app com as cores do time;
+- modalidades e quantidade padrão de quadros por modalidade;
 - quadra principal;
+- quadras do time;
 - comentários e reações;
 - redes sociais conectadas;
 - preferências de publicação de eventos.
+
+## Seção: Modalidades
+
+### Objetivo
+
+Permitir que a gestão configure quais modalidades o time pratica e a quantidade padrão de quadros usada em cada modalidade.
+
+### Campos
+
+- `modalities`
+- `default_match_frame_count` por modalidade
+
+### Regras
+
+- opções visuais devem respeitar as cores do tema ativo do time;
+- não usar cores mockadas nesta tela;
+- cada modalidade selecionada deve exibir controles de quantidade de quadros;
+- valores aceitos: `1` ou `2`;
+- o botão `Salvar alterações` deve persistir a coleção final em `team_modalities`;
+- `default_match_frame_count` deve ser gravado em `team_modalities.default_match_frame_count`;
+- remover uma modalidade deve remover ou inativar sua configuração operacional, conforme contrato final do serviço.
 
 ## Seção: Aparência do app com as cores do time
 

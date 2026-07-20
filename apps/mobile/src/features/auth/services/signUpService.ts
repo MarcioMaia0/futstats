@@ -2,6 +2,7 @@ import { supabase } from '../../../lib/supabase';
 
 const USERNAME_MIN_LENGTH = 3;
 const USERNAME_MAX_LENGTH = 20;
+const BRAZIL_COUNTRY_CODE = '55';
 const RESERVED_USERNAMES = new Set([
   'admin',
   'api',
@@ -51,6 +52,13 @@ export type UsernameAvailabilityResult = {
   username: string;
 };
 
+export type ContactPhoneValidationResult = {
+  code: 'EMPTY' | 'INVALID_LENGTH' | 'INVALID_DDD' | 'OK';
+  digits: string;
+  e164: string | null;
+  valid: boolean;
+};
+
 export type ResolveUsernameSuggestionResult = {
   checkedCandidates: string[];
   selectedUsername: string;
@@ -68,6 +76,54 @@ export type SignUpPayloadInput = {
 
 export function normalizeDisplayName(input: string) {
   return input.replace(/\s+/g, ' ').trim();
+}
+
+export function normalizeContactPhoneDigits(input: string) {
+  const digits = input.replace(/\D/g, '');
+  const withoutCountryCode = digits.length > 11 && digits.startsWith(BRAZIL_COUNTRY_CODE) ? digits.slice(2) : digits;
+
+  return withoutCountryCode.slice(0, 11);
+}
+
+export function formatContactPhone(input: string) {
+  const digits = normalizeContactPhoneDigits(input);
+
+  if (digits.length <= 2) {
+    return digits ? `(${digits}` : '';
+  }
+
+  if (digits.length <= 6) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  }
+
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+export function validateContactPhone(input: string): ContactPhoneValidationResult {
+  const digits = normalizeContactPhoneDigits(input);
+
+  if (!digits) {
+    return { code: 'EMPTY', digits, e164: null, valid: true };
+  }
+
+  if (digits.length !== 10 && digits.length !== 11) {
+    return { code: 'INVALID_LENGTH', digits, e164: null, valid: false };
+  }
+
+  if (!/^[1-9][0-9]/.test(digits.slice(0, 2))) {
+    return { code: 'INVALID_DDD', digits, e164: null, valid: false };
+  }
+
+  return {
+    code: 'OK',
+    digits,
+    e164: `+${BRAZIL_COUNTRY_CODE}${digits}`,
+    valid: true,
+  };
 }
 
 export function normalizeUsernameCandidate(input: string) {
@@ -211,8 +267,10 @@ export function validatePasswordConfirmation(password: string, confirmation: str
 }
 
 export function buildSignUpPayload(input: SignUpPayloadInput) {
+  const contactPhoneValidation = validateContactPhone(input.contactPhone ?? '');
+
   return {
-    contact_phone: input.contactPhone?.trim() || null,
+    contact_phone: contactPhoneValidation.e164,
     display_name: normalizeDisplayName(input.displayName),
     email: input.email.trim().toLowerCase(),
     password: input.password,

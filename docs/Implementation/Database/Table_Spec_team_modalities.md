@@ -1,9 +1,9 @@
 ---
 title: Table Spec team_modalities
 status: Draft
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-14
+last_update: 2026-07-20
 related_documents:
   - ../../API/Teams_API.md
   - ../../Frontend/Screens/Create_Team_Wizard.md
@@ -46,6 +46,7 @@ Esse dado ajuda o app a acelerar criação de jogos, filtros, perfil do time, ag
 - `id` (uuid, PK, default `gen_random_uuid()`)
 - `team_id` (uuid, obrigatório, FK -> `teams.id`)
 - `modality` (enum `sport_modality`, obrigatório)
+- `default_match_frame_count` (smallint, obrigatorio, default `1`)
 - `created_by_user_id` (uuid, FK -> `users.id`, nullable)
 - `created_at` (timestamptz, obrigatório)
 - `updated_at` (timestamptz, obrigatório)
@@ -70,6 +71,8 @@ Enum compartilhado com partidas e perfil esportivo.
   - `created_by_user_id -> users.id`
 - `uq_team_modalities_team_modality`
   - único por `team_id + modality`
+- `ck_team_modalities_default_match_frame_count`
+  - `default_match_frame_count in (1, 2)`
 
 ## Índices
 
@@ -85,6 +88,8 @@ Enum compartilhado com partidas e perfil esportivo.
 - Nenhuma modalidade deve ser obrigatória para criar o time.
 - A ausência de linhas em `team_modalities` significa que o time ainda não declarou preferências.
 - Selecionar apenas `FUTSAL`, por exemplo, não impede o time de agendar ou jogar `SOCIETY` ou `FIELD`.
+- `default_match_frame_count` guarda a quantidade padrao de quadros que o time costuma usar naquela modalidade.
+- Essa configuracao serve como padrao para agenda e organizacao, mas nao substitui o `match_frame_count` definido em um compromisso especifico.
 - Quando a lista for atualizada pela API, o backend deve sincronizar a coleção final enviada pela tela.
 - Duplicidade de modalidade para o mesmo time deve ser bloqueada por constraint.
 
@@ -100,6 +105,14 @@ Enum compartilhado com partidas e perfil esportivo.
 - Perfil do time
 - Agendamento de jogo
 - Busca e descoberta futura por modalidade
+- Team Roster
+
+## Uso implementado em 2026-07-20
+
+- Create Team Wizard permite configurar `1` ou `2` quadros para cada modalidade selecionada.
+- Team Settings hidrata e salva `default_match_frame_count`.
+- Team Roster usa modalidades configuradas para filtros e usa a quantidade de quadros para separar visualmente o elenco.
+- Quando uma modalidade não tiver valor explícito, o app deve tratar como `1` quadro.
 
 ## Resumo
 

@@ -1,9 +1,9 @@
 ---
 title: Auth API
 status: Draft
-version: 1.2.1
+version: 1.3.0
 owner: Product Architecture
-last_update: 2026-07-17
+last_update: 2026-07-20
 related_documents:
   - ../ADR/ADR_012_Identity_On_Supabase_Auth.md
   - ../Frontend/Screens/Welcome.md
@@ -35,6 +35,21 @@ Definir o contrato de autenticacao e bootstrap de sessao do FUTSTATS, cobrindo e
 - Criacao de conta nova deve concluir logicamente: `auth.users` + `persons` + `public.users`.
 
 ## Sessao e bootstrap
+
+## Estado implementado no app mobile
+
+Em 2026-07-20, o app mobile implementa autenticação Supabase com:
+
+- login por e-mail e senha;
+- Google OAuth;
+- login por identificador textual no mesmo campo da tela:
+  - valores com `@` são tratados primeiro como e-mail;
+  - quando o e-mail não resolve, o app tenta resolver como `username`;
+  - valores sem `@` são tratados primeiro como `username` e depois como `contact_phone`;
+  - telefone não autentica diretamente, apenas resolve a conta em `public.users`;
+- RPC `resolve_login_identifier(identifier text)` para retornar o e-mail autenticável de forma controlada;
+- criação de conta com telefone brasileiro de contato normalizado para E.164 quando informado;
+- sincronização do avatar de provider social para storage próprio do app.
 
 ### `GET /api/v1/me`
 
@@ -149,6 +164,8 @@ Cria conta por e-mail, `person` e o `public.users` minimo.
 
 Autentica conta existente por e-mail e senha.
 
+No app mobile atual, este fluxo também é usado depois da resolução de identificador. O frontend pode receber `username` ou telefone no campo visual, resolver para e-mail via RPC e então chamar Supabase Auth com o e-mail resolvido.
+
 #### Request
 
 ```json
@@ -166,6 +183,8 @@ Mesmo shape de `GET /me`.
 
 - Mensagem de erro neutra para credenciais invalidas.
 - Rate limit no endpoint.
+- A resolução de `username` ou `contact_phone` não deve revelar se uma conta existe para atacantes anônimos.
+- `contact_phone` é telefone de contato em `public.users`, não telefone autenticador de Supabase Auth.
 
 ### `POST /api/v1/auth/forgot-password`
 
@@ -295,6 +314,8 @@ Conclui o fluxo social apos callback do provider.
 - `Complete Profile` e exigido para conta nova quando `username` ainda nao existir.
 - Nome vindo do provedor social nao deve ser tratado como fonte canonica absoluta da pessoa.
 - Conta social nova deve concluir criacao de `person` antes de criar `public.users`.
+- Quando o provider social disponibilizar foto de perfil, o app pode copiar a imagem para storage próprio em `user-avatars` e gravar a URL pública em `public.users.avatar_url`.
+- A URL externa do provider não deve ser tratada como origem final confiável para renderização permanente, porque pode falhar por política de cache, autorização ou expiração.
 
 ## Phone OTP
 

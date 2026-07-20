@@ -47,6 +47,8 @@ import {
   saveTeamThemeOverrides,
   setTeamPrimaryVenue,
   updateTeamVenue,
+  type ModalityFrameCount,
+  type ModalityFrameCounts,
   type SaveTeamVenuePayload,
   type SocialPlatform,
   type SportModality,
@@ -95,6 +97,7 @@ type TeamSettingsDraft = {
   crestUploadToken: string;
   displayName: string;
   firstColor: string;
+  modalityFrameCounts: ModalityFrameCounts;
   modalities: SportModality[];
   name: string;
   primaryVenueLabel: string;
@@ -203,6 +206,11 @@ export function TeamSettingsScreen({
   const [teamVenues, setTeamVenues] = useState<TeamVenue[]>([]);
   const [venueDraft, setVenueDraft] = useState<TeamVenueDraft>(() => buildEmptyVenueDraft());
   const teamModalitiesKey = useMemo(() => normalizeTeamModalities(team.modalities).join('|'), [team.modalities]);
+  const teamModalityFrameCountsKey = useMemo(
+    () =>
+      MODALITY_OPTIONS.map((modality) => `${modality}:${team.modality_frame_counts[modality] ?? 1}`).join('|'),
+    [team.modality_frame_counts],
+  );
   const appExperienceAppearance = useMemo(() => resolveAppExperienceTheme(preferredThemeKey), [preferredThemeKey]);
   const appExperienceTheme = appExperienceAppearance.theme;
   const baseExperienceAppearance = useMemo(
@@ -268,7 +276,7 @@ export function TeamSettingsScreen({
 
     setDraft(nextDraft);
     setCrestPreviewUrl(team.crest_url);
-  }, [team.id, team.crest_url, teamModalitiesKey]);
+  }, [team.id, team.crest_url, teamModalitiesKey, teamModalityFrameCountsKey]);
 
   useEffect(() => {
     let isMounted = true;
@@ -537,12 +545,36 @@ export function TeamSettingsScreen({
   function handleToggleModality(modality: SportModality) {
     setDraft((current) => {
       const isSelected = current.modalities.includes(modality);
+      const nextFrameCounts = { ...current.modalityFrameCounts };
+
+      if (isSelected) {
+        delete nextFrameCounts[modality];
+      } else {
+        nextFrameCounts[modality] = current.modalityFrameCounts[modality] ?? 1;
+      }
 
       return {
         ...current,
+        modalityFrameCounts: nextFrameCounts,
         modalities: isSelected
           ? current.modalities.filter((item) => item !== modality)
           : [...current.modalities, modality],
+      };
+    });
+  }
+
+  function handleSelectModalityFrameCount(modality: SportModality, frameCount: ModalityFrameCount) {
+    setDraft((current) => {
+      if (!current.modalities.includes(modality)) {
+        return current;
+      }
+
+      return {
+        ...current,
+        modalityFrameCounts: {
+          ...current.modalityFrameCounts,
+          [modality]: frameCount,
+        },
       };
     });
   }
@@ -828,6 +860,7 @@ export function TeamSettingsScreen({
         commentsEnabled: draft.commentsEnabled,
         defaultPublishTeamEvents: draft.defaultPublishTeamEvents,
         firstColor: draft.firstColor,
+        modalityFrameCounts: draft.modalityFrameCounts,
         modalities: draft.modalities,
         name: draft.name,
         publicFeedEnabled: draft.publicFeedEnabled,
@@ -979,25 +1012,73 @@ export function TeamSettingsScreen({
           <>
           <View className="gap-4 rounded-3xl p-4" style={{ backgroundColor: experienceTheme.surfaceCard, borderColor: experienceTheme.borderDefault, borderWidth: 1 }} {...hookProps('team-settings-card-modalities')}>
             <Text className="font-slab text-[24px] leading-7" style={{ color: experienceTheme.accentPrimary }}>Modalidades</Text>
-            <View className="flex-row flex-wrap gap-[10px]">
+            <View className="flex-row flex-wrap items-start gap-[10px]" {...hookProps('team-settings-container-modality-options')}>
               {MODALITY_OPTIONS.map((modality) => {
                 const isSelected = draft.modalities.includes(modality);
+                const selectedFrameCount = draft.modalityFrameCounts[modality] ?? 1;
                 return (
-                  <Pressable
-                    accessibilityRole="button"
-                    className="rounded-full border px-[14px] py-[10px]"
-                    style={{
-                      backgroundColor: isSelected ? experienceTheme.accentPrimary : experienceTheme.surfaceBase,
-                      borderColor: isSelected ? experienceTheme.accentPrimary : experienceTheme.borderDefault,
-                    }}
-                    key={modality}
-                    onPress={() => handleToggleModality(modality)}
-                    {...hookProps(`team-settings-chip-modality-${modality.toLowerCase()}`)}
-                  >
-                    <Text className="text-base font-bold leading-6" style={{ color: isSelected ? experienceTheme.accentOnPrimary : experienceTheme.textPrimary }}>
-                      {getModalityLabel(modality)}
-                    </Text>
-                  </Pressable>
+                  <View className="flex-1 gap-3" key={modality} {...hookProps(`team-settings-container-modality-${modality.toLowerCase()}`)}>
+                    <Pressable
+                      accessibilityRole="button"
+                      className="rounded-full border px-[14px] py-[10px] flex-1"
+                      style={{
+                        backgroundColor: isSelected ? experienceTheme.accentPrimary : experienceTheme.surfaceBase,
+                        borderColor: isSelected ? experienceTheme.accentPrimary : experienceTheme.borderDefault,
+                      }}
+                      onPress={() => handleToggleModality(modality)}
+                      {...hookProps(`team-settings-chip-modality-${modality.toLowerCase()}`)}
+                    >
+                      <Text
+                        className="text-base font-bold text-center"
+                        style={{ color: isSelected ? experienceTheme.accentOnPrimary : experienceTheme.textPrimary }}
+                        {...hookProps(`team-settings-text-modality-${modality.toLowerCase()}`)}
+                      >
+                        {getModalityLabel(modality)}
+                      </Text>
+                    </Pressable>
+
+                    {isSelected ? (
+                      <View className="gap-2" {...hookProps(`team-settings-container-modality-${modality.toLowerCase()}-frame-count`)}>
+                        <View className="flex-row" {...hookProps(`team-settings-container-modality-${modality.toLowerCase()}-frame-count-options`)}>
+                          {([1, 2] as const).map((frameCount) => {
+                            const isFrameCountSelected = selectedFrameCount === frameCount;
+                            const frameCountShapeClass =
+                              frameCount === 1
+                                ? 'rounded-tl-[50px] rounded-bl-[50px]'
+                                : 'rounded-tr-[50px] rounded-br-[50px]';
+                            return (
+                              <Pressable
+                                accessibilityRole="button"
+                                className={`${frameCountShapeClass} border py-1 flex-1`}
+                                key={frameCount}
+                                onPress={() => handleSelectModalityFrameCount(modality, frameCount)}
+                                style={{
+                                  backgroundColor: isFrameCountSelected ? experienceTheme.accentPrimary : experienceTheme.surfaceBase,
+                                  borderColor: isFrameCountSelected ? experienceTheme.accentPrimary : experienceTheme.borderDefault,
+                                }}
+                                {...hookProps(`team-settings-button-modality-${modality.toLowerCase()}-frame-count-${frameCount}`)}
+                              >
+                                <Text
+                                  className="text-base font-bold leading-6 text-center"
+                                  style={{ color: isFrameCountSelected ? experienceTheme.accentOnPrimary : experienceTheme.textPrimary }}
+                                  {...hookProps(`team-settings-text-modality-${modality.toLowerCase()}-frame-count-${frameCount}`)}
+                                >
+                                  {frameCount}
+                                </Text>
+                              </Pressable>
+                            );
+                          })}
+                        </View>
+                        <Text
+                          className="text-[12px] font-bold leading-4 text-center"
+                          style={{ color: experienceTheme.textMuted }}
+                          {...hookProps(`team-settings-text-modality-${modality.toLowerCase()}-frame-count-label`)}
+                        >
+                          Quantidade de quadros
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
                 );
               })}
             </View>
@@ -1809,6 +1890,7 @@ function buildInitialDraft(team: TeamSummary): TeamSettingsDraft {
     defaultPublishTeamEvents: team.settings?.default_publish_team_events ?? false,
     displayName: createDisplayNameSuggestion(team.name),
     firstColor: team.colors.first_color ?? '',
+    modalityFrameCounts: buildInitialModalityFrameCounts(team),
     modalities: normalizeTeamModalities(team.modalities),
     name: team.name,
     primaryVenueLabel: team.primary_venue_id
@@ -1827,6 +1909,17 @@ function buildInitialDraft(team: TeamSummary): TeamSettingsDraft {
     thirdColor: team.colors.third_color ?? '',
     uiBackgroundColorSource: 'SECOND_COLOR',
   };
+}
+
+function buildInitialModalityFrameCounts(team: TeamSummary): ModalityFrameCounts {
+  return normalizeTeamModalities(team.modalities).reduce<ModalityFrameCounts>((counts, modality) => {
+    counts[modality] = normalizeModalityFrameCount(team.modality_frame_counts[modality]);
+    return counts;
+  }, {});
+}
+
+function normalizeModalityFrameCount(value?: number | null): ModalityFrameCount {
+  return value === 2 ? 2 : 1;
 }
 
 function normalizeTeamModalities(modalities: Array<SportModality | string | null | undefined>): SportModality[] {

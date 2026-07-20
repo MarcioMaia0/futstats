@@ -27,6 +27,7 @@ import {
   type CreatedTeamResult,
   type CreateTeamPayload,
   type HomeMatchCapability,
+  type ModalityFrameCount,
   type SocialPlatform,
   type SportModality,
 } from '../services/teamService';
@@ -41,8 +42,14 @@ type CreateTeamWizardScreenProps = {
   onCreated?: (result: CreatedTeamResult) => void;
 };
 
-type TeamColorKey = 'firstColor' | 'secondColor' | 'thirdColor';
+function hookProps(id: string) {
+  return {
+    nativeID: id,
+    testID: id,
+  };
+}
 
+type TeamColorKey = 'firstColor' | 'secondColor' | 'thirdColor';
 type WizardDraft = {
   crestUploadToken: string;
   firstColor: string;
@@ -51,6 +58,7 @@ type WizardDraft = {
   foundedYear: string;
   hasPrimaryVenue: boolean;
   instagramValue: string;
+  modalityFrameCounts: Partial<Record<SportModality, ModalityFrameCount>>;
   modalities: SportModality[];
   name: string;
   primaryVenue: {
@@ -91,6 +99,7 @@ const INITIAL_DRAFT: WizardDraft = {
   foundedYear: '',
   hasPrimaryVenue: false,
   instagramValue: '',
+  modalityFrameCounts: {},
   modalities: [],
   name: '',
   primaryVenue: {
@@ -131,7 +140,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
   const [venuePredictions, setVenuePredictions] = useState<PlacePrediction[]>([]);
   const [venueSearchMessage, setVenueSearchMessage] = useState<string | null>(null);
 
-  const shellWidth = Math.min(width - 32, 360);
+  const shellWidth = Math.min(width - 32, 600);
   const backgroundLogoWidth = Math.max(width * 1.26, 360);
   const backgroundLogoHeight = Math.min(height * 0.56, backgroundLogoWidth * 1.16);
   const socialValue = getSocialValue(draft, draft.selectedSocialPlatform);
@@ -248,12 +257,36 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
   function handleToggleModality(modality: SportModality) {
     setDraft((current) => {
       const isSelected = current.modalities.includes(modality);
+      const nextFrameCounts = { ...current.modalityFrameCounts };
+
+      if (isSelected) {
+        delete nextFrameCounts[modality];
+      } else {
+        nextFrameCounts[modality] = current.modalityFrameCounts[modality] ?? 1;
+      }
 
       return {
         ...current,
+        modalityFrameCounts: nextFrameCounts,
         modalities: isSelected
           ? current.modalities.filter((item) => item !== modality)
           : [...current.modalities, modality],
+      };
+    });
+  }
+
+  function handleSelectModalityFrameCount(modality: SportModality, frameCount: ModalityFrameCount) {
+    setDraft((current) => {
+      if (!current.modalities.includes(modality)) {
+        return current;
+      }
+
+      return {
+        ...current,
+        modalityFrameCounts: {
+          ...current.modalityFrameCounts,
+          [modality]: frameCount,
+        },
       };
     });
   }
@@ -512,11 +545,12 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
   }
 
   return (
-    <View className="flex-1">
+    <View className="flex-1" {...hookProps('create-team-container-main')}>
       <Image
         className="absolute z-0"
         resizeMode="contain"
         source={logoBackground}
+        {...hookProps('create-team-image-background-logo')}
         style={[
           {
             height: backgroundLogoHeight,
@@ -527,19 +561,19 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
         ]}
       />
 
-      <ScrollView className="flex-1" contentContainerClassName="grow items-center px-4 pb-8 pt-3">
-        <View className="z-[1] gap-[18px]" style={{ width: shellWidth }}>
-          <View className="min-h-[42px] flex-row items-center justify-between">
-            <BackCircleButton onPress={handleGoBack} />
-            <Text className="font-slab text-[24px] leading-7 text-brand-gold">Criar time</Text>
-            <View className="h-[42px] w-[42px]" />
+      <ScrollView className="flex-1" contentContainerClassName="grow items-center px-4 pb-8 pt-3" {...hookProps('create-team-container-scroll')}>
+        <View className="z-[1] gap-[18px]" style={{ width: shellWidth }} {...hookProps('create-team-container-shell')}>
+          <View className="min-h-[42px] flex-row items-center justify-between" {...hookProps('create-team-container-header')}>
+            <BackCircleButton onPress={handleGoBack} {...hookProps('create-team-button-back')} />
+            <Text className="font-slab text-[24px] leading-7 text-brand-gold" {...hookProps('create-team-text-title')}>Criar time</Text>
+            <View className="h-[42px] w-[42px]" {...hookProps('create-team-header-spacer')} />
           </View>
 
           <StepNavigationContainer currentStep={step} totalSteps={TOTAL_STEPS}>
-            <View className="gap-4">
+            <View className="gap-4 w-full" {...hookProps(`create-team-container-step-${step}`)}>
               {step === 0 && (
-                <View className="gap-[14px]">
-                  <Text className="text-center font-slab text-[24px] leading-7 text-brand-gold">Qual o nome do seu time?</Text>
+                <View className="gap-[14px]" {...hookProps('create-team-step-name')}>
+                  <SectionTitle centered hookId="create-team-text-name-title" icon="shield-outline" title="Qual o nome do seu time?" />
                   <TextInput
                     autoCapitalize="words"
                     className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
@@ -547,33 +581,36 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                     placeholder="Ex.: Vila Nova FC"
                     placeholderTextColor={defaultTheme.text.muted}
                     value={draft.name}
+                    {...hookProps('create-team-input-name')}
                   />
-                  <Text className="text-base leading-6 text-text-muted">
+                  <Text className="text-base leading-6 text-text-muted" {...hookProps('create-team-text-name-helper')}>
                     Digite o nome completo do time. Depois você escolhe como ele será exibido.
                   </Text>
                 </View>
               )}
 
               {step === 1 && (
-                <View className="gap-[14px]">
-                  <Text className="text-center font-slab text-[24px] leading-7 text-brand-gold">Escolha o escudo do time</Text>
-                  <ImagePreviewCard
-                    imageUri={crestPreviewUrl}
-                    isUploading={isCrestUploading}
-                    onEdit={handleEditCrest}
-                    title={crestPreviewUrl ? 'Escudo pronto para usar' : 'Escudo opcional'}
-                  />
+                <View className="gap-[14px]" {...hookProps('create-team-step-crest')}>
+                  <Text className="text-center font-slab text-[24px] leading-7 text-brand-gold" {...hookProps('create-team-text-crest-title')}>Escolha o escudo do time</Text>
+                  <View {...hookProps('create-team-card-crest-preview')}>
+                    <ImagePreviewCard
+                      imageUri={crestPreviewUrl}
+                      isUploading={isCrestUploading}
+                      onEdit={handleEditCrest}
+                      title={crestPreviewUrl ? 'Escudo pronto para usar' : 'Escudo opcional'}
+                    />
+                  </View>
                 </View>
               )}
 
               {step === 2 && (
-                <View className="gap-[14px]">
-                  <View className="gap-3">
-                    <Text className="font-slab text-[24px] leading-7 text-brand-gold">Data de fundação</Text>
+                <View className="gap-[14px]" {...hookProps('create-team-step-identity')}>
+                  <View className="gap-3" {...hookProps('create-team-container-foundation-and-colors')}>
+                    <SectionTitle icon="calendar-outline" title="Data de fundação" />
                     <Text className="text-base leading-6 text-text-muted">
                       Preencha apenas o que você souber. O ano pode ser informado sozinho.
                     </Text>
-                    <View className="flex-row gap-[10px]">
+                    <View className="flex-row gap-[10px]" {...hookProps('create-team-container-foundation-date')}>
                       <TextInput
                         keyboardType="number-pad"
                         maxLength={2}
@@ -583,6 +620,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         placeholderTextColor={defaultTheme.text.muted}
                         className="min-h-[50px] w-[60px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.foundedDay}
+                        {...hookProps('create-team-input-founded-day')}
                       />
                       <TextInput
                         keyboardType="number-pad"
@@ -593,6 +631,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         placeholderTextColor={defaultTheme.text.muted}
                         className="min-h-[50px] w-[100px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.foundedMonth}
+                        {...hookProps('create-team-input-founded-month')}
                       />
                       <TextInput
                         keyboardType="number-pad"
@@ -602,26 +641,30 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         placeholderTextColor={defaultTheme.text.muted}
                         className="min-h-[50px] w-[100px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.foundedYear}
+                        {...hookProps('create-team-input-founded-year')}
                       />
                     </View>
 
                     <View className="h-2" />
-                    <Text className="font-slab text-[24px] leading-7 text-brand-gold">Cores do time</Text>
+                    <SectionTitle icon="color-palette-outline" title="Cores do time" />
                     <Text className="text-base leading-6 text-text-muted">
                       Escolha as cores principais do time para começar a formar a identidade visual.
                     </Text>
-                    <View className="flex-row gap-3">
+                    <View className="flex-row gap-3" {...hookProps('create-team-container-color-previews')}>
                       {renderColorPreview({
+                        hookId: 'create-team-button-first-color-preview',
                         label: 'Primeira cor',
                         onPress: () => handleOpenColorPicker('firstColor'),
                         value: draft.firstColor,
                       })}
                       {renderColorPreview({
+                        hookId: 'create-team-button-second-color-preview',
                         label: 'Segunda cor',
                         onPress: () => handleOpenColorPicker('secondColor'),
                         value: draft.secondColor,
                       })}
                       {renderColorPreview({
+                        hookId: 'create-team-button-third-color-preview',
                         label: 'Terceira cor',
                         onPress: () => handleOpenColorPicker('thirdColor'),
                         value: draft.thirdColor,
@@ -634,6 +677,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                       placeholderTextColor={defaultTheme.text.muted}
                       className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                       value={draft.firstColor}
+                      {...hookProps('create-team-input-first-color')}
                     />
                     <TextInput
                       autoCapitalize="characters"
@@ -642,6 +686,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                       placeholderTextColor={defaultTheme.text.muted}
                       className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                       value={draft.secondColor}
+                      {...hookProps('create-team-input-second-color')}
                     />
                     <TextInput
                       autoCapitalize="characters"
@@ -650,64 +695,108 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                       placeholderTextColor={defaultTheme.text.muted}
                       className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                       value={draft.thirdColor}
+                      {...hookProps('create-team-input-third-color')}
                     />
                   </View>
                 </View>
               )}
 
               {step === 3 && (
-                <View className="gap-[14px]">
-                  <View className="gap-3">
-                    <Text className="font-slab text-[24px] leading-7 text-brand-gold">Modalidades</Text>
-                    <View className="flex-row flex-wrap gap-[10px]">
+                <View className="gap-[14px]" {...hookProps('create-team-step-modalities-location')}>
+                  <View className="gap-3 mb-3" {...hookProps('create-team-container-modalities')}>
+                    <SectionTitle hookId="create-team-text-modalities-title" icon="football-outline" title="Modalidades" />
+                    <View className="flex-row flex-wrap items-start gap-[10px]" {...hookProps('create-team-container-modality-options')}>
                       {MODALITY_OPTIONS.map((modality) => {
                         const isSelected = draft.modalities.includes(modality);
+                        const selectedFrameCount = draft.modalityFrameCounts[modality] ?? 1;
 
                         return (
-                          <Pressable
-                            accessibilityRole="button"
-                            className={`rounded-full border px-[14px] py-[10px] ${isSelected ? 'border-brand-gold bg-brand-gold' : 'border-stroke-default bg-surface-muted'}`}
-                            key={modality}
-                            onPress={() => handleToggleModality(modality)}
-                          >
-                            <Text className={`text-base font-bold leading-6 ${isSelected ? 'text-[#17120A]' : 'text-white'}`}>
-                              {getModalityLabel(modality)}
-                            </Text>
-                          </Pressable>
+                          <View className="flex-1 gap-2" key={modality} {...hookProps(`create-team-container-modality-${modality.toLowerCase()}`)}>
+                            <Pressable
+                              accessibilityRole="button"
+                              className={`rounded-full border px-[14px] py-[10px] flex-1 ${isSelected ? 'border-brand-gold bg-brand-gold' : 'border-stroke-default bg-surface-muted'}`}
+                              onPress={() => handleToggleModality(modality)}
+                              {...hookProps(`create-team-button-modality-${modality.toLowerCase()}`)}
+                            >
+                              <Text className={`text-base font-bold leading-6 text-center ${isSelected ? 'text-[#17120A]' : 'text-white'}`} {...hookProps(`create-team-text-modality-${modality.toLowerCase()}`)}>
+                                {getModalityLabel(modality)}
+                              </Text>
+                            </Pressable>
+                            {isSelected ? (
+                              <View className="gap-2" {...hookProps(`create-team-container-modality-${modality.toLowerCase()}-frame-count`)}>
+                                <View className="flex-row" {...hookProps(`create-team-container-modality-${modality.toLowerCase()}-frame-count-options`)}>
+                                  {([1, 2] as const).map((frameCount) => {
+                                    const isFrameCountSelected = selectedFrameCount === frameCount;
+
+                                    const frameCountShapeClass =
+                                      frameCount === 1
+                                        ? 'rounded-tl-[50px] rounded-bl-[50px]'
+                                        : 'rounded-tr-[50px] rounded-br-[50px]';
+                                    return (
+                                      <Pressable
+                                        accessibilityRole="button"
+                                        className={`${frameCountShapeClass} border py-1 flex-1 ${
+                                          isFrameCountSelected
+                                            ? 'border-brand-gold bg-brand-gold'
+                                            : 'border-stroke-default bg-surface-muted'
+                                        }`}
+                                        key={frameCount}
+                                        onPress={() => handleSelectModalityFrameCount(modality, frameCount)}
+                                        {...hookProps(`create-team-button-modality-${modality.toLowerCase()}-frame-count-${frameCount}`)}
+                                      >
+                                        <Text className={`text-base font-bold leading-6 text-center ${isFrameCountSelected ? 'text-[#17120A]' : 'text-white'}`} {...hookProps(`create-team-text-modality-${modality.toLowerCase()}-frame-count-${frameCount}`)}>
+                                          {frameCount}
+                                        </Text>
+                                      </Pressable>
+                                    );
+                                  })}
+                                </View>
+                                <Text className="text-[12px] font-bold leading-4 text-center text-text-subdued" {...hookProps(`create-team-text-modality-${modality.toLowerCase()}-frame-count-label`)}>
+                                  Quantidade de quadros
+                                </Text>
+                              </View>
+                            ) : null}
+                          </View>
                         );
                       })}
                     </View>
                   </View>
 
-                  <View className="gap-3">
-                    <View className="flex-row items-center justify-between gap-4">
-                      <Text className="font-slab text-[24px] leading-7 text-brand-gold">Tem quadra principal?</Text>
-                      <Pressable
-                        accessibilityRole="switch"
-                        className={`h-[34px] w-[62px] justify-center rounded-full border px-1 ${draft.hasPrimaryVenue ? 'border-brand-gold bg-[#4D3D12]' : 'border-stroke-default bg-surface-muted'}`}
-                        onPress={handlePrimaryVenueToggle}
-                      >
-                        <View className={`h-6 w-6 rounded-full ${draft.hasPrimaryVenue ? 'translate-x-[28px] bg-brand-gold' : 'bg-text-muted'}`} />
-                      </Pressable>
-                    </View>
+                  <View className="gap-3" {...hookProps('create-team-container-primary-venue')}>
+                    <SectionTitle
+                      hookId="create-team-text-primary-venue-title"
+                      icon="location-outline"
+                      rightSlot={
+                        <Pressable
+                          accessibilityRole="switch"
+                          className={`h-[34px] w-[62px] justify-center rounded-full border px-1 ${draft.hasPrimaryVenue ? 'border-brand-gold bg-[#4D3D12]' : 'border-stroke-default bg-surface-muted'}`}
+                          onPress={handlePrimaryVenueToggle}
+                          {...hookProps('create-team-toggle-primary-venue')}
+                        >
+                          <View className={`h-6 w-6 rounded-full ${draft.hasPrimaryVenue ? 'translate-x-[28px] bg-brand-gold' : 'bg-text-muted'}`} {...hookProps('create-team-toggle-primary-venue-knob')} />
+                        </Pressable>
+                      }
+                      title="Tem quadra principal?"
+                    />
 
-                    <Text className="text-base leading-6 text-text-subdued">
-                      Isso ajuda a definir a capacidade de mando e pode pr?-preencher a localidade.
+                    <Text className="text-base leading-6 text-text-subdued" {...hookProps('create-team-text-primary-venue-helper')}>
+                      Isso ajuda a definir a capacidade de mando e pode pre-preencher a localidade.
                     </Text>
 
-                    <Text style={styles.capabilityText}>
+                    <Text style={styles.capabilityText} {...hookProps('create-team-text-home-capability')}>
                       Capacidade de mando: {getHomeCapabilityLabel(getHomeCapability(draft.hasPrimaryVenue))}
                     </Text>
 
                     {draft.hasPrimaryVenue && (
-                      <View className="gap-3 rounded-[18px] border border-stroke-subtle bg-surface-muted p-[14px]">
-                        <Text className="text-base font-bold leading-6 text-white">{primaryVenueSummary}</Text>
+                      <View className="gap-3 rounded-[18px] border border-stroke-subtle bg-surface-muted p-[14px]" {...hookProps('create-team-card-primary-venue-summary')}>
+                        <Text className="text-base font-bold leading-6 text-white" {...hookProps('create-team-text-primary-venue-summary')}>{primaryVenueSummary}</Text>
                         <Pressable
                           accessibilityRole="button"
                           onPress={() => setIsPrimaryVenueModalOpen(true)}
                           className="min-h-[48px] items-center justify-center rounded-[16px] border border-brand-gold bg-surface-muted px-4"
+                          {...hookProps('create-team-button-open-primary-venue-modal')}
                         >
-                          <Text className="text-base font-bold leading-6 text-brand-gold">
+                          <Text className="text-base font-bold leading-6 text-brand-gold" {...hookProps('create-team-text-open-primary-venue-modal')}>
                             {draft.primaryVenue.name.trim() ? 'Editar quadra principal' : 'Adicionar quadra principal'}
                           </Text>
                         </Pressable>
@@ -716,8 +805,8 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                   </View>
 
                   {!hasPrimaryVenueLocation(draft) && (
-                    <View className="gap-3">
-                      <Text className="font-slab text-[24px] leading-7 text-brand-gold">Localidade do time</Text>
+                    <View className="gap-3" {...hookProps('create-team-container-location')}>
+                      <SectionTitle hookId="create-team-text-location-title" icon="map-outline" title="Localidade do time" />
                       <TextInput
                         autoCapitalize="words"
                         onChangeText={(value) => updateDraft('regionState', value)}
@@ -725,6 +814,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         placeholderTextColor={defaultTheme.text.muted}
                         className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.regionState}
+                        {...hookProps('create-team-input-region-state')}
                       />
                       <TextInput
                         autoCapitalize="words"
@@ -733,6 +823,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         placeholderTextColor={defaultTheme.text.muted}
                         className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.regionCity}
+                        {...hookProps('create-team-input-region-city')}
                       />
                       <TextInput
                         autoCapitalize="words"
@@ -741,6 +832,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                         placeholderTextColor={defaultTheme.text.muted}
                         className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                         value={draft.regionZone}
+                        {...hookProps('create-team-input-region-zone')}
                       />
                     </View>
                   )}
@@ -748,13 +840,13 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
               )}
 
               {step === 4 && (
-                <View className="gap-[14px]">
-                  <View className="gap-3">
-                    <Text className="font-slab text-[24px] leading-7 text-brand-gold">Redes sociais</Text>
-                    <Text className="text-base leading-6 text-text-subdued">
+                <View className="gap-[14px]" {...hookProps('create-team-step-social')}>
+                  <View className="gap-3" {...hookProps('create-team-container-social')}>
+                    <SectionTitle hookId="create-team-text-social-title" icon="share-social-outline" title="Redes sociais" />
+                    <Text className="text-base leading-6 text-text-subdued" {...hookProps('create-team-text-social-helper')}>
                       Conecte o perfil principal agora ou deixe para depois. Você pode informar @handle, nome do canal ou URL pública.
                     </Text>
-                    <View className="flex-row gap-[10px]">
+                    <View className="flex-row gap-[10px]" {...hookProps('create-team-container-social-tabs')}>
                       {SOCIAL_TABS.map((tab) => {
                         const isActive = tab.platform === draft.selectedSocialPlatform;
 
@@ -764,14 +856,16 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                             className={`min-h-[68px] flex-1 items-center justify-center rounded-[14px] border px-2 py-[10px] ${isActive ? 'border-brand-gold bg-surface-muted' : 'border-stroke-default bg-surface-muted'}`}
                             key={tab.platform}
                             onPress={() => updateDraft('selectedSocialPlatform', tab.platform)}
+                            {...hookProps(`create-team-button-social-${tab.platform.toLowerCase()}`)}
                           >
-                            <View className="items-center justify-center gap-1.5">
+                            <View className="items-center justify-center gap-1.5" {...hookProps(`create-team-container-social-${tab.platform.toLowerCase()}`)}>
                               <Ionicons
                                 color={isActive ? defaultTheme.text.accent : defaultTheme.text.subdued}
                                 name={getSocialPlatformIcon(tab.platform)}
                                 size={32}
+                                {...hookProps(`create-team-icon-social-${tab.platform.toLowerCase()}`)}
                               />
-                              <Text className={`text-base font-bold leading-6 ${isActive ? 'text-brand-gold' : 'text-text-subdued'}`}>{tab.label}</Text>
+                              <Text className={`text-base font-bold leading-6 ${isActive ? 'text-brand-gold' : 'text-text-subdued'}`} {...hookProps(`create-team-text-social-${tab.platform.toLowerCase()}`)}>{tab.label}</Text>
                             </View>
                           </Pressable>
                         );
@@ -785,22 +879,23 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                       placeholderTextColor={defaultTheme.text.muted}
                       className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                       value={socialValue}
+                      {...hookProps(`create-team-input-social-${draft.selectedSocialPlatform.toLowerCase()}`)}
                     />
                   </View>
                 </View>
               )}
 
-              {errorMessage && <Text className="text-center text-[13px] leading-[18px] text-[#FF7B7B]">{errorMessage}</Text>}
-              <View className="gap-3">
+              {errorMessage && <Text className="text-center text-[13px] leading-[18px] text-[#FF7B7B]" {...hookProps('create-team-text-error')}>{errorMessage}</Text>}
+              <View className="gap-3" {...hookProps('create-team-container-actions')}>
                 {step < TOTAL_STEPS - 1 ? (
                   <>
-                    <Pressable accessibilityRole="button" className="min-h-[54px] items-center justify-center rounded-[18px] bg-brand-gold px-[18px]" onPress={handleAdvanceStep}>
-                      <Text className="text-[19px] font-bold leading-6 text-[#1E1E1E]">Continuar</Text>
+                    <Pressable accessibilityRole="button" className="min-h-[54px] items-center justify-center rounded-[18px] bg-brand-gold px-[18px]" onPress={handleAdvanceStep} {...hookProps('create-team-button-continue')}>
+                      <Text className="text-[19px] font-bold leading-6 text-[#1E1E1E]" {...hookProps('create-team-text-continue')}>Continuar</Text>
                     </Pressable>
 
                     {step > 0 && (
-                      <Pressable accessibilityRole="button" onPress={handleAdvanceStep} style={styles.skipLinkButton}>
-                        <Text style={styles.skipLinkText}>Pular</Text>
+                      <Pressable accessibilityRole="button" onPress={handleAdvanceStep} style={styles.skipLinkButton} {...hookProps('create-team-button-skip')}>
+                        <Text style={styles.skipLinkText} {...hookProps('create-team-text-skip')}>Pular</Text>
                       </Pressable>
                     )}
                   </>
@@ -810,8 +905,9 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                     disabled={isSubmitting}
                     onPress={handleSubmit}
                     className={`min-h-[54px] items-center justify-center rounded-[18px] bg-brand-gold px-[18px] ${isSubmitting ? 'opacity-65' : ''}`}
+                    {...hookProps('create-team-button-submit')}
                   >
-                    <Text className="text-[19px] font-bold leading-6 text-[#1E1E1E]">{isSubmitting ? 'Criando...' : 'Concluir'}</Text>
+                    <Text className="text-[19px] font-bold leading-6 text-[#1E1E1E]" {...hookProps('create-team-text-submit')}>{isSubmitting ? 'Criando...' : 'Concluir'}</Text>
                   </Pressable>
                 )}
               </View>
@@ -821,12 +917,12 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
       </ScrollView>
 
       <Modal animationType="slide" transparent visible={isPrimaryVenueModalOpen}>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Quadra principal</Text>
+        <View style={styles.modalBackdrop} {...hookProps('create-team-modal-primary-venue-overlay')}>
+          <View style={styles.modalCard} {...hookProps('create-team-modal-primary-venue-card')}>
+            <Text style={styles.modalTitle} {...hookProps('create-team-modal-primary-venue-title')}>Quadra principal</Text>
 
-            <ScrollView contentContainerStyle={styles.modalContent}>
-              <View style={styles.venueSearchFieldWrap}>
+            <ScrollView contentContainerStyle={styles.modalContent} {...hookProps('create-team-modal-primary-venue-scroll')}>
+              <View style={styles.venueSearchFieldWrap} {...hookProps('create-team-modal-primary-venue-search-field')}>
                 <TextInput
                   autoCapitalize="words"
                   onChangeText={(value) => {
@@ -837,26 +933,28 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                   placeholderTextColor={defaultTheme.text.muted}
                   className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                   value={draft.primaryVenue.name}
+                  {...hookProps('create-team-input-primary-venue-name')}
                 />
                 {(isVenueSearchLoading || isVenueDetailsLoading || venuePredictions.length > 0) && (
-                  <View style={styles.venueSearchDropdown}>
-                    {isVenueSearchLoading ? <Text style={styles.helperTextSmall}>Buscando locais...</Text> : null}
-                    {isVenueDetailsLoading ? <Text style={styles.helperTextSmall}>Preenchendo endere?o...</Text> : null}
+                  <View style={styles.venueSearchDropdown} {...hookProps('create-team-container-primary-venue-search-dropdown')}>
+                    {isVenueSearchLoading ? <Text style={styles.helperTextSmall} {...hookProps('create-team-text-primary-venue-search-loading')}>Buscando locais...</Text> : null}
+                    {isVenueDetailsLoading ? <Text style={styles.helperTextSmall} {...hookProps('create-team-text-primary-venue-details-loading')}>Preenchendo endere?o...</Text> : null}
                     {!isVenueSearchLoading && !isVenueDetailsLoading && venuePredictions.length > 0 ? (
-                      <View style={styles.venuePredictionList}>
+                      <View style={styles.venuePredictionList} {...hookProps('create-team-container-primary-venue-predictions')}>
                         {venuePredictions.map((prediction, index) => (
                           <Pressable
                             accessibilityRole="button"
                             key={prediction.placeId}
                             onPress={() => void handleSelectVenuePrediction(prediction)}
+                            {...hookProps(`create-team-button-primary-venue-prediction-${index}`)}
                             style={[
                               styles.venuePredictionItem,
                               index === venuePredictions.length - 1 && styles.venuePredictionItemLast,
                             ]}
                           >
-                            <Text style={styles.venuePredictionTitle}>{prediction.primaryText}</Text>
+                            <Text style={styles.venuePredictionTitle} {...hookProps(`create-team-text-primary-venue-prediction-title-${index}`)}>{prediction.primaryText}</Text>
                             {prediction.secondaryText ? (
-                              <Text style={styles.venuePredictionSubtitle}>{prediction.secondaryText}</Text>
+                              <Text style={styles.venuePredictionSubtitle} {...hookProps(`create-team-text-primary-venue-prediction-subtitle-${index}`)}>{prediction.secondaryText}</Text>
                             ) : null}
                           </Pressable>
                         ))}
@@ -865,7 +963,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                   </View>
                 )}
               </View>
-              {venueSearchMessage ? <Text style={styles.helperTextSmall}>{venueSearchMessage}</Text> : null}
+              {venueSearchMessage ? <Text style={styles.helperTextSmall} {...hookProps('create-team-text-primary-venue-search-message')}>{venueSearchMessage}</Text> : null}
               <TextInput
                 autoCapitalize="words"
                 onChangeText={(value) => updatePrimaryVenue('regionState', value)}
@@ -873,6 +971,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 placeholderTextColor={defaultTheme.text.muted}
                 className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.regionState}
+                {...hookProps('create-team-input-primary-venue-region-state')}
               />
               <TextInput
                 autoCapitalize="words"
@@ -881,6 +980,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 placeholderTextColor={defaultTheme.text.muted}
                 className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.regionCity}
+                {...hookProps('create-team-input-primary-venue-region-city')}
               />
               <TextInput
                 autoCapitalize="words"
@@ -889,6 +989,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 placeholderTextColor={defaultTheme.text.muted}
                 className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.regionZone}
+                {...hookProps('create-team-input-primary-venue-region-zone')}
               />
               <TextInput
                 autoCapitalize="words"
@@ -897,6 +998,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 placeholderTextColor={defaultTheme.text.muted}
                 className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.addressLine}
+                {...hookProps('create-team-input-primary-venue-address-line')}
               />
               <TextInput
                 onChangeText={(value) => updatePrimaryVenue('addressNumber', value)}
@@ -904,6 +1006,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 placeholderTextColor={defaultTheme.text.muted}
                 className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.addressNumber}
+                {...hookProps('create-team-input-primary-venue-address-number')}
               />
               <TextInput
                 autoCapitalize="words"
@@ -912,6 +1015,7 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 placeholderTextColor={defaultTheme.text.muted}
                 className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.addressDistrict}
+                {...hookProps('create-team-input-primary-venue-address-district')}
               />
               <TextInput
                 onChangeText={(value) => updatePrimaryVenue('postalCode', value)}
@@ -919,15 +1023,16 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
                 placeholderTextColor={defaultTheme.text.muted}
                 className="min-h-[50px] rounded-[18px] border border-stroke-default bg-surface-muted px-4 text-base leading-6 text-white"
                 value={draft.primaryVenue.postalCode}
+                {...hookProps('create-team-input-primary-venue-postal-code')}
               />
             </ScrollView>
 
-            <View style={styles.modalActions}>
-              <Pressable accessibilityRole="button" onPress={handleSavePrimaryVenue} style={styles.primaryButton}>
-                <Text style={styles.primaryButtonText}>Salvar quadra</Text>
+            <View style={styles.modalActions} {...hookProps('create-team-modal-primary-venue-actions')}>
+              <Pressable accessibilityRole="button" onPress={handleSavePrimaryVenue} style={styles.primaryButton} {...hookProps('create-team-button-save-primary-venue')}>
+                <Text style={styles.primaryButtonText} {...hookProps('create-team-text-save-primary-venue')}>Salvar quadra</Text>
               </Pressable>
-              <Pressable accessibilityRole="button" onPress={() => setIsPrimaryVenueModalOpen(false)} style={styles.ghostButton}>
-                <Text style={styles.ghostButtonText}>Cancelar</Text>
+              <Pressable accessibilityRole="button" onPress={() => setIsPrimaryVenueModalOpen(false)} style={styles.ghostButton} {...hookProps('create-team-button-cancel-primary-venue')}>
+                <Text style={styles.ghostButtonText} {...hookProps('create-team-text-cancel-primary-venue')}>Cancelar</Text>
               </Pressable>
             </View>
           </View>
@@ -940,20 +1045,20 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
         visible={isCrestSourceModalOpen}
         onRequestClose={() => setIsCrestSourceModalOpen(false)}
       >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.chooserCard}>
-            <Text style={styles.chooserTitle}>Adicionar escudo</Text>
-            <Text style={styles.helperTextSmall}>Escolha se prefere enviar uma imagem ou tirar uma foto agora.</Text>
+        <View style={styles.modalBackdrop} {...hookProps('create-team-modal-crest-source-overlay')}>
+          <View style={styles.chooserCard} {...hookProps('create-team-modal-crest-source-card')}>
+            <Text style={styles.chooserTitle} {...hookProps('create-team-modal-crest-source-title')}>Adicionar escudo</Text>
+            <Text style={styles.helperTextSmall} {...hookProps('create-team-modal-crest-source-helper')}>Escolha se prefere enviar uma imagem ou tirar uma foto agora.</Text>
 
-            <View style={styles.chooserActions}>
-              <Pressable accessibilityRole="button" onPress={() => void handlePickCrestFromLibrary()} style={styles.primaryButton}>
-                <Text style={styles.primaryButtonText}>Fazer upload</Text>
+            <View style={styles.chooserActions} {...hookProps('create-team-modal-crest-source-actions')}>
+              <Pressable accessibilityRole="button" onPress={() => void handlePickCrestFromLibrary()} style={styles.primaryButton} {...hookProps('create-team-button-crest-upload')}>
+                <Text style={styles.primaryButtonText} {...hookProps('create-team-text-crest-upload')}>Fazer upload</Text>
               </Pressable>
-              <Pressable accessibilityRole="button" onPress={() => void handlePickCrestFromCamera()} style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>Usar câmera</Text>
+              <Pressable accessibilityRole="button" onPress={() => void handlePickCrestFromCamera()} style={styles.secondaryButton} {...hookProps('create-team-button-crest-camera')}>
+                <Text style={styles.secondaryButtonText} {...hookProps('create-team-text-crest-camera')}>Usar câmera</Text>
               </Pressable>
-              <Pressable accessibilityRole="button" onPress={() => setIsCrestSourceModalOpen(false)} style={styles.ghostButton}>
-                <Text style={styles.ghostButtonText}>Cancelar</Text>
+              <Pressable accessibilityRole="button" onPress={() => setIsCrestSourceModalOpen(false)} style={styles.ghostButton} {...hookProps('create-team-button-cancel-crest-source')}>
+                <Text style={styles.ghostButtonText} {...hookProps('create-team-text-cancel-crest-source')}>Cancelar</Text>
               </Pressable>
             </View>
           </View>
@@ -966,19 +1071,20 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
         visible={activeColorField !== null}
         onRequestClose={handleCloseColorPicker}
       >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.chooserCard}>
-            <Text style={styles.chooserTitle}>Escolha uma cor</Text>
+        <View style={styles.modalBackdrop} {...hookProps('create-team-modal-color-picker-overlay')}>
+          <View style={styles.chooserCard} {...hookProps('create-team-modal-color-picker-card')}>
+            <Text style={styles.chooserTitle} {...hookProps('create-team-modal-color-picker-title')}>Escolha uma cor</Text>
 
-            <View style={styles.colorPickerPanel}>
-              <View style={styles.colorPickerGrid}>
+            <View style={styles.colorPickerPanel} {...hookProps('create-team-container-color-picker-panel')}>
+              <View style={styles.colorPickerGrid} {...hookProps('create-team-container-color-picker-grid')}>
                 {COLOR_SWATCH_ROWS.map((row, rowIndex) => (
-                  <View key={`row-${rowIndex}`} style={styles.colorPickerRow}>
+                  <View key={`row-${rowIndex}`} style={styles.colorPickerRow} {...hookProps(`create-team-container-color-picker-row-${rowIndex}`)}>
                     {row.map((color, colorIndex) => (
                       <Pressable
                         accessibilityRole="button"
                         key={`${rowIndex}-${colorIndex}-${color}`}
                         onPress={() => setColorDraftValue(rowIndex === 0 && colorIndex === 0 ? NO_COLOR_VALUE : color)}
+                        {...hookProps(`create-team-button-color-swatch-${rowIndex}-${colorIndex}`)}
                         style={[
                           styles.colorPickerSwatch,
                           rowIndex === 0 && colorIndex === 0
@@ -1005,14 +1111,15 @@ export function CreateTeamWizardScreen({ onBack, onCreated }: CreateTeamWizardSc
               placeholderTextColor={defaultTheme.text.muted}
               style={[styles.input, styles.colorHexInput]}
               value={colorDraftValue === NO_COLOR_VALUE ? '' : colorDraftValue}
+              {...hookProps('create-team-input-color-picker-hex')}
             />
 
-            <View style={styles.chooserActions}>
-              <Pressable accessibilityRole="button" onPress={() => handleApplyColorSelection()} style={styles.primaryButton}>
-                <Text style={styles.primaryButtonText}>Aplicar cor</Text>
+            <View style={styles.chooserActions} {...hookProps('create-team-modal-color-picker-actions')}>
+              <Pressable accessibilityRole="button" onPress={() => handleApplyColorSelection()} style={styles.primaryButton} {...hookProps('create-team-button-apply-color')}>
+                <Text style={styles.primaryButtonText} {...hookProps('create-team-text-apply-color')}>Aplicar cor</Text>
               </Pressable>
-              <Pressable accessibilityRole="button" onPress={handleCloseColorPicker} style={styles.ghostButton}>
-                <Text style={styles.ghostButtonText}>Cancelar</Text>
+              <Pressable accessibilityRole="button" onPress={handleCloseColorPicker} style={styles.ghostButton} {...hookProps('create-team-button-cancel-color-picker')}>
+                <Text style={styles.ghostButtonText} {...hookProps('create-team-text-cancel-color-picker')}>Cancelar</Text>
               </Pressable>
             </View>
           </View>
@@ -1057,6 +1164,13 @@ function buildPayload(draft: WizardDraft): CreateTeamPayload {
 
   if (draft.modalities.length) {
     payload.modalities = draft.modalities;
+    payload.modality_frame_counts = draft.modalities.reduce<NonNullable<CreateTeamPayload['modality_frame_counts']>>(
+      (counts, modality) => ({
+        ...counts,
+        [modality]: draft.modalityFrameCounts[modality] ?? 1,
+      }),
+      {},
+    );
   }
 
   if (draft.regionState.trim()) {
@@ -1183,6 +1297,38 @@ function getSocialPlatformIcon(platform: SocialPlatform): React.ComponentProps<t
   }
 
   return 'logo-youtube';
+}
+
+function SectionTitle({
+  centered = false,
+  hookId,
+  icon,
+  rightSlot,
+  title,
+}: {
+  centered?: boolean;
+  hookId?: string;
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  rightSlot?: React.ReactNode;
+  title: string;
+}) {
+  return (
+    <View
+      className={`flex-row items-start justify-between gap-3 ${centered ? 'justify-center' : ''}`}
+      {...(hookId ? hookProps(`${hookId}-row`) : {})}
+    >
+      <View className={`min-w-0 flex-1 flex-row items-start gap-2 ${centered && !rightSlot ? 'justify-center' : ''}`}>
+        <Ionicons color={defaultTheme.color.primary} name={icon} size={23} style={{ marginTop: 2 }} />
+        <Text
+          className={`min-w-0 flex-1 flex-wrap font-slab text-[24px] text-brand-gold ${centered ? 'text-center' : ''}`}
+          {...(hookId ? hookProps(hookId) : {})}
+        >
+          {title}
+        </Text>
+      </View>
+      {rightSlot ? <View className="shrink-0">{rightSlot}</View> : null}
+    </View>
+  );
 }
 
 function getModalityLabel(modality: SportModality) {
@@ -1318,10 +1464,12 @@ function hslToHex(hue: number, saturation: number, lightness: number) {
 }
 
 function renderColorPreview({
+  hookId,
   label,
   onPress,
   value,
 }: {
+  hookId: string;
   label: string;
   onPress: () => void;
   value: string;
@@ -1335,6 +1483,7 @@ function renderColorPreview({
       accessibilityRole="button"
       className="h-12 w-12 items-center justify-center overflow-hidden rounded-[16px] border"
       onPress={onPress}
+      {...hookProps(hookId)}
       style={{
         backgroundColor,
         borderColor: normalized ? defaultTheme.border.emphasis : defaultTheme.border.default,
@@ -1346,50 +1495,10 @@ function renderColorPreview({
 }
 
 const styles = StyleSheet.create({
-  block: {
-    gap: 12,
-  },
-  backgroundLogo: {
-    position: 'absolute',
-    zIndex: 0,
-  },
-  blockTitle: {
-    color: defaultTheme.text.accent,
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: typography.textStyles.headingLg.fontSize,
-    fontWeight: typography.textStyles.headingLg.fontWeight,
-    lineHeight: typography.textStyles.headingLg.lineHeight,
-  },
   capabilityText: {
     color: defaultTheme.text.subdued,
     fontSize: typography.textStyles.fieldHint.fontSize,
     lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  chip: {
-    backgroundColor: defaultTheme.surface.input,
-    borderColor: defaultTheme.border.default,
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  chipSelected: {
-    backgroundColor: defaultTheme.surface.primaryAction,
-    borderColor: defaultTheme.border.emphasis,
-  },
-  chipText: {
-    color: defaultTheme.text.body,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    fontWeight: '700',
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
-  },
-  chipTextSelected: {
-    color: defaultTheme.text.onPrimary,
   },
   chooserActions: {
     gap: 10,
@@ -1459,56 +1568,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     transform: [{ scale: 1.04 }],
   },
-  colorPreview: {
-    alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 1,
-    height: 48,
-    justifyContent: 'center',
-    overflow: 'hidden',
-    width: 48,
-  },
-  colorPreviewDiagonal: {
-    backgroundColor: '#D72638',
-    height: 3,
-    transform: [{ rotate: '-45deg' }],
-    width: 72,
-  },
-  colorPreviewRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  contentStack: {
-    gap: 16,
-  },
-  disabledButton: {
-    opacity: 0.65,
-  },
-  errorText: {
-    color: defaultTheme.text.danger,
-    fontSize: 13,
-    lineHeight: 18,
-    textAlign: 'center',
-  },
-  footerActions: {
-    gap: 12,
-  },
-  foundationFieldDay: {
-    width: 60,
-  },
-  foundationFieldMonth: {
-    width: 100,
-  },
-  foundationFieldsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  foundationToColorsSpacing: {
-    height: 8,
-  },
-  foundationFieldYear: {
-    width: 100,
-  },
   ghostButton: {
     alignItems: 'center',
     borderColor: defaultTheme.border.emphasis,
@@ -1523,13 +1582,6 @@ const styles = StyleSheet.create({
     fontSize: components.button.ghost.textStyle.fontSize,
     fontWeight: components.button.ghost.textStyle.fontWeight,
     lineHeight: components.button.ghost.textStyle.lineHeight,
-  },
-  helperCaption: {
-    color: defaultTheme.text.muted,
-    fontFamily: typography.textStyles.fieldHint.fontFamily,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    fontWeight: typography.textStyles.fieldHint.fontWeight,
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
   },
   helperTextSmall: {
     color: defaultTheme.text.subdued,
@@ -1592,34 +1644,6 @@ const styles = StyleSheet.create({
     fontWeight: components.button.primary.textStyle.fontWeight,
     lineHeight: components.button.primary.textStyle.lineHeight,
   },
-  screen: {
-    flex: 1,
-  },
-  scrollContent: {
-    alignItems: 'center',
-    flexGrow: 1,
-    paddingBottom: 32,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  screenTitle: {
-    color: defaultTheme.text.accent,
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: typography.textStyles.headingLg.fontSize,
-    fontWeight: typography.textStyles.headingLg.fontWeight,
-    lineHeight: typography.textStyles.headingLg.lineHeight,
-  },
-  section: {
-    gap: 14,
-  },
-  sectionTitle: {
-    color: defaultTheme.text.accent,
-    fontFamily: typography.families.brandDisplayAlt,
-    fontSize: typography.textStyles.headingLg.fontSize,
-    fontWeight: typography.textStyles.headingLg.fontWeight,
-    lineHeight: typography.textStyles.headingLg.lineHeight,
-    textAlign: 'center',
-  },
   secondaryButton: {
     alignItems: 'center',
     backgroundColor: defaultTheme.surface.secondaryAction,
@@ -1636,46 +1660,6 @@ const styles = StyleSheet.create({
     fontWeight: components.button.secondary.textStyle.fontWeight,
     lineHeight: components.button.secondary.textStyle.lineHeight,
   },
-  shellFrame: {
-    gap: 18,
-    zIndex: 1,
-  },
-  socialTab: {
-    alignItems: 'center',
-    backgroundColor: defaultTheme.surface.input,
-    borderColor: defaultTheme.border.default,
-    borderRadius: 14,
-    borderWidth: 1,
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 68,
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-  },
-  socialTabActive: {
-    borderColor: defaultTheme.border.emphasis,
-  },
-  socialTabContent: {
-    alignItems: 'center',
-    gap: 6,
-    justifyContent: 'center',
-  },
-  socialTabIcon: {
-    textAlign: 'center',
-  },
-  socialTabRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  socialTabText: {
-    color: defaultTheme.text.subdued,
-    fontSize: components.button.secondary.textStyle.fontSize,
-    fontWeight: components.button.secondary.textStyle.fontWeight,
-    lineHeight: components.button.secondary.textStyle.lineHeight,
-  },
-  socialTabTextActive: {
-    color: defaultTheme.text.accent,
-  },
   skipLinkButton: {
     alignItems: 'flex-end',
     alignSelf: 'stretch',
@@ -1687,66 +1671,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     lineHeight: typography.textStyles.fieldHint.lineHeight,
     textAlign: 'right',
-  },
-  successText: {
-    color: defaultTheme.text.success,
-    fontSize: 13,
-    lineHeight: 18,
-    textAlign: 'center',
-  },
-  toggleButton: {
-    backgroundColor: defaultTheme.surface.input,
-    borderColor: defaultTheme.border.default,
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 34,
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-    width: 62,
-  },
-  toggleButtonActive: {
-    backgroundColor: defaultTheme.surface.accentSoft,
-    borderColor: defaultTheme.border.emphasis,
-  },
-  toggleHeaderRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 16,
-    justifyContent: 'space-between',
-  },
-  toggleThumb: {
-    backgroundColor: defaultTheme.text.muted,
-    borderRadius: 999,
-    height: 24,
-    width: 24,
-  },
-  toggleThumbActive: {
-    backgroundColor: defaultTheme.color.primary,
-    transform: [{ translateX: 28 }],
-  },
-  topBar: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    minHeight: 42,
-  },
-  topBarSpacer: {
-    height: 42,
-    width: 42,
-  },
-  venuePanel: {
-    backgroundColor: defaultTheme.surface.input,
-    borderColor: defaultTheme.border.subtle,
-    borderRadius: 18,
-    borderWidth: 1,
-    gap: 12,
-    padding: 14,
-  },
-  venueSummary: {
-    color: defaultTheme.text.body,
-    fontSize: typography.textStyles.fieldHint.fontSize,
-    fontWeight: '700',
-    lineHeight: typography.textStyles.fieldHint.lineHeight,
   },
   venuePredictionItem: {
     borderBottomColor: defaultTheme.border.subtle,

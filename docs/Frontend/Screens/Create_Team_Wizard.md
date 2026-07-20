@@ -1,9 +1,9 @@
 ---
 title: Screen: Create Team Wizard
 status: Draft
-version: 1.1.0
+version: 1.2.0
 owner: Product Architecture
-last_update: 2026-07-14
+last_update: 2026-07-20
 related_documents:
   - ../../Domain/Teams.md
   - ../../API/Identity_API.md
@@ -34,7 +34,8 @@ Componente sugerido: `CreateTeamWizardScreen`.
 ## Quando aparece
 
 - quando a pessoa escolhe `Criar meu time` em `Start Path Selection`;
-- quando um fluxo futuro de criação de time for iniciado manualmente por alguém com permissão para isso.
+- quando um fluxo futuro de criação de time for iniciado manualmente por alguém com permissão para isso;
+- em ambiente de desenvolvimento/teste, pode ser aberto diretamente quando a URL contém `?wizardteam=true`.
 
 ## Estrutura geral do fluxo
 
@@ -138,6 +139,7 @@ Permitir que a pessoa complemente dados operacionais e de identidade do time.
 ### Campos
 
 - `modalities`
+- `modality_frame_counts`
 - `home_match_capability`
 - `has_primary_venue`
 - `founded_year`
@@ -165,6 +167,10 @@ Permitir que a pessoa complemente dados operacionais e de identidade do time.
 - mês sem ano não deve ser aceito;
 - modalidade é opcional e contextual, não limitadora;
 - o time pode marcar uma ou mais modalidades preferenciais;
+- ao selecionar uma modalidade, a UI deve permitir definir a quantidade padrão de quadros daquela modalidade;
+- quantidade padrão de quadros aceita valores `1` ou `2`;
+- a linguagem de produto para esse conceito é "quadros";
+- a persistência técnica fica em `team_modalities.default_match_frame_count`;
 - marcar modalidade no wizard não impede o time de criar ou agendar partidas em outra modalidade no futuro;
 - `Tem quadra principal?` é um toggle;
 - `Tem quadra principal?` deve aparecer antes do bloco de localidade;

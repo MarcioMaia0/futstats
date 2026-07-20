@@ -6,6 +6,7 @@ import { Pressable, SafeAreaView, StyleSheet, Text, View, useColorScheme } from 
 
 import { AppBackground } from './components/layout/AppBackground';
 import { LoginScreen } from './features/auth/screens/LoginScreen';
+import { IconPreviewScreen } from './features/design/screens/IconPreviewScreen';
 import { SignUpScreen } from './features/auth/screens/SignUpScreen';
 import { signOutCurrentUser } from './features/auth/services/authService';
 import { bootstrapCurrentUser, completeStartPathChoice, getMe } from './features/identity/services/identityService';
@@ -27,14 +28,30 @@ type MePayload = {
   person?: {
     id?: string;
   } | null;
+  user?: {
+    avatar_url?: string | null;
+  } | null;
 };
 
 export function AppRoot() {
   const colorScheme = useColorScheme();
-  const [screen, setScreen] = useState<'login' | 'sign-up' | 'start-path' | 'create-team' | 'join-team' | 'team-profile' | 'team-roster' | 'notifications' | 'team-settings'>('login');
+  const [screen, setScreen] = useState<
+    | 'login'
+    | 'sign-up'
+    | 'start-path'
+    | 'create-team'
+    | 'join-team'
+    | 'team-profile'
+    | 'team-roster'
+    | 'notifications'
+    | 'join-request-wizard'
+    | 'icon-preview'
+    | 'team-settings'
+  >('login');
   const [activeTeam, setActiveTeam] = useState<CreatedTeamResult['team'] | null>(null);
   const [teamThemeOverrides, setTeamThemeOverrides] = useState<TeamExperienceThemeOverrides | null>(null);
   const [preferredThemeKey, setPreferredThemeKey] = useState<UserThemePreferenceKey | null>(null);
+  const [currentUserAvatarUrl, setCurrentUserAvatarUrl] = useState<string | null>(null);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [isTemporaryTeamRedirectModalOpen, setIsTemporaryTeamRedirectModalOpen] = useState(false);
   const forcedScreen = getForcedScreenOverride();
@@ -49,6 +66,7 @@ export function AppRoot() {
       setActiveTeam(null);
       setTeamThemeOverrides(null);
       setPreferredThemeKey(null);
+      setCurrentUserAvatarUrl(null);
       setHasUnreadNotifications(false);
       setIsTemporaryTeamRedirectModalOpen(false);
       setScreen('login');
@@ -74,6 +92,7 @@ export function AppRoot() {
       setActiveTeam(null);
       setTeamThemeOverrides(null);
       setPreferredThemeKey(null);
+      setCurrentUserAvatarUrl(null);
       setHasUnreadNotifications(false);
       setScreen('login');
     });
@@ -151,9 +170,10 @@ export function AppRoot() {
           <LoginScreen onCreateAccountRequested={() => setScreen('sign-up')} onStartPathRequested={() => setScreen('start-path')} />
         ) : screen === 'sign-up' ? (
           <SignUpScreen onBackToLogin={() => setScreen('login')} />
-        ) : screen === 'notifications' ? (
+        ) : screen === 'notifications' || screen === 'join-request-wizard' ? (
           <NotificationsScreen
             hasUnreadNotifications={hasUnreadNotifications}
+            initialJoinRequestWizardOpen={screen === 'join-request-wizard'}
             onBack={() => setScreen(activeTeam ? 'team-profile' : 'start-path')}
             onOpenAnalyzeJoinRequest={() => undefined}
             onOpenSettings={() => setScreen('team-settings')}
@@ -161,6 +181,7 @@ export function AppRoot() {
             onReturnHome={() => setScreen(activeTeam ? 'team-profile' : 'start-path')}
             onUnreadNotificationsChange={setHasUnreadNotifications}
             preferredThemeKey={preferredThemeKey}
+            profileAvatarUrl={currentUserAvatarUrl}
             team={activeTeam}
             themeOverrides={teamThemeOverrides}
           />
@@ -176,6 +197,12 @@ export function AppRoot() {
             preferredThemeKey={preferredThemeKey}
             team={activeTeam}
           />
+        ) : screen === 'icon-preview' && activeTeam ? (
+          <IconPreviewScreen
+            onBack={() => setScreen('team-profile')}
+            preferredThemeKey={preferredThemeKey}
+            themeOverrides={teamThemeOverrides}
+          />
         ) : screen === 'team-roster' && activeTeam ? (
           <TeamRosterScreen
             hasUnreadNotifications={hasUnreadNotifications}
@@ -183,6 +210,7 @@ export function AppRoot() {
             onOpenNotifications={() => setScreen('notifications')}
             onProfilePress={handleLogout}
             preferredThemeKey={preferredThemeKey}
+            profileAvatarUrl={currentUserAvatarUrl}
             team={activeTeam}
             themeOverrides={teamThemeOverrides}
           />
@@ -190,11 +218,13 @@ export function AppRoot() {
           <TeamProfileScreen
             hasUnreadNotifications={hasUnreadNotifications}
             onBack={() => setScreen('start-path')}
+            onOpenIconPreview={() => setScreen('icon-preview')}
             onOpenNotifications={() => setScreen('notifications')}
             onOpenRoster={() => setScreen('team-roster')}
             onOpenSettings={() => setScreen('team-settings')}
             onProfilePress={handleLogout}
             preferredThemeKey={preferredThemeKey}
+            profileAvatarUrl={currentUserAvatarUrl}
             team={activeTeam}
             themeOverrides={teamThemeOverrides}
           />
@@ -234,11 +264,14 @@ export function AppRoot() {
   );
 
   async function hydrateScreenAfterLogin(isMounted: boolean) {
-    const existingTeam = await tryLoadExistingTeam();
+    const currentUserContext = await tryLoadCurrentUserContext();
+    const existingTeam = currentUserContext?.team ?? null;
 
     if (!isMounted) {
       return;
     }
+
+    setCurrentUserAvatarUrl(currentUserContext?.avatarUrl ?? null);
 
     if (existingTeam) {
       const userThemePreference = await tryLoadUserThemePreference();
@@ -246,6 +279,12 @@ export function AppRoot() {
       setActiveTeam(existingTeam);
       setTeamThemeOverrides(existingTeam.theme ?? null);
       setPreferredThemeKey(userThemePreference?.preferredThemeKey ?? null);
+
+      if (forcedScreen === 'create-team') {
+        setIsTemporaryTeamRedirectModalOpen(false);
+        setScreen('create-team');
+        return;
+      }
 
       if (forcedScreen === 'team') {
         setIsTemporaryTeamRedirectModalOpen(false);
@@ -259,9 +298,21 @@ export function AppRoot() {
         return;
       }
 
+      if (forcedScreen === 'icon-preview') {
+        setIsTemporaryTeamRedirectModalOpen(false);
+        setScreen('icon-preview');
+        return;
+      }
+
       if (forcedScreen === 'notifications') {
         setIsTemporaryTeamRedirectModalOpen(false);
         setScreen('notifications');
+        return;
+      }
+
+      if (forcedScreen === 'join-request-wizard') {
+        setIsTemporaryTeamRedirectModalOpen(false);
+        setScreen('join-request-wizard');
         return;
       }
 
@@ -283,8 +334,18 @@ export function AppRoot() {
     setPreferredThemeKey(userThemePreference?.preferredThemeKey ?? null);
     setIsTemporaryTeamRedirectModalOpen(false);
 
+    if (forcedScreen === 'create-team') {
+      setScreen('create-team');
+      return;
+    }
+
     if (forcedScreen === 'join-team') {
       setScreen('join-team');
+      return;
+    }
+
+    if (forcedScreen === 'join-request-wizard') {
+      setScreen('join-request-wizard');
       return;
     }
 
@@ -352,18 +413,22 @@ async function tryBootstrapCurrentUser() {
   }
 }
 
-async function tryLoadExistingTeam() {
+async function tryLoadCurrentUserContext() {
   try {
     const me = (await getMe()) as MePayload;
     const personId = me.person?.id;
+    const avatarUrl = me.user?.avatar_url?.trim() || null;
 
     if (!personId) {
-      return null;
+      return { avatarUrl, team: null };
     }
 
-    return await fetchFirstManagedTeam(personId);
+    return {
+      avatarUrl,
+      team: await fetchFirstManagedTeam(personId),
+    };
   } catch (error) {
-    console.warn('Could not load existing team for temporary redirect.', error);
+    console.warn('Could not load current user context for temporary redirect.', error);
     return null;
   }
 }
@@ -384,9 +449,15 @@ function getForcedScreenOverride() {
 
   const url = new URL(window.location.href);
   const screen = url.searchParams.get('screen');
+  const wizardTeam = url.searchParams.get('wizardteam');
+  const wizardJoinRequest = url.searchParams.get('wizardjoinrequest');
 
   if (screen === 'login') {
     return 'login';
+  }
+
+  if (wizardTeam === 'true') {
+    return 'create-team';
   }
 
   if (screen === 'team') {
@@ -397,8 +468,16 @@ function getForcedScreenOverride() {
     return 'team-settings';
   }
 
+  if (screen === 'icon-preview') {
+    return 'icon-preview';
+  }
+
   if (screen === 'notifications') {
     return 'notifications';
+  }
+
+  if (screen === 'join-request-wizard' || wizardJoinRequest === 'true') {
+    return 'join-request-wizard';
   }
 
   if (screen === 'join-team') {

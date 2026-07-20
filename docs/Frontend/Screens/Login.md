@@ -1,9 +1,9 @@
 ---
 title: Screen: Login
 status: Draft
-version: 0.1.0
+version: 0.2.0
 owner: Product Architecture
-last_update: 2026-07-17
+last_update: 2026-07-20
 related_documents:
   - ../../Domain/Identity.md
   - ../../ADR/ADR_004_Account_User_Player_Separation.md
@@ -19,12 +19,12 @@ related_documents:
 
 ## Objetivo
 
-Autenticar uma conta existente pelo caminho de e-mail e senha. Componente: `LoginScreen`.
+Autenticar uma conta existente por identificador e senha. Componente: `LoginScreen`.
 
 ## Elementos
 
 - título e contexto visual de entrada;
-- campo de e-mail;
+- campo de e-mail, usuário ou telefone;
 - campo de senha;
 - botão primário `Entrar`;
 - link `Esqueci a senha`;
@@ -33,8 +33,16 @@ Autenticar uma conta existente pelo caminho de e-mail e senha. Componente: `Logi
 
 ## Campos
 
-- `email` - obrigatório, formato de e-mail. Origem: `auth.users.email`.
+- `identifier` - obrigatório. Pode ser e-mail, username ou telefone de contato.
 - `password` - obrigatório. Nunca persistido em claro.
+
+## Resolução do identificador
+
+- Se o valor tiver `@`, a UI tenta autenticar como e-mail.
+- Se o e-mail não resolver, a UI tenta resolver como `username`.
+- Se o valor não tiver `@`, a UI tenta resolver como `username`.
+- Se o `username` não resolver, a UI tenta resolver como `contact_phone`.
+- Telefone é apenas identificador de busca em `public.users.contact_phone`; a autenticação final continua sendo por e-mail/senha no Supabase Auth.
 
 ## Regras de UX
 
@@ -54,7 +62,7 @@ Autenticar uma conta existente pelo caminho de e-mail e senha. Componente: `Logi
 
 ## Eventos
 
-- entrar submete `POST /api/v1/auth/sign-in`.
+- entrar submete login por identificador no app, que pode resolver para `POST /api/v1/auth/sign-in`.
 
 ## Regras de navegação
 

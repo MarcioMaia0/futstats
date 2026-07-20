@@ -1,9 +1,9 @@
 ---
 title: Media Storage Strategy
 status: Draft
-version: 1.1.0
+version: 1.2.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-20
 ---
 
 # Media Storage Strategy
@@ -33,6 +33,16 @@ Definir como o FUTSTATS deve lidar com imagens, escudos, vídeos e cards.
 ## Estratégia inicial
 
 Usar storage de objetos para imagens e cards, e links externos para vídeos longos.
+
+## Avatar de usuário
+
+Estado atual em 2026-07-20:
+
+- avatares vindos de provider social podem ser copiados para o bucket público `user-avatars`;
+- o caminho do arquivo deve ficar organizado por usuário autenticado;
+- a URL pública final é gravada em `public.users.avatar_url`;
+- a UI deve usar essa URL com fallback para ícone quando a imagem falhar;
+- a URL externa original do provider social não deve ser tratada como origem permanente de renderização.
 
 ## Estratégia para uploads temporários
 

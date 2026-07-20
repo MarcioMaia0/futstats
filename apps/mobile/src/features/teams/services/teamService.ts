@@ -3,6 +3,8 @@ import { getMe } from '../../identity/services/identityService';
 import type { TeamExperienceThemeOverrides } from '../../../theme/teamExperienceTheme';
 
 export type SportModality = 'FUTSAL' | 'SOCIETY' | 'FIELD';
+export type ModalityFrameCount = 1 | 2;
+export type ModalityFrameCounts = Partial<Record<SportModality, ModalityFrameCount>>;
 
 export type HomeMatchCapability = 'HAS_HOME_VENUE' | 'NO_HOME_VENUE' | 'NOT_DEFINED_YET';
 
@@ -25,6 +27,7 @@ export type TeamSummary = {
   founded_day: number | null;
   founded_month: number | null;
   founded_year: number | null;
+  modality_frame_counts: ModalityFrameCounts;
   modalities: SportModality[];
   home_match_capability: HomeMatchCapability;
   region_state: string | null;
@@ -111,6 +114,7 @@ export type CreateTeamPayload = {
   second_color?: string | null;
   third_color?: string | null;
   home_match_capability?: HomeMatchCapability;
+  modality_frame_counts?: ModalityFrameCounts;
   modalities?: SportModality[];
   primary_venue?: {
     name?: string | null;
@@ -135,6 +139,7 @@ export type SaveTeamSettingsPayload = {
   commentsEnabled: boolean;
   defaultPublishTeamEvents: boolean;
   firstColor?: string | null;
+  modalityFrameCounts?: ModalityFrameCounts;
   modalities: SportModality[];
   name: string;
   publicFeedEnabled: boolean;
@@ -197,7 +202,15 @@ export async function createTeam(payload: CreateTeamPayload): Promise<CreatedTea
     throw error;
   }
 
-  return data as CreatedTeamResult;
+  const createdTeam = data as CreatedTeamResult;
+  await saveTeamModalityFrameCounts(createdTeam.team.id, payload.modalities ?? [], payload.modality_frame_counts);
+
+  const savedTeam = await fetchTeamSummary(createdTeam.team.id);
+
+  return {
+    ...createdTeam,
+    team: savedTeam ?? createdTeam.team,
+  };
 }
 
 export async function fetchFirstManagedTeam(personId: string): Promise<TeamSummary | null> {
@@ -236,7 +249,7 @@ export async function fetchFirstManagedTeam(personId: string): Promise<TeamSumma
 
   const { data: modalitiesRows, error: modalitiesError } = await supabase
     .from('team_modalities')
-    .select('modality')
+    .select('modality, default_match_frame_count')
     .eq('team_id', membership.team_id)
     .order('modality', { ascending: true });
 
@@ -281,6 +294,7 @@ export async function fetchFirstManagedTeam(personId: string): Promise<TeamSumma
     founded_day: teamRow.founded_day,
     founded_month: teamRow.founded_month,
     founded_year: teamRow.founded_year,
+    modality_frame_counts: buildModalityFrameCounts(modalitiesRows),
     modalities: (modalitiesRows ?? []).map((row) => row.modality as SportModality),
     home_match_capability: teamRow.home_match_capability as HomeMatchCapability,
     region_state: teamRow.region_state,
@@ -446,6 +460,16 @@ export async function saveTeamSettings(teamId: string, payload: SaveTeamSettings
   }
 
   const normalizedModalities = normalizeModalities(payload.modalities);
+  const { data: existingModalitiesRows, error: existingModalitiesError } = await supabase
+    .from('team_modalities')
+    .select('modality, default_match_frame_count')
+    .eq('team_id', teamId);
+
+  if (existingModalitiesError) {
+    throw existingModalitiesError;
+  }
+
+  const existingFrameCounts = buildModalityFrameCounts(existingModalitiesRows);
 
   const { error: teamError } = await supabase
     .from('teams')
@@ -503,6 +527,9 @@ export async function saveTeamSettings(teamId: string, payload: SaveTeamSettings
     const { error: insertModalitiesError } = await supabase.from('team_modalities').insert(
       normalizedModalities.map((modality) => ({
         created_by_user_id: authData.user?.id ?? null,
+        default_match_frame_count: normalizeModalityFrameCount(
+          payload.modalityFrameCounts?.[modality] ?? existingFrameCounts[modality],
+        ),
         modality,
         team_id: teamId,
       })),
@@ -701,7 +728,7 @@ export async function fetchTeamSummary(teamId: string): Promise<TeamSummary | nu
     await Promise.all([
       supabase
         .from('team_modalities')
-        .select('modality')
+        .select('modality, default_match_frame_count')
         .eq('team_id', teamId)
         .order('modality', { ascending: true }),
       supabase
@@ -746,6 +773,7 @@ export async function fetchTeamSummary(teamId: string): Promise<TeamSummary | nu
     founded_day: teamRow.founded_day,
     founded_month: teamRow.founded_month,
     founded_year: teamRow.founded_year,
+    modality_frame_counts: buildModalityFrameCounts(modalitiesRows),
     modalities: (modalitiesRows ?? []).map((row) => row.modality as SportModality),
     home_match_capability: teamRow.home_match_capability as HomeMatchCapability,
     region_state: teamRow.region_state,
@@ -805,6 +833,52 @@ function buildTeamSettings(row: TeamSettingsRow | null) {
     public_feed_enabled: row.public_feed_enabled,
     reactions_enabled: row.reactions_enabled,
   };
+}
+
+function buildModalityFrameCounts(
+  rows: Array<{ default_match_frame_count?: number | null; modality?: string | null }> | null,
+): ModalityFrameCounts {
+  return (rows ?? []).reduce<ModalityFrameCounts>((counts, row) => {
+    if (isSportModality(row.modality)) {
+      counts[row.modality] = normalizeModalityFrameCount(row.default_match_frame_count);
+    }
+
+    return counts;
+  }, {});
+}
+
+async function saveTeamModalityFrameCounts(
+  teamId: string,
+  modalities: SportModality[],
+  frameCounts?: ModalityFrameCounts,
+) {
+  if (!frameCounts || !modalities.length) {
+    return;
+  }
+
+  await Promise.all(
+    normalizeModalities(modalities).map(async (modality) => {
+      const { error } = await supabase
+        .from('team_modalities')
+        .update({
+          default_match_frame_count: normalizeModalityFrameCount(frameCounts[modality]),
+        })
+        .eq('team_id', teamId)
+        .eq('modality', modality);
+
+      if (error) {
+        throw error;
+      }
+    }),
+  );
+}
+
+function normalizeModalityFrameCount(value?: number | null): ModalityFrameCount {
+  return value === 2 ? 2 : 1;
+}
+
+function isSportModality(value?: string | null): value is SportModality {
+  return value === 'FUTSAL' || value === 'SOCIETY' || value === 'FIELD';
 }
 
 function mapVenueRow(

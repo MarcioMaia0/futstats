@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { Animated, Image, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
 import { ThemedTextureBackground } from '../../../components/layout/ThemedTextureBackground';
 import { BackCircleButton } from '../../../components/navigation/BackCircleButton';
@@ -17,11 +17,13 @@ type TeamProfileScreenProps = {
   hasUnreadNotifications?: boolean;
   themeOverrides?: TeamExperienceThemeOverrides | null;
   onBack?: () => void;
+  onOpenIconPreview?: () => void;
   onOpenNotifications?: () => void;
   onOpenRoster?: () => void;
   onOpenSettings?: () => void;
   onProfilePress?: () => void;
   preferredThemeKey?: UserThemePreferenceKey | null;
+  profileAvatarUrl?: string | null;
   team: TeamSummary;
 };
 
@@ -52,6 +54,8 @@ const SUMMARY_FILTERS = [
   { key: 'threeMonths', label: '3 meses' },
   { key: 'month', label: 'Mês' },
 ] as const;
+
+const PROFILE_HEADER_AREA_HEIGHT = 66;
 
 type SummaryFilterKey = (typeof SUMMARY_FILTERS)[number]['key'];
 type MatchResult = 'V' | 'E' | 'D';
@@ -90,11 +94,13 @@ function hookProps(id: string) {
 export function TeamProfileScreen({
   hasUnreadNotifications = false,
   onBack,
+  onOpenIconPreview,
   onOpenNotifications,
   onOpenRoster,
   onOpenSettings,
   onProfilePress,
   preferredThemeKey = null,
+  profileAvatarUrl = null,
   team,
   themeOverrides = null,
 }: TeamProfileScreenProps) {
@@ -111,6 +117,7 @@ export function TeamProfileScreen({
   const zoneLabel = team.region_zone?.trim() || 'Zona em definição';
   const foundedLabel = formatFoundedLabel(team);
   const [summaryFilter, setSummaryFilter] = useState<SummaryFilterKey>('start');
+  const scrollY = useRef(new Animated.Value(0)).current;
   const experienceAppearance = useMemo(
     () =>
       resolveExperienceTheme({
@@ -132,133 +139,73 @@ export function TeamProfileScreen({
   const titleClass = isCompact ? 'font-slab text-[30px] leading-[32px]' : 'font-slab text-[60px] leading-[60px]';
   const locationClass = isCompact ? 'text-base leading-6' : 'text-[20px] leading-7';
   const sectionTitleClass = isCompact ? 'font-slab text-[24px] leading-7 uppercase' : 'font-slab text-[30px] leading-[34px] uppercase';
+  const clampedScrollY = useMemo(() => Animated.diffClamp(scrollY, 0, PROFILE_HEADER_AREA_HEIGHT), [scrollY]);
+  const headerHeight = clampedScrollY.interpolate({
+    inputRange: [0, PROFILE_HEADER_AREA_HEIGHT],
+    outputRange: [PROFILE_HEADER_AREA_HEIGHT, 0],
+    extrapolate: 'clamp',
+  });
+  const headerOpacity = clampedScrollY.interpolate({
+    inputRange: [0, PROFILE_HEADER_AREA_HEIGHT],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
 
   return (
     <ThemedTextureBackground baseColor={experienceTheme.surfaceBase} mode={experienceAppearance.mode}>
       <View className="flex-1 bg-transparent" {...hookProps('team-profile-container-main')}>
+        <Animated.View
+          className="overflow-hidden bg-black/50"
+          style={{ height: headerHeight, opacity: headerOpacity }}
+          {...hookProps('team-profile-container-collapsible-header')}
+        >
+          <View className="w-full flex-row items-center justify-between px-5 pt-3" {...hookProps('team-profile-container-header')}>
+            <BackCircleButton onPress={onBack} {...hookProps('team-profile-button-back')} />
+            <View className="flex-row items-center gap-2" {...hookProps('team-profile-container-header-actions')}>
+              <Pressable
+                accessibilityRole="button"
+                className="min-h-[42px] w-[42px] flex justify-center items-center rounded-full bg-black/80"
+                {...hookProps('team-profile-button-share')}
+              >
+                <Ionicons color={experienceTheme.textPrimary} name="share-social-outline" size={isCompact ? 18 : 20} />
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                className="h-[42px] w-[42px] items-center justify-center rounded-full bg-black/80"
+                onPress={onOpenSettings}
+                {...hookProps('team-profile-button-settings')}
+              >
+                <Ionicons color={experienceTheme.textPrimary} name="settings-outline" size={isCompact ? 18 : 20} />
+              </Pressable>
+            </View>
+          </View>
+        </Animated.View>
+
+        <View className="bg-black/50" {...hookProps('team-profile-container-fixed-quick-actions')}>
+          <TeamProfileQuickActions
+            experienceTheme={experienceTheme}
+            isCompact={isCompact}
+            onOpenRoster={onOpenRoster}
+          />
+          <View
+            className="h-px w-full"
+            style={{ backgroundColor: experienceTheme.borderDefault }}
+            {...hookProps('team-profile-divider-quick-actions')}
+          />
+        </View>
+
         <ScrollView
           className="flex-1"
           contentContainerClassName="pb-[110px]"
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+          scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           {...hookProps('team-profile-container-scroll')}
         >
           <View className="w-full self-center gap-4" {...hookProps('team-profile-container-shell')}>
-          <View className="w-full bg-black/50 pt-3" {...hookProps('team-profile-container-top-section')}>
+          <View className="w-full bg-black/50" {...hookProps('team-profile-container-top-section')}>
             <View className="w-full self-center" {...hookProps('team-profile-container-top-section-inner')}>
               <View className="gap-2" {...hookProps('team-profile-container-hero-cluster')}>
-                <View className="w-full flex-row items-center justify-between px-5" {...hookProps('team-profile-container-header')}>
-                  <BackCircleButton onPress={onBack} {...hookProps('team-profile-button-back')} />
-                  <View className="flex-row items-center gap-2" {...hookProps('team-profile-container-header-actions')}>
-                    <Pressable
-                      accessibilityRole="button"
-                      className="min-h-[42px] w-[42px] flex justify-center items-center rounded-full bg-black/80"
-                      // style={{ backgroundColor: experienceTheme.surfaceCard, borderColor: experienceTheme.borderDefault, borderWidth: 1 }}
-                      {...hookProps('team-profile-button-share')}
-                    >
-                      <Ionicons color={experienceTheme.textPrimary} name="share-social-outline" size={isCompact ? 18 : 20} />
-                      {/*<Text
-                        className={isCompact ? 'ml-[10px] text-base leading-6' : 'ml-[10px] text-[20px] leading-7'}
-                        style={{ color: experienceTheme.textPrimary }}
-                      >
-                        Compartilhar
-                      </Text>*/}
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="button"
-                      className="h-[42px] w-[42px] items-center justify-center rounded-full bg-black/80"
-                      onPress={onOpenSettings}
-                      // style={{ backgroundColor: experienceTheme.surfaceCard, borderColor: experienceTheme.borderDefault, borderWidth: 1 }}
-                      {...hookProps('team-profile-button-settings')}
-                    >
-                      <Ionicons color={experienceTheme.textPrimary} name="settings-outline" size={isCompact ? 18 : 20} />
-                    </Pressable>
-                  </View>
-                </View>
-
-                <View className="flex-row px-5 py-0" {...hookProps('team-profile-container-quick-actions')}>
-                  {/*{QUICK_ACTIONS.map((action) => (
-                    <Pressable
-                      accessibilityRole="button"
-                      className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
-                      key={action.label}
-                      {...hookProps(`team-profile-button-quick-action-${slugify(action.label)}`)}
-                    >
-                      <Ionicons color={experienceTheme.accentPrimary} name={action.icon} size={isCompact ? 18 : 20} />
-                      <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
-                        {action.label}
-                      </Text>
-                    </Pressable>
-                  ))}*/}
-
-                  <Pressable
-                    accessibilityRole="button"
-                    className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
-                    key="Criar jogo"
-                    {...hookProps(`team-profile-button-quick-action-criar-jogo`)}
-                  >
-                    <Ionicons color={experienceTheme.accentPrimary} name="football-outline" size={isCompact ? 18 : 20} />
-                    <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
-                      {"Criar jogo"}
-                    </Text>
-                  </Pressable>
-
-                  <Pressable
-                    accessibilityRole="button"
-                    className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
-                    key="Agenda"
-                    {...hookProps(`team-profile-button-quick-action-agenda`)}
-                  >
-                    <Ionicons color={experienceTheme.accentPrimary} name="calendar-outline" size={isCompact ? 18 : 20} />
-                    <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
-                      {"Agenda"}
-                    </Text>
-                  </Pressable>
-
-                  <Pressable
-                    accessibilityRole="button"
-                    className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
-                    key="Elenco"
-                    onPress={onOpenRoster}
-                    {...hookProps(`team-profile-button-quick-action-elenco`)}
-                  >
-                    <Ionicons color={experienceTheme.accentPrimary} name="people-outline" size={isCompact ? 18 : 20} />
-                    <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
-                      {"Elenco"}
-                    </Text>
-                  </Pressable>
-
-                  <Pressable
-                    accessibilityRole="button"
-                    className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
-                    key="Publicar"
-                    {...hookProps(`team-profile-button-quick-action-publicar`)}
-                  >
-                    <Ionicons color={experienceTheme.accentPrimary} name="megaphone-outline" size={isCompact ? 18 : 20} />
-                    <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
-                      {"Publicar"}
-                    </Text>
-                  </Pressable>
-
-                  <Pressable
-                    accessibilityRole="button"
-                    className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
-                    key="Evento"
-                    {...hookProps(`team-profile-button-quick-action-evento`)}
-                  >
-                    <Ionicons color={experienceTheme.accentPrimary} name="ticket-outline" size={isCompact ? 18 : 20} />
-                    <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
-                      {"Evento"}
-                    </Text>
-                  </Pressable>
-
-                </View>
-
-                <View
-                  className="h-px w-full"
-                  style={{ backgroundColor: experienceTheme.borderDefault }}
-                  {...hookProps('team-profile-divider-quick-actions')}
-                />
-
                 <View
                   className={isCompact ? 'flex-row items-start gap-3 px-5 pb-4 pt-2' : 'flex-row items-start gap-4 px-5 pb-4 pt-2'}
                   {...hookProps('team-profile-container-hero')}
@@ -447,8 +394,10 @@ export function TeamProfileScreen({
                 experienceTheme={experienceTheme}
                 isCompact={isCompact}
                 title="Próximo jogo"
+                titleIcon="trophy-outline"
                 {...hookProps('team-profile-card-next-match')}
               >
+                {/*<Ionicons color={experienceTheme.textPrimary} name="share-social-outline" size={isCompact ? 18 : 20} />*/}
                 <View className="flex-row items-center justify-between">
                   <Text className="text-[11px] uppercase leading-[14px]" style={{ color: experienceTheme.textMuted }}>
                     Primeiro desafio
@@ -485,7 +434,7 @@ export function TeamProfileScreen({
                 </View>
               </FeatureCard>
 
-              <FeatureCard contentCardWidth={contentCardWidth} experienceTheme={experienceTheme} isCompact={isCompact} title="Última publicação" {...hookProps('team-profile-card-latest-post')}>
+              <FeatureCard contentCardWidth={contentCardWidth} experienceTheme={experienceTheme} isCompact={isCompact} title="Última publicação" titleIcon="megaphone-outline" {...hookProps('team-profile-card-latest-post')}>
                 <View className="flex-row items-center gap-[10px]">
                   <View className="h-[30px] w-[30px] items-center justify-center overflow-hidden rounded-full" style={{ borderColor: experienceTheme.accentPrimary, borderWidth: 1 }}>
                     {crestUri ? (
@@ -527,7 +476,7 @@ export function TeamProfileScreen({
                 </View>
               </FeatureCard>
 
-              <FeatureCard contentCardWidth={contentCardWidth} experienceTheme={experienceTheme} isCompact={isCompact} title="Elenco em destaque" {...hookProps('team-profile-card-featured-players')}>
+              <FeatureCard contentCardWidth={contentCardWidth} experienceTheme={experienceTheme} isCompact={isCompact} title="Elenco em destaque" titleIcon="person-add-outline" {...hookProps('team-profile-card-featured-players')}>
                 <View className="flex-row items-center justify-end">
                   {/*<Text className="text-[11px] leading-[14px]" style={{ color: experienceTheme.textMuted }}>
                     Ver todos
@@ -580,7 +529,7 @@ export function TeamProfileScreen({
                 </View>
               </FeatureCard>
 
-              <FeatureCard contentCardWidth={contentCardWidth} experienceTheme={experienceTheme} isCompact={isCompact} title="Agenda" {...hookProps('team-profile-card-agenda')}>
+              <FeatureCard contentCardWidth={contentCardWidth} experienceTheme={experienceTheme} isCompact={isCompact} title="Agenda" titleIcon="calendar-outline" {...hookProps('team-profile-card-agenda')}>
                 
                 <View className="gap-3">
                   {AGENDA_ITEMS.map((item, index) => (
@@ -625,6 +574,8 @@ export function TeamProfileScreen({
           hasUnreadNotifications={hasUnreadNotifications}
           onNotificationsPress={onOpenNotifications}
           onProfilePress={onProfilePress}
+          onSearchPress={onOpenIconPreview}
+          profileAvatarUrl={profileAvatarUrl}
           theme={experienceTheme}
         />
       </View>
@@ -640,6 +591,7 @@ function FeatureCard({
   experienceTheme,
   isCompact,
   title,
+  titleIcon,
   ...props
 }: {
   actionLabel?: string;
@@ -649,6 +601,7 @@ function FeatureCard({
   experienceTheme: TeamExperienceTheme;
   isCompact: boolean;
   title: string;
+  titleIcon?: React.ComponentProps<typeof Ionicons>['name'];
   nativeID?: string;
   testID?: string;
 }) {
@@ -658,9 +611,12 @@ function FeatureCard({
       style={{ backgroundColor: experienceTheme.surfaceCard, borderColor: experienceTheme.borderDefault, borderWidth: 1, width: contentCardWidth }}
       {...props}
     >
-      <Text className={isCompact ? 'font-slab text-[24px] leading-7 uppercase' : 'font-slab text-[30px] leading-[34px] uppercase'} style={{ color: experienceTheme.accentPrimary }}>
-        {title}
-      </Text>
+      <View className="min-w-0 flex-row items-start gap-2 ">
+        {titleIcon ? <Ionicons color={experienceTheme.accentPrimary} name={titleIcon} size={isCompact ? 22 : 26} style={{ marginTop: isCompact ? 2 : 4 }} /> : null}
+        <Text className={isCompact ? 'min-w-0 flex-1 flex-wrap font-slab text-[24px]  uppercase' : 'min-w-0 flex-1 flex-wrap font-slab text-[30px] leading-[34px] uppercase'} style={{ color: experienceTheme.accentPrimary }}>
+          {title}
+        </Text>
+      </View>
       {children}
       {actionLabel && actionStyle === 'primary' ? (
         <Pressable
@@ -674,6 +630,35 @@ function FeatureCard({
           <Ionicons color={experienceTheme.accentOnPrimary} name="chevron-forward" size={14} />
         </Pressable>
       ) : null}
+    </View>
+  );
+}
+
+function TeamProfileQuickActions({
+  experienceTheme,
+  isCompact,
+  onOpenRoster,
+}: {
+  experienceTheme: TeamExperienceTheme;
+  isCompact: boolean;
+  onOpenRoster?: () => void;
+}) {
+  return (
+    <View className="flex-row px-5 py-0" {...hookProps('team-profile-container-quick-actions')}>
+      {QUICK_ACTIONS.map((action) => (
+        <Pressable
+          accessibilityRole="button"
+          className="min-h-[50px] flex-1 items-center justify-center gap-[5px]"
+          key={action.label}
+          onPress={action.label === 'Elenco' ? onOpenRoster : undefined}
+          {...hookProps(`team-profile-button-quick-action-${slugify(action.label)}`)}
+        >
+          <Ionicons color={experienceTheme.accentPrimary} name={action.icon} size={isCompact ? 18 : 20} />
+          <Text className="text-center text-[0.75rem] leading-[0.875rem]" style={{ color: experienceTheme.textMuted }}>
+            {action.label}
+          </Text>
+        </Pressable>
+      ))}
     </View>
   );
 }

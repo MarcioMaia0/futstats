@@ -1,7 +1,7 @@
 ﻿# FUTSTATS Documentation Manifest
 
-Generated on: 2026-07-10
-Total files: 452
+Generated on: 2026-07-20
+Total files: 456
 
 Note: backup folders `docs/backup-*` are intentionally excluded from this manifest.
 
@@ -200,12 +200,14 @@ Note: backup folders `docs/backup-*` are intentionally excluded from this manife
 - `Frontend/Screens/Feed.md`
 - `Frontend/Screens/Forgot_Password.md`
 - `Frontend/Screens/Home_Dashboard.md`
+- `Frontend/Screens/Icon_Preview.md`
 - `Frontend/Screens/Join_Team_Search.md`
 - `Frontend/Screens/Login.md`
 - `Frontend/Screens/Language_Settings.md`
 - `Frontend/Screens/Lineup_And_Live_Operation.md`
 - `Frontend/Screens/Match_Detail.md`
 - `Frontend/Screens/Match_Scoreboard.md`
+- `Frontend/Screens/Notifications.md`
 - `Frontend/Screens/Phone_Otp.md`
 - `Frontend/Screens/Player_Profile.md`
 - `Frontend/Screens/Privacy_Settings.md`
@@ -218,6 +220,7 @@ Note: backup folders `docs/backup-*` are intentionally excluded from this manife
 - `Frontend/Screens/Start_Path_Selection.md`
 - `Frontend/Screens/Team_Home.md`
 - `Frontend/Screens/Team_Profile.md`
+- `Frontend/Screens/Team_Roster.md`
 - `Frontend/Screens/Team_Settings.md`
 - `Frontend/Screens/Theme_Settings.md`
 - `Frontend/Screens/Welcome.md`
@@ -413,6 +416,7 @@ Note: backup folders `docs/backup-*` are intentionally excluded from this manife
 - `QA/Test_Strategy.md`
 - `README.md`
 - `Release_1_0/AI_Context_Pack.md`
+- `Release_1_0/Current_Project_Status.md`
 - `Release_1_0/Developer_Onboarding.md`
 - `Release_1_0/Documentation_Readiness_Report.md`
 - `Release_1_0/FINAL_README.md`

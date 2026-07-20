@@ -7,13 +7,14 @@ import { ThemeToggle } from '../../../components/inputs/ThemeToggle';
 import { ThemedTextureBackground } from '../../../components/layout/ThemedTextureBackground';
 import { BackCircleButton } from '../../../components/navigation/BackCircleButton';
 import { TeamExperienceBottomBar } from '../../../components/navigation/TeamExperienceBottomBar';
+import { getModalityLabel } from '../../../config/modalityPositions';
 import {
   resolveExperienceTheme,
   type TeamExperienceTheme,
   type TeamExperienceThemeOverrides,
   type UserThemePreferenceKey,
 } from '../../../theme/teamExperienceTheme';
-import type { ApprovedMembershipMode, TeamSummary } from '../../teams/services/teamService';
+import type { ApprovedMembershipMode, ModalityFrameCounts, SportModality, TeamSummary } from '../../teams/services/teamService';
 import {
   NotificationCard,
   type NotificationCardItem,
@@ -28,6 +29,7 @@ import {
 
 type NotificationsScreenProps = {
   hasUnreadNotifications?: boolean;
+  initialJoinRequestWizardOpen?: boolean;
   onBack?: () => void;
   onOpenAnalyzeJoinRequest?: (joinRequestId: string, teamId: string) => void;
   onOpenAgenda?: () => void;
@@ -36,6 +38,7 @@ type NotificationsScreenProps = {
   onReturnHome?: () => void;
   onUnreadNotificationsChange?: (hasUnread: boolean) => void;
   preferredThemeKey?: UserThemePreferenceKey | null;
+  profileAvatarUrl?: string | null;
   team?: TeamSummary | null;
   themeOverrides?: TeamExperienceThemeOverrides | null;
 };
@@ -45,6 +48,12 @@ type ApprovalToggles = {
   director: boolean;
   player: boolean;
   president: boolean;
+};
+
+type ApprovalPlayerFrameType = 'UNASSIGNED' | 'FIRST_FRAME' | 'SECOND_FRAME';
+
+type ApprovalPlayerSportContext = {
+  frameType: ApprovalPlayerFrameType;
 };
 
 type NotificationLeadVisual =
@@ -67,6 +76,13 @@ const EMPTY_APPROVAL_TOGGLES: ApprovalToggles = {
   president: false,
 };
 
+const FAKE_JOIN_REQUEST_ID = 'fake-join-request-preview';
+const FAKE_JOIN_REQUEST_MODALITIES: SportModality[] = ['FUTSAL', 'SOCIETY'];
+const FAKE_JOIN_REQUEST_FRAME_COUNTS: ModalityFrameCounts = {
+  FUTSAL: 2,
+  SOCIETY: 2,
+};
+
 function hasNotificationAttention(item: NotificationCardItem) {
   return !item.read || item.pendingAction;
 }
@@ -80,6 +96,7 @@ function hookProps(id: string) {
 
 export function NotificationsScreen({
   hasUnreadNotifications = false,
+  initialJoinRequestWizardOpen = false,
   onBack,
   onOpenAgenda,
   onOpenSettings,
@@ -87,15 +104,19 @@ export function NotificationsScreen({
   onReturnHome,
   onUnreadNotificationsChange,
   preferredThemeKey = null,
+  profileAvatarUrl = null,
   team = null,
   themeOverrides = null,
 }: NotificationsScreenProps) {
-  const { width } = useWindowDimensions();
+  const { height } = useWindowDimensions();
   const [activeFilter, setActiveFilter] = useState<NotificationFilterKey>('team');
   const [notificationsState, setNotificationsState] = useState<NotificationCardItem[]>([]);
   const [selectedNotificationId, setSelectedNotificationId] = useState<string | null>(null);
   const [selectedApprovalMode, setSelectedApprovalMode] = useState<ApprovedMembershipMode | null>(null);
   const [approvalToggles, setApprovalToggles] = useState<ApprovalToggles>(EMPTY_APPROVAL_TOGGLES);
+  const [approvalPlayerSportContexts, setApprovalPlayerSportContexts] = useState<
+    Partial<Record<SportModality, ApprovalPlayerSportContext>>
+  >({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -110,6 +131,21 @@ export function NotificationsScreen({
     [preferredThemeKey, team, themeOverrides],
   );
   const experienceTheme = experienceAppearance.theme;
+  const modalMaxHeight = Math.max(220, height - 24);
+  const approvalModalities = useMemo(
+    () =>
+      normalizeApprovalModalities(
+        team?.modalities?.length ? team.modalities : initialJoinRequestWizardOpen ? FAKE_JOIN_REQUEST_MODALITIES : [],
+      ),
+    [initialJoinRequestWizardOpen, team?.modalities],
+  );
+  const approvalFrameCounts = useMemo(
+    () => ({
+      ...(initialJoinRequestWizardOpen ? FAKE_JOIN_REQUEST_FRAME_COUNTS : {}),
+      ...(team?.modality_frame_counts ?? {}),
+    }),
+    [initialJoinRequestWizardOpen, team?.modality_frame_counts],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -118,6 +154,23 @@ export function NotificationsScreen({
       try {
         setIsLoading(true);
         setErrorMessage(null);
+
+        if (initialJoinRequestWizardOpen) {
+          const fakeJoinRequest = buildFakeJoinRequestNotification(team);
+
+          if (!isMounted) {
+            return;
+          }
+
+          setNotificationsState([fakeJoinRequest]);
+          setSelectedNotificationId(fakeJoinRequest.id);
+          setSelectedApprovalMode(null);
+          setApprovalToggles(EMPTY_APPROVAL_TOGGLES);
+          setApprovalPlayerSportContexts({});
+          onUnreadNotificationsChange?.(true);
+          return;
+        }
+
         const result = await fetchNotificationsFeed(team);
 
         if (!isMounted) {
@@ -128,6 +181,7 @@ export function NotificationsScreen({
         setSelectedNotificationId(null);
         setSelectedApprovalMode(null);
         setApprovalToggles(EMPTY_APPROVAL_TOGGLES);
+        setApprovalPlayerSportContexts({});
         onUnreadNotificationsChange?.(result.items.some(hasNotificationAttention));
       } catch (error) {
         if (!isMounted) {
@@ -150,7 +204,7 @@ export function NotificationsScreen({
     return () => {
       isMounted = false;
     };
-  }, [onUnreadNotificationsChange, team]);
+  }, [initialJoinRequestWizardOpen, onUnreadNotificationsChange, team]);
 
   const selectedNotification = useMemo(
     () => notificationsState.find((item) => item.id === selectedNotificationId) ?? null,
@@ -161,6 +215,7 @@ export function NotificationsScreen({
     if (selectedNotification?.type !== 'TEAM_JOIN_REQUEST_CREATED') {
       setSelectedApprovalMode(null);
       setApprovalToggles(EMPTY_APPROVAL_TOGGLES);
+      setApprovalPlayerSportContexts({});
       return;
     }
 
@@ -227,6 +282,7 @@ export function NotificationsScreen({
     setSelectedNotificationId(null);
     setSelectedApprovalMode(null);
     setApprovalToggles(EMPTY_APPROVAL_TOGGLES);
+    setApprovalPlayerSportContexts({});
   }
 
   function handleToggleApprovalRole(role: keyof ApprovalToggles, value: boolean) {
@@ -253,12 +309,52 @@ export function NotificationsScreen({
 
       const derivedMode = resolveApprovalModeFromToggles(next);
       setSelectedApprovalMode(derivedMode);
+
+      if (role === 'player') {
+        if (value) {
+          const fallbackModality = approvalModalities[0] ?? null;
+
+          if (fallbackModality) {
+            setApprovalPlayerSportContexts((contexts) =>
+              ensureApprovalPlayerSportContext(contexts, fallbackModality, approvalFrameCounts),
+            );
+          }
+        } else {
+          setApprovalPlayerSportContexts({});
+        }
+      }
+
       return next;
+    });
+  }
+
+  function handleSelectApprovalPlayerModality(modality: SportModality) {
+    setApprovalPlayerSportContexts((contexts) => toggleApprovalPlayerSportContext(contexts, modality, approvalFrameCounts));
+  }
+
+  function handleSelectApprovalPlayerFrameType(modality: SportModality, frameType: ApprovalPlayerFrameType) {
+    setApprovalPlayerSportContexts((contexts) => {
+      const currentContext = contexts[modality] ?? {
+        frameType: getDefaultApprovalFrameTypeForModality(modality, approvalFrameCounts),
+      };
+
+      return {
+        ...contexts,
+        [modality]: {
+          ...currentContext,
+          frameType,
+        },
+      };
     });
   }
 
   async function handleApproveJoinRequest(item: NotificationCardItem) {
     if (item.type !== 'TEAM_JOIN_REQUEST_CREATED' || !item.joinRequestId || !selectedApprovalMode) {
+      return;
+    }
+
+    if (initialJoinRequestWizardOpen && item.joinRequestId === FAKE_JOIN_REQUEST_ID) {
+      handleCloseNotificationModal();
       return;
     }
 
@@ -277,6 +373,11 @@ export function NotificationsScreen({
 
   async function handleRejectJoinRequest(item: NotificationCardItem) {
     if (item.type !== 'TEAM_JOIN_REQUEST_CREATED' || !item.joinRequestId) {
+      return;
+    }
+
+    if (initialJoinRequestWizardOpen && item.joinRequestId === FAKE_JOIN_REQUEST_ID) {
+      handleCloseNotificationModal();
       return;
     }
 
@@ -395,17 +496,24 @@ export function NotificationsScreen({
           hasUnreadNotifications={hasUnreadNotifications}
           onHomePress={onReturnHome}
           onProfilePress={onProfilePress}
+          profileAvatarUrl={profileAvatarUrl}
           theme={experienceTheme}
         />
 
         <Modal animationType="fade" transparent visible={selectedNotification !== null} onRequestClose={handleCloseNotificationModal}>
-          <View className="flex-1 items-center justify-center bg-black/75 px-4" {...hookProps('notifications-modal-overlay')}>
+          <View className="flex-1 items-center justify-center bg-black/75 px-4 py-3" {...hookProps('notifications-modal-overlay')}>
             {selectedNotification ? (
               <View
-                className="w-full max-w-[360px] gap-4 rounded-[28px] border p-4"
-                style={{ backgroundColor: experienceTheme.surfaceCard, borderColor: experienceTheme.borderDefault }}
+                className="w-full max-w-[360px] overflow-hidden rounded-[28px] border"
+                style={{ backgroundColor: experienceTheme.surfaceCard, borderColor: experienceTheme.borderDefault, maxHeight: modalMaxHeight }}
                 {...hookProps('notifications-modal-card')}
               >
+                <ScrollView
+                  contentContainerClassName="gap-4 p-4"
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                  {...hookProps('notifications-modal-scroll')}
+                >
                 <View className="gap-3" {...hookProps('notifications-modal-body')}>
                   <View className="flex-row items-start gap-3" {...hookProps('notifications-modal-origin')}>
                     <View className="h-[58px] w-[58px] items-center justify-center" {...hookProps('notifications-modal-origin-avatar')}>
@@ -466,15 +574,25 @@ export function NotificationsScreen({
 
                       <View className="gap-2">
                         <ApprovalToggleRow
-                          description="Marca se a pessoa entra para compor o elenco."
+                          // description="Marca se a pessoa entra para compor o elenco."
                           hookId="notifications-modal-toggle-player"
                           label="Jogador"
                           onValueChange={(value) => handleToggleApprovalRole('player', value)}
                           theme={experienceTheme}
                           value={approvalToggles.player}
                         />
+                        {approvalToggles.player ? (
+                          <ApprovalPlayerSportContextPanel
+                            frameCounts={approvalFrameCounts}
+                            modalities={approvalModalities}
+                            onSelectFrameType={handleSelectApprovalPlayerFrameType}
+                            onSelectModality={handleSelectApprovalPlayerModality}
+                            sportContexts={approvalPlayerSportContexts}
+                            theme={experienceTheme}
+                          />
+                        ) : null}
                         <ApprovalToggleRow
-                          description="Marca se a pessoa entra para apoiar a operação do time."
+                          // description="Marca se a pessoa entra para apoiar a operação do time."
                           hookId="notifications-modal-toggle-committee"
                           label="Comissão"
                           onValueChange={(value) => handleToggleApprovalRole('committee', value)}
@@ -482,7 +600,7 @@ export function NotificationsScreen({
                           value={approvalToggles.committee}
                         />
                         <ApprovalToggleRow
-                          description="Marca se a pessoa entra com acesso de gestão."
+                          // description="Marca se a pessoa entra com acesso de gestão."
                           hookId="notifications-modal-toggle-director"
                           label="Diretoria"
                           onValueChange={(value) => handleToggleApprovalRole('director', value)}
@@ -490,7 +608,7 @@ export function NotificationsScreen({
                           value={approvalToggles.director}
                         />
                         <ApprovalToggleRow
-                          description="Marca se a pessoa entra como responsável principal."
+                          // description="Marca se a pessoa entra como responsável principal."
                           hookId="notifications-modal-toggle-president"
                           label="Presidência"
                           onValueChange={(value) => handleToggleApprovalRole('president', value)}
@@ -580,6 +698,7 @@ export function NotificationsScreen({
                     </Pressable>
                   )}
                 </View>
+                </ScrollView>
               </View>
             ) : null}
           </View>
@@ -661,6 +780,166 @@ function resolveApprovalModeFromToggles(toggles: ApprovalToggles): ApprovedMembe
   return null;
 }
 
+function buildFakeJoinRequestNotification(team: TeamSummary | null): NotificationCardItem {
+  return {
+    applicantAvatarUrl: null,
+    applicantName: 'Bruno Paula',
+    applicantRoleLabel: '',
+    applicantSubtitle: 'Ja possui perfil de jogador no app. A funcao final no time sera definida pela gestao.',
+    approvalModeOptions: [],
+    createdAt: new Date().toISOString(),
+    id: FAKE_JOIN_REQUEST_ID,
+    joinRequestId: FAKE_JOIN_REQUEST_ID,
+    pendingAction: true,
+    read: false,
+    teamCrestUrl: team?.crest_url ?? null,
+    teamId: team?.id ?? 'fake-team-preview',
+    teamName: team?.name ?? "Old'Dogs F.C.",
+    type: 'TEAM_JOIN_REQUEST_CREATED',
+  };
+}
+
+function ApprovalPlayerSportContextPanel({
+  frameCounts,
+  modalities,
+  onSelectFrameType,
+  onSelectModality,
+  sportContexts,
+  theme,
+}: {
+  frameCounts: ModalityFrameCounts;
+  modalities: SportModality[];
+  onSelectFrameType: (modality: SportModality, frameType: ApprovalPlayerFrameType) => void;
+  onSelectModality: (modality: SportModality) => void;
+  sportContexts: Partial<Record<SportModality, ApprovalPlayerSportContext>>;
+  theme: TeamExperienceTheme;
+}) {
+  const visibleModalities = normalizeApprovalModalities(modalities);
+
+  if (!visibleModalities.length) {
+    return null;
+  }
+
+  return (
+    <View {...hookProps('notifications-modal-container-player-sport-context')}>
+      <View className="gap-2 max-w-3xl" {...hookProps('notifications-modal-container-player-modalities')}>
+        <Text className="text-[0.9rem] font-bold leading-5" style={{ color: theme.accentPrimary }} {...hookProps('notifications-modal-text-player-modalities-label')}>
+          Modalidade
+        </Text>
+
+        <View className="flex-row flex-wrap items-start gap-2" {...hookProps('notifications-modal-container-player-modality-options')}>
+          {visibleModalities.map((modality) => {
+            const isSelected = Boolean(sportContexts[modality]);
+            const sportContext = sportContexts[modality];
+            const frameCount = frameCounts[modality] ?? 1;
+
+            return (
+              <View className="min-w-[88px] flex-1 gap-2" key={modality} {...hookProps(`notifications-modal-container-player-modality-${modality.toLowerCase()}`)}>
+                <Pressable
+                  accessibilityRole="button"
+                  className="min-h-[38px] items-center justify-center rounded-full border px-3 py-2"
+                  onPress={() => onSelectModality(modality)}
+                  style={{
+                    backgroundColor: isSelected ? `${theme.accentPrimary}22` : theme.surfaceBase,
+                    borderColor: isSelected ? theme.accentPrimary : theme.borderDefault,
+                  }}
+                  {...hookProps(`notifications-modal-button-player-modality-${modality.toLowerCase()}`)}
+                >
+                  <Text className="text-[0.9rem] font-bold leading-4" style={{ color: isSelected ? theme.accentPrimary : theme.textPrimary }}>
+                    {getModalityLabel(modality)}
+                  </Text>
+                </Pressable>
+
+                {isSelected && sportContext && frameCount > 1 ? (
+                  <View className="gap-2" {...hookProps(`notifications-modal-container-player-${modality.toLowerCase()}-frame-count`)}>
+                    <View className="flex-row" {...hookProps(`notifications-modal-container-player-${modality.toLowerCase()}-frame-options`)}>
+                      {[
+                        { frameType: 'FIRST_FRAME' as const, label: '1' },
+                        { frameType: 'SECOND_FRAME' as const, label: '2' },
+                      ].map((option) => {
+                        const isFrameSelected = sportContext.frameType === option.frameType;
+                        const frameShapeClass =
+                          option.frameType === 'FIRST_FRAME' ? 'rounded-tl-[50px] rounded-bl-[50px]' : 'rounded-tr-[50px] rounded-br-[50px]';
+
+                        return (
+                          <Pressable
+                            accessibilityRole="button"
+                            className={`${frameShapeClass} min-h-[28px] flex-1 items-center justify-center border px-2 py-1`}
+                            key={option.frameType}
+                            onPress={() => onSelectFrameType(modality, option.frameType)}
+                            style={{
+                              backgroundColor: isFrameSelected ? `${theme.accentPrimary}22` : theme.surfaceBase,
+                              borderColor: isFrameSelected ? theme.accentPrimary : theme.borderDefault,
+                            }}
+                            {...hookProps(`notifications-modal-button-player-${modality.toLowerCase()}-${option.frameType.toLowerCase()}`)}
+                          >
+                            <Text className="text-[0.85rem] font-bold leading-4" style={{ color: isFrameSelected ? theme.accentPrimary : theme.textPrimary }}>
+                              {option.label}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+
+                    <Text className="text-center text-[0.68rem] font-bold leading-3" style={{ color: theme.textMuted }} {...hookProps(`notifications-modal-text-player-${modality.toLowerCase()}-frame-label`)}>
+                      Quadro
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function normalizeApprovalModalities(modalities: SportModality[]) {
+  return Array.from(new Set(modalities));
+}
+
+function ensureApprovalPlayerSportContext(
+  currentContexts: Partial<Record<SportModality, ApprovalPlayerSportContext>>,
+  modality: SportModality,
+  frameCounts: ModalityFrameCounts,
+) {
+  if (currentContexts[modality]) {
+    return currentContexts;
+  }
+
+  return {
+    ...currentContexts,
+    [modality]: {
+      frameType: getDefaultApprovalFrameTypeForModality(modality, frameCounts),
+    },
+  };
+}
+
+function toggleApprovalPlayerSportContext(
+  currentContexts: Partial<Record<SportModality, ApprovalPlayerSportContext>>,
+  modality: SportModality,
+  frameCounts: ModalityFrameCounts,
+) {
+  if (!currentContexts[modality]) {
+    return ensureApprovalPlayerSportContext(currentContexts, modality, frameCounts);
+  }
+
+  const selectedModalities = Object.keys(currentContexts);
+
+  if (selectedModalities.length <= 1) {
+    return currentContexts;
+  }
+
+  const nextContexts = { ...currentContexts };
+  delete nextContexts[modality];
+  return nextContexts;
+}
+
+function getDefaultApprovalFrameTypeForModality(modality: SportModality, frameCounts: ModalityFrameCounts): ApprovalPlayerFrameType {
+  return (frameCounts[modality] ?? 1) > 1 ? 'FIRST_FRAME' : 'UNASSIGNED';
+}
+
 function ApprovalToggleRow({
   description,
   hookId,
@@ -669,7 +948,7 @@ function ApprovalToggleRow({
   theme,
   value,
 }: {
-  description: string;
+  description?: string;
   hookId: string;
   label: string;
   onValueChange: (value: boolean) => void;
@@ -686,9 +965,11 @@ function ApprovalToggleRow({
         <Text className="text-[1rem] font-bold leading-6" style={{ color: theme.textPrimary }}>
           {label}
         </Text>
-        <Text className="text-[0.9rem] leading-5" style={{ color: theme.textMuted }}>
-          {description}
-        </Text>
+        {description ? (
+          <Text className="text-[0.9rem] leading-5" style={{ color: theme.textMuted }}>
+            {description}
+          </Text>
+        ) : null}
       </View>
       <ThemeToggle activeColor={theme.accentPrimary} inactiveColor={theme.borderDefault} onValueChange={onValueChange} value={value} />
     </View>

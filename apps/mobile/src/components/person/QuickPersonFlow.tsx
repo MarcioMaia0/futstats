@@ -8,7 +8,7 @@ import {
   getModalityPositionOptions,
   type ModalityPositionCode,
 } from '../../config/modalityPositions';
-import type { SportModality } from '../../features/teams/services/teamService';
+import type { ModalityFrameCounts, SportModality } from '../../features/teams/services/teamService';
 import type { TeamRosterRole } from '../../features/teams/services/teamRosterService';
 import type { TeamExperienceTheme } from '../../theme/teamExperienceTheme';
 import { OptionSelectField, type OptionSelectItem } from '../inputs/OptionSelectField';
@@ -19,6 +19,12 @@ import { StepNavigationContainer } from '../navigation/StepNavigationContainer';
 export type QuickPersonMode = 'match' | 'roster';
 
 export type QuickPersonDominantFoot = 'RIGHT' | 'LEFT' | 'BOTH' | null;
+export type QuickPersonDefaultFrameType = 'UNASSIGNED' | 'FIRST_FRAME' | 'SECOND_FRAME';
+
+export type QuickPersonSportContext = {
+  frameType: QuickPersonDefaultFrameType;
+  positionCodes: ModalityPositionCode[];
+};
 
 export type QuickPersonDraft = {
   addAsCommittee: boolean;
@@ -33,6 +39,7 @@ export type QuickPersonDraft = {
   nickname: string;
   positionCodes: ModalityPositionCode[];
   shirtNumber: string;
+  sportContexts: Partial<Record<SportModality, QuickPersonSportContext>>;
 };
 
 export const INITIAL_QUICK_PERSON_DRAFT: QuickPersonDraft = {
@@ -48,9 +55,16 @@ export const INITIAL_QUICK_PERSON_DRAFT: QuickPersonDraft = {
   nickname: '',
   positionCodes: [],
   shirtNumber: '',
+  sportContexts: {
+    FUTSAL: {
+      frameType: 'UNASSIGNED',
+      positionCodes: [],
+    },
+  },
 };
 
 type QuickPersonFlowProps = {
+  availableModalityFrameCounts?: ModalityFrameCounts;
   availableModalities?: SportModality[];
   canAssignLeadershipRoles?: boolean;
   initialDraft?: QuickPersonDraft;
@@ -89,6 +103,7 @@ export function buildRosterRolesFromQuickPersonDraft(draft: QuickPersonDraft): T
 }
 
 export function QuickPersonFlow({
+  availableModalityFrameCounts = {},
   availableModalities = ['FUTSAL'] as SportModality[],
   canAssignLeadershipRoles = false,
   initialDraft = INITIAL_QUICK_PERSON_DRAFT,
@@ -101,13 +116,20 @@ export function QuickPersonFlow({
     const uniqueValues = Array.from(new Set(availableModalities));
     return uniqueValues.length ? uniqueValues : (['FUTSAL'] as SportModality[]);
   }, [availableModalities]);
+  const initialSportContextFields = useMemo(
+    () => syncLegacySportFields(buildInitialSportContexts(initialDraft, sanitizedModalities, availableModalityFrameCounts)),
+    [availableModalityFrameCounts, initialDraft, sanitizedModalities],
+  );
 
   const [currentStep, setCurrentStep] = useState(0);
   const [draft, setDraft] = useState<QuickPersonDraft>({
     ...INITIAL_QUICK_PERSON_DRAFT,
     ...initialDraft,
-    modality: initialDraft.modality ?? sanitizedModalities[0] ?? 'FUTSAL',
+    ...initialSportContextFields,
   });
+  const [activeSportModality, setActiveSportModality] = useState<SportModality>(
+    initialSportContextFields.modality ?? sanitizedModalities[0] ?? 'FUTSAL',
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isImageSourceModalOpen, setIsImageSourceModalOpen] = useState(false);
 
@@ -116,21 +138,6 @@ export function QuickPersonFlow({
     () => ['Identidade da pessoa', 'Vínculo com o time', 'Contexto esportivo'][currentStep] ?? 'Cadastro rápido',
     [currentStep],
   );
-  const positionOptions = useMemo(
-    () => (draft.modality ? getModalityPositionOptions(draft.modality) : []),
-    [draft.modality],
-  );
-  const positionSelectOptions = useMemo<Array<OptionSelectItem<ModalityPositionCode>>>(
-    () =>
-      positionOptions.map((option) => ({
-        group: option.group,
-        label: option.label,
-        shortLabel: option.shortLabel,
-        value: option.code,
-      })),
-    [positionOptions],
-  );
-
   function hookProps(id: string) {
     return {
       nativeID: id,
@@ -197,14 +204,28 @@ export function QuickPersonFlow({
           addAsPlayer: false,
           dominantFoot: null,
           isGuestForCurrentMatch: false,
+          modality: null,
           positionCodes: [],
           shirtNumber: '',
+          sportContexts: {},
         };
       }
+
+      const nextSportContexts = Object.keys(current.sportContexts).length
+        ? current.sportContexts
+        : {
+            [sanitizedModalities[0]]: {
+              frameType: getDefaultFrameTypeForModality(sanitizedModalities[0], availableModalityFrameCounts),
+              positionCodes: [],
+            },
+          };
+
+      setActiveSportModality((Object.keys(nextSportContexts) as SportModality[])[0] ?? sanitizedModalities[0]);
 
       return {
         ...current,
         addAsPlayer: true,
+        ...syncLegacySportFields(nextSportContexts),
       };
     });
   }
@@ -242,12 +263,54 @@ export function QuickPersonFlow({
     }));
   }
 
-  function handleChangeModality(modality: SportModality) {
+  function handleSelectSportModality(modality: SportModality) {
     setDraft((current) => ({
       ...current,
-      modality,
-      positionCodes: [],
+      ...syncLegacySportFields(ensureSportContext(current.sportContexts, modality, availableModalityFrameCounts)),
     }));
+    setActiveSportModality(modality);
+  }
+
+  function handleSelectSportContextFrameType(modality: SportModality, frameType: QuickPersonDefaultFrameType) {
+    setDraft((current) => {
+      const currentContext = current.sportContexts[modality];
+
+      if (!currentContext) {
+        return current;
+      }
+
+      return {
+        ...current,
+        ...syncLegacySportFields({
+          ...current.sportContexts,
+          [modality]: {
+            ...currentContext,
+            frameType,
+          },
+        }),
+      };
+    });
+  }
+
+  function handleChangeSportContextPositions(modality: SportModality, positionCodes: ModalityPositionCode[]) {
+    setDraft((current) => {
+      const currentContext = current.sportContexts[modality];
+
+      if (!currentContext) {
+        return current;
+      }
+
+      return {
+        ...current,
+        ...syncLegacySportFields({
+          ...current.sportContexts,
+          [modality]: {
+            ...currentContext,
+            positionCodes,
+          },
+        }),
+      };
+    });
   }
 
   function handleEditAvatar() {
@@ -459,43 +522,42 @@ export function QuickPersonFlow({
                         Modalidade
                       </Text>
 
-                      <View className="flex-row flex-wrap gap-2">
+                      <View className="flex-row flex-wrap gap-2 w-full max-w-xl" {...hookProps('quick-person-flow-container-modality-options')}>
                         {sanitizedModalities.map((modality) => {
-                          const isActive = draft.modality === modality;
+                          const isSelected = Boolean(draft.sportContexts[modality]);
+                          const isActive = activeSportModality === modality;
 
                           return (
                             <Pressable
                               key={modality}
                               accessibilityRole="button"
-                              className="min-h-[42px] rounded-full border px-4 py-2 flex justify-center"
-                              onPress={() => handleChangeModality(modality)}
+                              className="min-h-[42px] min-w-[100px] rounded-full border px-4 py-2 flex justify-center"
+                              onPress={() => handleSelectSportModality(modality)}
                               style={{
-                                backgroundColor: isActive ? `${theme.accentPrimary}22` : theme.surfaceBase,
-                                borderColor: isActive ? theme.accentPrimary : theme.borderDefault,
+                                backgroundColor: isSelected ? `${theme.accentPrimary}22` : theme.surfaceBase,
+                                borderColor: isActive || isSelected ? theme.accentPrimary : theme.borderDefault,
                               }}
                               {...hookProps(`quick-person-flow-button-modality-${modality.toLowerCase()}`)}
                             >
-                              <Text className="text-[0.95rem] " style={{ color: isActive ? theme.accentPrimary : theme.textPrimary }}>
+                              <Text className="text-[0.95rem] text-center" style={{ color: isSelected ? theme.accentPrimary : theme.textPrimary }}>
                                 {getModalityLabel(modality)}
                               </Text>
                             </Pressable>
                           );
                         })}
                       </View>
-                    </View>
 
-                    <OptionSelectField
-                      label="Posicao"
-                      modalTitle="Posicoes"
-                      onChange={(value) => updateDraft('positionCodes', value)}
-                      options={positionSelectOptions}
-                      placeholder="Selecionar posicoes"
-                      searchPlaceholder="Buscar posicao"
-                      selectionMode="multi"
-                      theme={theme}
-                      value={draft.positionCodes}
-                      {...hookProps('quick-person-flow-select-position')}
-                    />
+                      {draft.sportContexts[activeSportModality] ? (
+                        <SportContextPanel
+                          activeModality={activeSportModality}
+                          frameCount={availableModalityFrameCounts[activeSportModality] ?? 1}
+                          onChangePositions={handleChangeSportContextPositions}
+                          onSelectFrameType={handleSelectSportContextFrameType}
+                          sportContext={draft.sportContexts[activeSportModality]}
+                          theme={theme}
+                        />
+                      ) : null}
+                    </View>
 
                     <View className="gap-2" {...hookProps('quick-person-flow-container-dominant-foot')}>
                       <Text className="text-[0.95rem] font-bold" style={{ color: theme.accentPrimary }}>
@@ -631,6 +693,161 @@ export function QuickPersonFlow({
         </View>
       </Modal>
     </>
+  );
+}
+
+function buildInitialSportContexts(
+  initialDraft: QuickPersonDraft,
+  modalities: SportModality[],
+  frameCounts: ModalityFrameCounts,
+): Partial<Record<SportModality, QuickPersonSportContext>> {
+  if (initialDraft.sportContexts && Object.keys(initialDraft.sportContexts).length) {
+    return initialDraft.sportContexts;
+  }
+
+  const modality = initialDraft.modality ?? modalities[0] ?? 'FUTSAL';
+
+  return {
+    [modality]: {
+      frameType: getDefaultFrameTypeForModality(modality, frameCounts),
+      positionCodes: initialDraft.positionCodes,
+    },
+  };
+}
+
+function ensureSportContext(
+  currentContexts: Partial<Record<SportModality, QuickPersonSportContext>>,
+  modality: SportModality,
+  frameCounts: ModalityFrameCounts,
+) {
+  if (currentContexts[modality]) {
+    return currentContexts;
+  }
+
+  return {
+    ...currentContexts,
+    [modality]: {
+      frameType: getDefaultFrameTypeForModality(modality, frameCounts),
+      positionCodes: [],
+    },
+  };
+}
+
+function syncLegacySportFields(sportContexts: Partial<Record<SportModality, QuickPersonSportContext>>) {
+  const firstModality = (Object.keys(sportContexts) as SportModality[])[0] ?? null;
+
+  return {
+    modality: firstModality,
+    positionCodes: firstModality ? sportContexts[firstModality]?.positionCodes ?? [] : [],
+    sportContexts,
+  };
+}
+
+function getDefaultFrameTypeForModality(
+  modality: SportModality,
+  frameCounts: ModalityFrameCounts,
+): QuickPersonDefaultFrameType {
+  return (frameCounts[modality] ?? 1) > 1 ? 'FIRST_FRAME' : 'UNASSIGNED';
+}
+
+function getPositionSelectOptions(modality: SportModality): Array<OptionSelectItem<ModalityPositionCode>> {
+  return getModalityPositionOptions(modality).map((option) => ({
+    group: option.group,
+    label: option.label,
+    shortLabel: option.shortLabel,
+    value: option.code,
+  }));
+}
+
+function quickHookProps(id: string) {
+  return {
+    nativeID: id,
+    testID: id,
+  };
+}
+
+function SportContextPanel({
+  activeModality,
+  frameCount,
+  onChangePositions,
+  onSelectFrameType,
+  sportContext,
+  theme,
+}: {
+  activeModality: SportModality;
+  frameCount: number;
+  onChangePositions: (modality: SportModality, positionCodes: ModalityPositionCode[]) => void;
+  onSelectFrameType: (modality: SportModality, frameType: QuickPersonDefaultFrameType) => void;
+  sportContext?: QuickPersonSportContext;
+  theme: TeamExperienceTheme;
+}) {
+  if (!sportContext) {
+    return null;
+  }
+
+  return (
+    <View
+      className="gap-5"
+      // style={{ backgroundColor: theme.surfaceBase, borderColor: theme.borderDefault }}
+      {...quickHookProps(`quick-person-flow-container-modality-${activeModality.toLowerCase()}-sport-context`)}
+    >
+      {frameCount > 1 ? (
+        <View className="gap-2 max-w-[100px]" {...quickHookProps(`quick-person-flow-container-modality-${activeModality.toLowerCase()}-frame-count`)}>
+          <View className="flex-row" {...quickHookProps(`quick-person-flow-container-modality-${activeModality.toLowerCase()}-frame-options`)}>
+            {[
+              { frameType: 'FIRST_FRAME' as const, label: '1' },
+              { frameType: 'SECOND_FRAME' as const, label: '2' },
+            ].map((option) => {
+              const isFrameSelected = sportContext.frameType === option.frameType;
+              const frameCountShapeClass =
+                option.frameType === 'FIRST_FRAME' ? 'rounded-tl-[50px] rounded-bl-[50px]' : 'rounded-tr-[50px] rounded-br-[50px]';
+
+              return (
+                <Pressable
+                  key={option.frameType}
+                  accessibilityRole="button"
+                  className={`${frameCountShapeClass} min-h-[34px] flex-1 items-center justify-center border px-3 py-1`}
+                  onPress={() => onSelectFrameType(activeModality, option.frameType)}
+                  // style={{
+                  //   backgroundColor: isFrameSelected ? theme.accentPrimary : theme.surfaceCard,
+                  //   borderColor: isFrameSelected ? theme.accentPrimary : theme.borderDefault,
+                  // }}
+                  style={{
+                    backgroundColor: isFrameSelected ? `${theme.accentPrimary}22` : theme.surfaceBase,
+                    borderColor: isFrameSelected ? theme.accentPrimary : theme.borderDefault,
+                  }}
+                  {...quickHookProps(`quick-person-flow-button-modality-${activeModality.toLowerCase()}-${option.frameType.toLowerCase()}`)}
+                >
+                  <Text
+                    className="text-[0.9rem] font-bold leading-5"
+                    style={{ color: isFrameSelected ? theme.accentPrimary : theme.textPrimary }}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Text className="text-center text-[0.72rem] font-bold leading-4" style={{ color: theme.textMuted }}>
+            Quadro
+          </Text>
+        </View>
+      ) : null}
+
+      <OptionSelectField
+        label={`Posição - ${getModalityLabel(activeModality)}`}
+        modalTitle={`Posições - ${getModalityLabel(activeModality)}`}
+        onChange={(value) => onChangePositions(activeModality, value)}
+        options={getPositionSelectOptions(activeModality)}
+        placeholder="Selecionar posições"
+        searchPlaceholder="Buscar posição"
+        selectionMode="multi"
+        theme={theme}
+        value={sportContext.positionCodes}
+        {...quickHookProps(`quick-person-flow-select-position-${activeModality.toLowerCase()}`)}
+      />
+    </View>
   );
 }
 

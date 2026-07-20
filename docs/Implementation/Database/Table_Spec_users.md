@@ -1,9 +1,9 @@
 ---
 title: Table Spec users
 status: Draft
-version: 2.0.0
+version: 2.1.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-20
 related_documents:
   - ../../ADR/ADR_012_Identity_On_Supabase_Auth.md
   - ../../API/Auth_API.md
@@ -149,6 +149,8 @@ Observação:
 
 - o sistema também possui `persons.avatar_media_id` como avatar canônico da pessoa;
 - este campo em `users` existe como dado de presença/plataforma;
+- no app atual, avatares vindos de provider social podem ser copiados para o bucket `user-avatars` e gravados neste campo como URL pública;
+- a UI deve usar fallback visual quando a URL não carregar;
 - qualquer estratégia de consolidação entre os dois deve ser documentada depois, se o produto quiser unificar a origem visual.
 
 ### `contact_phone`
@@ -159,6 +161,12 @@ Observação:
 - finalidade:
   - telefone de contato da pessoa;
   - não é telefone de autenticação.
+
+Observação:
+
+- no app atual, `contact_phone` pode ser usado como identificador de busca no login por identificador;
+- a autenticação final continua sendo por e-mail/senha no Supabase Auth;
+- para cadastro brasileiro, o front deve exigir DDD quando o telefone for informado e normalizar para `+55...`.
 
 ### `region_state`
 

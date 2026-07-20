@@ -6,7 +6,7 @@ import logoFinal from '../../../assets/brand/logo-final.png';
 import googleIcon from '../../../assets/icons/google.png';
 import { env } from '../../../config/env';
 import { components, defaultTheme } from '../../../theme';
-import { signInWithEmailPassword, signInWithGoogle } from '../services/authService';
+import { signInWithGoogle, signInWithIdentifierPassword } from '../services/authService';
 
 type LoginScreenProps = {
   onCreateAccountRequested?: () => void;
@@ -21,7 +21,7 @@ function hookProps(id: string) {
 }
 
 export function LoginScreen({ onCreateAccountRequested, onStartPathRequested }: LoginScreenProps) {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
   const [isEmailLoading, setIsEmailLoading] = useState(false);
@@ -41,15 +41,15 @@ export function LoginScreen({ onCreateAccountRequested, onStartPathRequested }: 
   }
 
   async function handleEmailSignIn() {
-    if (!email.trim() || !password) {
-      setAuthError('Preencha e-mail e senha para entrar.');
+    if (!identifier.trim() || !password) {
+      setAuthError('Preencha e-mail, @usuario ou telefone e senha para entrar.');
       return;
     }
 
     setAuthError(null);
     setIsEmailLoading(true);
 
-    const { error } = await signInWithEmailPassword({ email, password });
+    const { error } = await signInWithIdentifierPassword({ identifier, password });
 
     if (error) {
       setAuthError(error.message);
@@ -80,29 +80,43 @@ export function LoginScreen({ onCreateAccountRequested, onStartPathRequested }: 
         </View>
 
         <View className="gap-[14px]" {...hookProps('login-container-form')}>
-          <View className="gap-[14px]" {...hookProps('login-container-field-email')}>
-            <Text className="text-[13px] font-bold leading-[18px] text-brand-gold" {...hookProps('login-label-email')}>
-              E-mail
-            </Text>
-            <TextInput
-              autoCapitalize="none"
-              className="min-h-[58px] rounded-[22px] border border-[#5A5A5A] bg-[#242424] px-4 text-[15px] leading-5 text-white"
-              keyboardType="email-address"
-              onChangeText={setEmail}
-              placeholder="nome@email.com"
-              placeholderTextColor={components.input.placeholderColor}
-              value={email}
-              {...hookProps('login-input-email')}
-            />
+          <View className="gap-[14px] mb-5" {...hookProps('login-container-field-identifier')}>
+            {/*<View className="flex-row items-center gap-2" {...hookProps('login-label-identifier-row')}>
+              <Ionicons color={defaultTheme.color.primary} name="person-circle-outline" size={16} />
+              <Text className="text-[13px] font-bold leading-[18px] text-brand-gold" {...hookProps('login-label-identifier')}>
+                E-mail, usuário ou telefone
+              </Text>
+            </View>*/}
+            <View className="relative" {...hookProps('login-input-identifier-container')}>
+              <View className="absolute left-4 top-0 z-10 h-[58px] items-center justify-center" {...hookProps('login-input-identifier-icon')}>
+                <Ionicons color={defaultTheme.color.primary} name="person-circle-outline" size={20} />
+              </View>
+              <TextInput
+                autoCapitalize="none"
+                className="min-h-[58px] rounded-[22px] border border-[#5A5A5A] bg-[#242424] px-4 pl-12 text-[15px] leading-5 text-white"
+                keyboardType="default"
+                onChangeText={setIdentifier}
+                placeholder="email, @usuario ou celular"
+                placeholderTextColor={components.input.placeholderColor}
+                value={identifier}
+                {...hookProps('login-input-identifier')}
+              />
+            </View>
           </View>
 
           <View className="gap-[14px]" {...hookProps('login-container-field-password')}>
-            <Text className="text-[13px] font-bold leading-[18px] text-brand-gold" {...hookProps('login-label-password')}>
-              Senha
-            </Text>
+            {/*<View className="flex-row items-center gap-2" {...hookProps('login-label-password-row')}>
+              <Ionicons color={defaultTheme.color.primary} name="lock-closed-outline" size={16} />
+              <Text className="text-[13px] font-bold leading-[18px] text-brand-gold" {...hookProps('login-label-password')}>
+                Senha
+              </Text>
+            </View>*/}
             <View className="relative" {...hookProps('login-input-password-container')}>
+              <View className="absolute left-4 top-0 z-10 h-[58px] items-center justify-center" {...hookProps('login-input-password-icon')}>
+                <Ionicons color={defaultTheme.color.primary} name="lock-closed-outline" size={20} />
+              </View>
               <TextInput
-                className="min-h-[58px] rounded-[22px] border border-[#5A5A5A] bg-[#242424] px-4 pr-14 text-[15px] leading-5 text-white"
+                className="min-h-[58px] rounded-[22px] border border-[#5A5A5A] bg-[#242424] px-4 pl-12 pr-14 text-[15px] leading-5 text-white"
                 onChangeText={setPassword}
                 placeholder="Sua senha"
                 placeholderTextColor={components.input.placeholderColor}
@@ -134,18 +148,20 @@ export function LoginScreen({ onCreateAccountRequested, onStartPathRequested }: 
 
           <TouchableOpacity
             activeOpacity={0.86}
-            className={`mt-3 items-center rounded-[22px] py-[18px] ${isEmailLoading ? 'bg-brand-gold/70' : 'bg-brand-gold'}`}
+            className={`mt-3 flex-row items-center justify-center gap-2 rounded-[22px] py-[18px] ${isEmailLoading ? 'bg-brand-gold/70' : 'bg-brand-gold'}`}
             onPress={handleEmailSignIn}
             {...hookProps('login-button-submit')}
           >
+            <Ionicons color="#1E1E1E" name="log-in-outline" size={22} />
             <Text className="text-[19px] font-bold leading-6 text-[#1E1E1E]" {...hookProps('login-text-submit')}>
               {isEmailLoading ? 'Entrando...' : 'ENTRAR'}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity activeOpacity={0.76} className="items-center py-1" onPress={onCreateAccountRequested} {...hookProps('login-button-create-account')}>
+          <TouchableOpacity activeOpacity={0.76} className="flex-row items-center justify-center gap-2 py-1" onPress={onCreateAccountRequested} {...hookProps('login-button-create-account')}>
+            
             <Text className="text-[16px] leading-6 text-text-subdued" {...hookProps('login-text-create-account')}>
-              Ainda não tem conta? <Text className="font-bold text-brand-gold">Criar conta</Text>
+              Ainda não tem conta? <Ionicons color={defaultTheme.color.primary} name="person-add-outline" size={18} /> <Text className="font-bold text-brand-gold">Criar conta</Text>
             </Text>
           </TouchableOpacity>
 
@@ -195,10 +211,11 @@ export function LoginScreen({ onCreateAccountRequested, onStartPathRequested }: 
 
           <TouchableOpacity
             activeOpacity={0.76}
-            className="mt-5 items-center rounded-[22px] border border-brand-gold bg-transparent py-[17px]"
+            className="mt-5 flex-row items-center justify-center gap-2 rounded-[22px] border border-brand-gold bg-transparent py-[17px]"
             onPress={onStartPathRequested}
             {...hookProps('login-button-guest')}
           >
+            {/*<Ionicons color={defaultTheme.color.primary} name="football-outline" size={22} />*/}
             <Text className="text-[19px] font-bold leading-6 text-brand-gold" {...hookProps('login-text-guest')}>
               Entrar sem conta
             </Text>
@@ -207,7 +224,7 @@ export function LoginScreen({ onCreateAccountRequested, onStartPathRequested }: 
 
         {!env.hasSupabaseConfig && (
           <Text className="text-center text-[11px] leading-[17px] text-text-muted" {...hookProps('login-text-config-warning')}>
-            Configure o Supabase em .env.local para habilitar autenticacao.
+            Configure o Supabase em .env.local para habilitar autenticação.
           </Text>
         )}
 

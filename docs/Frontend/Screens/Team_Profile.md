@@ -1,9 +1,9 @@
 ---
 title: Screen: Team Profile
 status: Draft
-version: 1.0.0
+version: 1.1.0
 owner: Product Architecture
-last_update: 2026-07-09
+last_update: 2026-07-20
 related_documents:
   - ../../Implementation/Core_Flows/Team_Profile_Implementation.md
   - Team_Settings.md
@@ -19,6 +19,8 @@ Perfil público ou privado do time.
 
 - escudo;
 - cores do time;
+- cabeçalho recolhível;
+- menu de ações rápidas sticky;
 - últimos jogos;
 - próximos jogos;
 - elenco;
@@ -86,6 +88,9 @@ Quando disponível, a UI pode mostrar:
 - Permitir avançar para detalhes.
 - Respeitar tema e modo de linguagem.
 - Aplicar tema do time quando disponível.
+- O menu de ações rápidas deve permanecer acessível durante a rolagem.
+- Ao rolar, apenas o primeiro cabeçalho deve recolher; o conteúdo abaixo rola abaixo do menu de ações.
+- Evitar sobreposição visual agressiva entre backgrounds translúcidos; quando necessário, usar máscara/overlay ou ajuste de composição sem perder o efeito sticky.
 - Respeitar privacidade do time e visibilidade de conteúdo.
 - Time deve poder existir e ser exibido com dados mínimos.
 - Histórico do time não pertence a um único usuário.

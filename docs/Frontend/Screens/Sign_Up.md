@@ -1,9 +1,9 @@
 ---
 title: Screen: Sign Up
 status: Draft
-version: 0.2.0
+version: 0.3.0
 owner: Product Architecture
-last_update: 2026-07-18
+last_update: 2026-07-20
 related_documents:
   - ../../Domain/Identity.md
   - ../../ADR/ADR_004_Account_User_Player_Separation.md
@@ -23,7 +23,7 @@ Criar uma conta nova pelo caminho de e-mail e senha. Componente: `SignUpScreen`.
 ## Elementos
 
 - título e contexto visual de criação de conta;
-- campos de cadastro;
+- campos de cadastro com explicação no placeholder;
 - sugestão editável de `@usuario` gerada a partir do nome de exibição;
 - botão primário `Criar conta`;
 - aceite de Termos e Privacidade;
@@ -34,7 +34,7 @@ Criar uma conta nova pelo caminho de e-mail e senha. Componente: `SignUpScreen`.
 
 - `display_name` - obrigatório. Origem: `public.users.display_name`.
 - `email` - obrigatório, formato de e-mail. Origem: `auth.users.email`.
-- `contact_phone` - opcional, formato E.164 (telefone de contato, não verificado). Origem: `public.users.contact_phone`.
+- `contact_phone` - opcional, mas quando informado deve conter DDD e ser normalizado para E.164 brasileiro. Origem: `public.users.contact_phone`.
 - `password` - obrigatório, mínimo 8 caracteres; campo com botão `mostrar senha`. Nunca persistido em claro.
 - `confirm_password` - obrigatório na UI; usado apenas para confirmação visual da pessoa; nunca persistido nem enviado como campo de domínio.
 - `terms_accepted` - checkbox obrigatório. Origem: `public.users.terms_accepted_at`.
@@ -72,6 +72,9 @@ Criar uma conta nova pelo caminho de e-mail e senha. Componente: `SignUpScreen`.
 - se o e-mail informado já pertencer a uma conta social (Google ou Apple), o vínculo exige antes a confirmação do e-mail; no sentido inverso, login social com e-mail verificado sobre conta de e-mail existente faz vínculo automático;
 - depois de `sign-up`, a decisão entre Home e `Complete Profile` deve seguir `GET /api/v1/me -> onboarding.requires_complete_profile`;
 - textos via i18n; tokens de tema.
+- labels visuais dos campos podem ser ocultados quando o placeholder e o ícone deixarem o significado claro.
+- o fundo deve preservar a marca d'água do app quando usada no padrão visual da tela.
+- telefone sem DDD deve bloquear submit quando o campo estiver preenchido.
 
 ## Estados
 

@@ -2,13 +2,14 @@
 title: Documentation Index
 status: Approved
 document_type: Normative
-version: 2.4.0
+version: 2.5.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-20
 related_documents:
   - docs/README.md
   - docs/Architecture/Architecture_Principles.md
   - docs/AI/AI_Development_Guidelines.md
+  - docs/Release_1_0/Current_Project_Status.md
   - docs/Release_1_0/Handoff_Guide.md
   - docs/Release_1_0/Source_of_Truth_Map.md
 ---
@@ -73,14 +74,15 @@ Critério obrigatório:
 Para compreender o projeto de forma holística:
 
 1. [README.md](/D:/xampp/htdocs/futstats-app/docs/README.md)
-2. `Documentation_Index.md`
-3. [Product/Product_Overview.md](/D:/xampp/htdocs/futstats-app/docs/Product/Product_Overview.md)
-4. [Product/Product_Vision.md](/D:/xampp/htdocs/futstats-app/docs/Product/Product_Vision.md)
-5. [Product/Product_Principles.md](/D:/xampp/htdocs/futstats-app/docs/Product/Product_Principles.md)
-6. [Release_1_0/Source_of_Truth_Map.md](/D:/xampp/htdocs/futstats-app/docs/Release_1_0/Source_of_Truth_Map.md)
-7. [Domain/README.md](/D:/xampp/htdocs/futstats-app/docs/Domain/README.md)
-8. [Architecture/Architecture_Principles.md](/D:/xampp/htdocs/futstats-app/docs/Architecture/Architecture_Principles.md)
-9. [Release_1_0/Handoff_Guide.md](/D:/xampp/htdocs/futstats-app/docs/Release_1_0/Handoff_Guide.md)
+2. [Release_1_0/Current_Project_Status.md](/D:/xampp/htdocs/futstats-app/docs/Release_1_0/Current_Project_Status.md)
+3. [Release_1_0/Handoff_Guide.md](/D:/xampp/htdocs/futstats-app/docs/Release_1_0/Handoff_Guide.md)
+4. `Documentation_Index.md`
+5. [Product/Product_Overview.md](/D:/xampp/htdocs/futstats-app/docs/Product/Product_Overview.md)
+6. [Product/Product_Vision.md](/D:/xampp/htdocs/futstats-app/docs/Product/Product_Vision.md)
+7. [Product/Product_Principles.md](/D:/xampp/htdocs/futstats-app/docs/Product/Product_Principles.md)
+8. [Release_1_0/Source_of_Truth_Map.md](/D:/xampp/htdocs/futstats-app/docs/Release_1_0/Source_of_Truth_Map.md)
+9. [Domain/README.md](/D:/xampp/htdocs/futstats-app/docs/Domain/README.md)
+10. [Architecture/Architecture_Principles.md](/D:/xampp/htdocs/futstats-app/docs/Architecture/Architecture_Principles.md)
 
 ## Guia das Áreas e Pastas
 

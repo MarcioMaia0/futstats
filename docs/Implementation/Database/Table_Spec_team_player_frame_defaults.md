@@ -1,9 +1,9 @@
 ---
 title: Table Spec team_player_frame_defaults
 status: Draft
-version: 2.1.0
+version: 2.2.0
 owner: Product Architecture
-last_update: 2026-07-10
+last_update: 2026-07-20
 related_documents:
   - Table_Spec_team_players.md
   - Table_Spec_scheduled_matches.md
@@ -374,6 +374,13 @@ impactam em cascata:
 - confirmação de presença;
 - preparação da escalação;
 - experiência da diretoria na várzea.
+
+## Uso implementado em 2026-07-20
+
+- Team Roster usa esta tabela para separar jogadores por quadro dentro da modalidade selecionada.
+- Jogadores sem linha correspondente aparecem no agrupamento "Sem quadro definido".
+- A criação rápida de jogador pode gravar esta preferência quando a modalidade/quadro for informado.
+- A aprovação de solicitação de entrada pode gravar esta preferência quando o solicitante for aprovado como jogador.
 
 ## Resumo estrutural
 

@@ -1,9 +1,9 @@
 ---
 title: Teams API
 status: Draft
-version: 1.4.0
+version: 1.5.0
 owner: Product Architecture
-last_update: 2026-07-14
+last_update: 2026-07-20
 related_documents:
   - ../Architecture/Media_Storage_Strategy.md
   - ./Scheduled_Matches_API.md
@@ -14,6 +14,7 @@ related_documents:
   - ../Implementation/Database/Table_Spec_team_modalities.md
   - ../Implementation/Database/Table_Spec_team_members.md
   - ../Implementation/Database/Table_Spec_team_players.md
+  - ../Implementation/Database/Table_Spec_team_player_frame_defaults.md
   - ../Implementation/Database/Table_Spec_team_social_connections.md
   - ../Implementation/Database/Table_Spec_team_settings.md
   - ../Implementation/Database/Table_Spec_teams.md
@@ -61,6 +62,21 @@ POST /api/v1/teams/:team_id/join-requests/:request_id/reject
 POST /api/v1/teams/:team_id/join-requests/:request_id/cancel
 ```
 
+## Estado implementado no app mobile
+
+Em 2026-07-20, o app mobile já usa Supabase diretamente para:
+
+- criar time pelo wizard;
+- hidratar e salvar configurações do time;
+- persistir modalidades do time em `team_modalities`;
+- persistir `default_match_frame_count` por modalidade;
+- listar e gerenciar múltiplas quadras do time;
+- ler elenco real do banco;
+- criar jogador/pessoa rapidamente por RPC;
+- aprovar solicitações de entrada com papéis e, quando aplicável, modalidade/quadro do jogador.
+
+O contrato HTTP deste documento continua como referência de API futura, mas o app atual usa serviços client-side sobre Supabase enquanto a camada REST não existir.
+
 ## Contrato prioritário
 
 ### `POST /api/v1/teams`
@@ -77,6 +93,10 @@ Cria um time e concede papel inicial de gestão para a pessoa autenticada.
   "founded_month": 5,
   "founded_day": 24,
   "modalities": ["FUTSAL", "SOCIETY"],
+  "modality_frame_counts": {
+    "FUTSAL": 2,
+    "SOCIETY": 1
+  },
   "home_match_capability": "HAS_HOME_VENUE",
   "region_state": "SP",
   "region_city": "Sao Paulo",
@@ -139,6 +159,10 @@ Cria um time e concede papel inicial de gestão para a pessoa autenticada.
 - `modalities` é opcional e representa modalidades preferenciais do time.
 - `modalities` pode aceitar nenhuma, uma ou mais opções.
 - `modalities` deve ser persistido em `team_modalities`.
+- `modality_frame_counts` é opcional e define a quantidade padrão de quadros para cada modalidade declarada.
+- quando uma modalidade não tiver valor explícito em `modality_frame_counts`, o padrão é `1`.
+- valores válidos de quantidade de quadros por modalidade: `1` ou `2`.
+- esse valor deve ser persistido em `team_modalities.default_match_frame_count`.
 - marcar modalidades aqui não limita a criação futura de partidas em outras modalidades.
 - `home_match_capability` é opcional no payload, mas o domínio deve trabalhar conceitualmente com:
   - `HAS_HOME_VENUE`
@@ -1228,6 +1252,26 @@ Rejeita a solicitação de entrada.
 ### `POST /api/v1/teams/:team_id/join-requests/:request_id/cancel`
 
 Cancela a solicitação pela própria pessoa solicitante enquanto ainda estiver pendente.
+
+## Elenco, modalidade e quadro
+
+O app mobile atual usa o roster do time como leitura operacional por modalidade.
+
+Regras vigentes:
+
+- filtros de modalidade devem exibir apenas modalidades configuradas em `team_modalities`;
+- se o time tiver apenas uma modalidade configurada, o filtro visual pode ser omitido;
+- jogadores podem participar de mais de uma modalidade;
+- para cada modalidade, o jogador pode ter um quadro padrão em `team_player_frame_defaults`;
+- quando não houver quadro padrão, o jogador deve aparecer no agrupamento "sem quadro definido";
+- `team_modalities.default_match_frame_count` controla se uma modalidade oferece um ou dois quadros por padrão;
+- a criação rápida de jogador deve criar pessoa/atleta/vínculo de time e atualizar o elenco após persistir.
+
+Ao aprovar solicitação de entrada:
+
+- papéis de gestão são definidos na aprovação;
+- se o solicitante for marcado como jogador, a UI deve permitir configurar modalidade e quadro conforme as modalidades do time;
+- essa configuração alimenta o mesmo modelo de elenco usado pela tela `Team Roster`.
 
 ## Regras gerais
 

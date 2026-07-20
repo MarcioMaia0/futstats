@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
 
 import type { TeamExperienceTheme } from '../../theme/teamExperienceTheme';
 
@@ -13,6 +14,7 @@ type TeamExperienceBottomBarProps = {
   onNotificationsPress?: () => void;
   onProfilePress?: () => void;
   onSearchPress?: () => void;
+  profileAvatarUrl?: string | null;
   theme: TeamExperienceTheme;
 };
 
@@ -34,8 +36,16 @@ export function TeamExperienceBottomBar({
   onNotificationsPress,
   onProfilePress,
   onSearchPress,
+  profileAvatarUrl = null,
   theme,
 }: TeamExperienceBottomBarProps) {
+  const [hasProfileAvatarError, setHasProfileAvatarError] = useState(false);
+  const shouldShowProfileAvatar = Boolean(profileAvatarUrl) && !hasProfileAvatarError;
+
+  useEffect(() => {
+    setHasProfileAvatarError(false);
+  }, [profileAvatarUrl]);
+
   return (
     <View
       className="absolute bottom-0 left-0 right-0 h-[94px] flex-row px-2 pb-[14px] pt-3"
@@ -64,14 +74,27 @@ export function TeamExperienceBottomBar({
             testID={`team-experience-bottom-bar-button-${item.key}`}
           >
             <View>
-              <Ionicons color={active ? theme.accentPrimary : theme.textMuted} name={item.icon} size={22} />
+              {item.key === 'profile' && shouldShowProfileAvatar ? (
+                <Image
+                  accessibilityLabel="Avatar do perfil"
+                  className="h-[45px] w-[45px] rounded-full"
+                  onError={() => setHasProfileAvatarError(true)}
+                  resizeMode="cover"
+                  source={{ uri: profileAvatarUrl ?? '' }}
+                  style={{ borderColor: active ? theme.accentPrimary : theme.textMuted, borderWidth: 1 }}
+                />
+              ) : (
+                <Ionicons color={active ? theme.accentPrimary : theme.textMuted} name={item.icon} size={26} />
+              )}
               {item.key === 'notifications' && hasUnreadNotifications && !active ? (
                 <View className="absolute -right-[2px] -top-[2px] h-2 w-2 rounded-full" style={{ backgroundColor: theme.accentPrimary }} />
               ) : null}
             </View>
-            <Text className="text-[13px] leading-[18px]" style={{ color: active ? theme.accentPrimary : theme.textMuted }}>
-              {item.label}
-            </Text>
+            { item.key !== 'profile' && shouldShowProfileAvatar ? (
+              <Text className="text-[13px] -mt-[5px]" style={{ color: active ? theme.accentPrimary : theme.textMuted }}>
+                {item.label}
+              </Text>
+            ) : null}
           </Pressable>
         );
       })}
